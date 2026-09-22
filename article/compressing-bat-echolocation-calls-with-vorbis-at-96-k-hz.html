@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compressing Bat Echolocation Calls with Vorbis at 96 kHz - vorbis</title>
+    <meta name="description" content="This article evaluates whether the lossy Vorbis audio compression codec can accurately preserve bat echolocation calls recorded at a 96 kHz sampling rate. It examines the container's technical specifications, the constraints imposed by human psychoacoust">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/compressing-bat-echolocation-calls-with-vorbis-at-96-k-hz">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Compressing Bat Echolocation Calls with Vorbis at 96 kHz - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/compressing-bat-echolocation-calls-with-vorbis-at-96-k-hz" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article evaluates whether the lossy Vorbis audio compression codec can accurately preserve bat echolocation calls recorded at a 96 kHz sampling rate. It examines the container's technical specifications, the constraints imposed by human psychoacoust" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1
+id="compressing-bat-echolocation-calls-with-vorbis-at-96-khz">Compressing
+Bat Echolocation Calls with Vorbis at 96 kHz</h1>
+<p>This article evaluates whether the lossy Vorbis audio compression
+codec can accurately preserve bat echolocation calls recorded at a 96
+kHz sampling rate. It examines the container's technical specifications,
+the constraints imposed by human psychoacoustic tuning, and the
+resulting impact on ultrasonic acoustic analysis. While Vorbis supports
+the technical sample rate, its inherent compression architecture makes
+it unsuitable for accurate bioacoustic research.</p>
+<h3
+id="technical-sample-rate-support-vs-psychoacoustic-design">Technical
+Sample Rate Support vs. Psychoacoustic Design</h3>
+<p>The Ogg Vorbis specification natively supports high sampling rates,
+including 96 kHz and higher. A 96 kHz sample rate provides a theoretical
+Nyquist bandwidth limit of 48 kHz, which covers the lower ultrasonic
+range used by several bat species, such as noctules and big brown
+bats.</p>
+<p>However, Vorbis is a perceptual, lossy audio codec engineered
+specifically for human listeners. Its compression model relies on human
+psychoacoustic principles, such as equal-loudness contours, simultaneous
+frequency masking, and temporal masking. The underlying algorithm
+assumes that frequencies above the human threshold of hearing
+(approximately 20 kHz) are irrelevant.</p>
+<h3 id="high-frequency-low-pass-filtering">High-Frequency Low-Pass
+Filtering</h3>
+<p>Standard Vorbis encoders, including the reference
+<code>libvorbis</code> implementation, automatically apply low-pass
+filters to maximize bit-rate efficiency. Even when processing a 96 kHz
+stream, the encoder typically attenuates or outright discards frequency
+components above 20 kHz to 24 kHz.</p>
+<p>Because bat echolocation pulses within a 96 kHz recording sit
+primarily between 20 kHz and 48 kHz, default Vorbis encoding strips away
+the vast majority of the signal. Disabling this low-pass filter requires
+overriding internal encoder settings, which forces the codec to allocate
+bits to spectral regions it was never calibrated to encode
+efficiently.</p>
+<h3 id="waveform-and-temporal-smearing">Waveform and Temporal
+Smearing</h3>
+<p>Bat echolocation pulses are characterized by extremely short, steep
+frequency-modulated (FM) chirps and constant-frequency (CF) components
+lasting only a few milliseconds. Accurate bioacoustic identification
+depends on sub-millisecond temporal precision and distinct harmonic
+structures.</p>
+<p>Vorbis uses a modified discrete cosine transform (MDCT) with variable
+window sizes to encode frequency data. When processing rapid ultrasonic
+transients:</p>
+<ul>
+<li><strong>Pre-echo artifacts</strong> occur, where energy from a sharp
+call smears forward into the preceding silence.</li>
+<li><strong>Phase distortion</strong> alters the pulse shape, distorting
+measurements of call duration and inter-pulse intervals.</li>
+<li><strong>Coarse quantization</strong> in ultrasonic bands damages
+weak harmonics and secondary feeding-buzz components.</li>
+</ul>
+<p>These alterations alter automated detection algorithms and render
+manual acoustic measurements scientifically invalid.</p>
+<h3 id="recommended-alternatives">Recommended Alternatives</h3>
+<p>Because Vorbis discards and alters high-frequency information, lossy
+psychoacoustic formats should not be used for bat echolocation data.
+Researchers requiring file compression should use lossless formats
+instead:</p>
+<ul>
+<li><strong>FLAC (Free Lossless Audio Codec):</strong> Fully supports 96
+kHz sampling rates and multichannel recordings while reducing file sizes
+by 30% to 50% without altering a single sample.</li>
+<li><strong>WavPack:</strong> Supports high-sample-rate audio with full
+mathematical reversibility in lossless mode.</li>
+</ul>
+<p>Vorbis cannot accurately compress bat echolocation calls at 96 kHz.
+Although the file format can store the stream, its human-centric
+compression design destroys the ultrasonic signal characteristics
+required for species identification and acoustic research.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

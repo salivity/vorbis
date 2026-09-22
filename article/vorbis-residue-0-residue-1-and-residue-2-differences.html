@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Residue 0, Residue 1, and Residue 2 Differences - vorbis</title>
+    <meta name="description" content="In the Vorbis audio compression format, the residue encoding stage is responsible for reconstructing the detailed spectral residue vectors after the spectral floor curve has been subtracted. The primary difference between Residue 0, Residue 1, and Residu">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-residue-0-residue-1-and-residue-2-differences">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Residue 0, Residue 1, and Residue 2 Differences - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-residue-0-residue-1-and-residue-2-differences" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the Vorbis audio compression format, the residue encoding stage is responsible for reconstructing the detailed spectral residue vectors after the spectral floor curve has been subtracted. The primary difference between Residue 0, Residue 1, and Residu" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-residue-0-residue-1-and-residue-2-differences">Vorbis
+Residue 0, Residue 1, and Residue 2 Differences</h1>
+<p>In the Vorbis audio compression format, the residue encoding stage is
+responsible for reconstructing the detailed spectral residue vectors
+after the spectral floor curve has been subtracted. The primary
+difference between Residue 0, Residue 1, and Residue 2 lies in how
+multi-channel audio data is organized, interleaved, and mapped to vector
+quantization codebooks during decoding. While Residue 0 handles channels
+independently, Residues 1 and 2 interleave channel data to exploit
+inter-channel redundancies, using different geometric alignments for
+their codebook vectors.</p>
+<h3 id="the-role-of-residue-in-vorbis">The Role of Residue in
+Vorbis</h3>
+<p>During Vorbis encoding, audio is transformed into the frequency
+domain via a Modified Discrete Cosine Transform (MDCT). The gross
+spectral envelope is modeled as the "floor," and the remaining fine
+frequency detail is the "residue." Residue vectors are quantized into
+multidimensional packets using predefined codebooks across multiple
+passes. The decoder reads these residue types to place reconstructed
+MDCT coefficients back into their respective channel buffers.</p>
+<h3 id="residue-0-independent-channel-encoding">Residue 0: Independent
+Channel Encoding</h3>
+<p>Residue 0 processes each audio channel completely independently.</p>
+<ul>
+<li><strong>Structure:</strong> The spectral coefficients of each
+channel are treated as separate, self-contained linear vectors.</li>
+<li><strong>Decoding Behavior:</strong> The decoder finishes
+reconstructing an entire residue vector for Channel 0 before moving to
+Channel 1, Channel 2, and so on. A single codebook lookup of dimension
+<span class="math inline">\(N\)</span> supplies <span
+class="math inline">\(N\)</span> consecutive spectral bins to the active
+channel.</li>
+<li><strong>Use Case:</strong> Residue 0 is simplest in terms of memory
+layout, but it cannot exploit correlation between channels. It is
+primarily used for true mono streams or multi-channel material where
+channels share little to no phase or amplitude correlation.</li>
+</ul>
+<h3 id="residue-1-interleaved-sequence-encoding">Residue 1: Interleaved
+Sequence Encoding</h3>
+<p>Residue 1 introduces multi-channel awareness by interleaving the
+spectral bins of all channels into a single unified array before
+applying vector quantization.</p>
+<ul>
+<li><strong>Structure:</strong> If an audio stream has two channels
+(<span class="math inline">\(L\)</span> and <span
+class="math inline">\(R\)</span>), the residue sequence is arranged
+alternately: <span class="math inline">\([L_0, R_0, L_1, R_1, L_2, R_2,
+\dots]\)</span>.</li>
+<li><strong>Decoding Behavior:</strong> The codebook decodes vectors
+sequentially through this interleaved array. If a codebook entry has a
+dimension of <span class="math inline">\(N\)</span>, those <span
+class="math inline">\(N\)</span> values are written sequentially across
+the interleaved stream. Depending on the codebook dimension and channel
+count, a single codebook vector might cross channel boundaries or
+populate consecutive frequency bins across different channels.</li>
+<li><strong>Use Case:</strong> Residue 1 provides compression gains over
+Residue 0 when channels share statistical energy properties, allowing a
+single codebook model to efficiently cover multi-channel dynamics.</li>
+</ul>
+<h3 id="residue-2-parallel-inter-channel-encoding">Residue 2: Parallel
+Inter-Channel Encoding</h3>
+<p>Residue 2 also interleaves channels, but it explicitly aligns
+codebook vector dimensions directly across channels at identical
+frequency locations.</p>
+<ul>
+<li><strong>Structure:</strong> The channels are interleaved such that
+codebook lookups decode values for all channels at the exact same
+spectral bin simultaneously.</li>
+<li><strong>Decoding Behavior:</strong> In a stereo stream (<span
+class="math inline">\(L\)</span> and <span
+class="math inline">\(R\)</span>) using a 2-dimensional codebook, a
+single codebook entry produces a pair of coefficients: value 0 maps to
+<span class="math inline">\(L_k\)</span> and value 1 maps to <span
+class="math inline">\(R_k\)</span>. The decoder steps
+frequency-by-frequency, populating equivalent positions in all channels
+simultaneously.</li>
+<li><strong>Use Case:</strong> Residue 2 is the standard choice for
+stereo and coupled multi-channel Vorbis streams. Because left and right
+audio channels often have highly correlated frequency content, grouping
+<span class="math inline">\((L_k, R_k)\)</span> into a single
+multidimensional vector allows the encoder to exploit spatial redundancy
+directly, which is critical for Vorbis's channel-coupling (joint stereo)
+implementation.</li>
+</ul>
+<h3 id="summary-comparison">Summary Comparison</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Residue 0</th>
+<th style="text-align: left;">Residue 1</th>
+<th style="text-align: left;">Residue 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Channel Processing</strong></td>
+<td style="text-align: left;">Fully independent</td>
+<td style="text-align: left;">Interleaved sequentially</td>
+<td style="text-align: left;">Interleaved in parallel across
+channels</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Codebook Vector
+Mapping</strong></td>
+<td style="text-align: left;">Consecutive bins within one channel</td>
+<td style="text-align: left;">Consecutive elements across an interleaved
+array</td>
+<td style="text-align: left;">Identical frequency bin across multiple
+channels</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Inter-Channel
+Redundancy</strong></td>
+<td style="text-align: left;">None exploited</td>
+<td style="text-align: left;">Weakly exploited via shared codebooks</td>
+<td style="text-align: left;">Strongly exploited via joint vector
+quantization</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Primary Application</strong></td>
+<td style="text-align: left;">Mono streams</td>
+<td style="text-align: left;">Independent multi-channel streams</td>
+<td style="text-align: left;">Coupled stereo and joint-stereo modes</td>
+</tr>
+</tbody>
+</table></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

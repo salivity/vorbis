@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Quantization Vector Dimensions - vorbis</title>
+    <meta name="description" content="This article examines the vector dimension ranges typically used in Vorbis vector quantization (VQ), explaining how multi-dimensional codebooks compress spectral audio data. In practical implementations like libvorbis, vector dimensions typically range f">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-quantization-vector-dimensions">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Quantization Vector Dimensions - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-quantization-vector-dimensions" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the vector dimension ranges typically used in Vorbis vector quantization (VQ), explaining how multi-dimensional codebooks compress spectral audio data. In practical implementations like libvorbis, vector dimensions typically range f" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-quantization-vector-dimensions">Vorbis Quantization
+Vector Dimensions</h1>
+<p>This article examines the vector dimension ranges typically used in
+Vorbis vector quantization (VQ), explaining how multi-dimensional
+codebooks compress spectral audio data. In practical implementations
+like libvorbis, vector dimensions typically range from 1 to 8 elements
+per vector, with dimensions 2, 4, and 8 serving as the most common
+configurations. Understanding this range provides insight into how the
+Vorbis format balances compression efficiency, codebook size, and
+computational overhead.</p>
+<h3 id="what-is-vector-quantization-in-vorbis">What Is Vector
+Quantization in Vorbis?</h3>
+<p>In the Vorbis audio codec, Vector Quantization (VQ) is a lossy
+compression technique used to represent spectral coefficients. Rather
+than quantizing each discrete spectral value individually (scalar
+quantization), Vorbis groups adjacent values into multi-dimensional
+vectors. Each vector is then mapped to the closest matching entry within
+a predefined codebook, storing only the entry's index.</p>
+<h3 id="the-typical-vector-dimension-range">The Typical Vector Dimension
+Range</h3>
+<p>The Vorbis bitstream specification allows for arbitrary codebook
+dimensions stored as an integer, but practical implementations enforce
+tight limits to maintain efficiency:</p>
+<ul>
+<li><strong>Typical Range:</strong> Vector dimensions in production
+Vorbis streams consistently fall between <strong>1 and 8</strong>.</li>
+<li><strong>Most Common Dimensions:</strong> Dimensions of <strong>2, 4,
+and 8</strong> are the standard configurations across most Vorbis
+codebooks.</li>
+<li><strong>Upper Practical Limit:</strong> While the format technically
+permits larger vectors, dimensions rarely exceed <strong>8</strong> or
+<strong>16</strong> in production profiles due to the memory required to
+store codebook lookup tables.</li>
+</ul>
+<h3 id="why-dimensions-are-kept-between-1-and-8">Why Dimensions Are Kept
+Between 1 and 8</h3>
+<p>The choice of vector dimensions is constrained by the mathematical
+complexity of multi-dimensional spaces:</p>
+<ol type="1">
+<li><strong>Exponential Codebook Growth:</strong> A codebook's size
+scales exponentially with its dimension (<span
+class="math inline">\(N^k\)</span>, where <span
+class="math inline">\(k\)</span> is the dimension). Higher dimensions
+demand massive lookup tables, which inflate decoder memory usage and
+file header size.</li>
+<li><strong>Computational Overhead:</strong> Searching high-dimensional
+vector spaces during encoding significantly increases CPU overhead,
+slowing down real-time or fast encoding passes.</li>
+<li><strong>Diminishing Compression Gains:</strong> Most perceptual
+correlation in audio residues occurs among immediate neighboring
+frequency bins. Grouping beyond 4 to 8 bins provides minimal additional
+coding efficiency while vastly increasing complexity.</li>
+</ol>
+<h3 id="application-by-pipeline-stage">Application by Pipeline
+Stage</h3>
+<ul>
+<li><strong>Spectral Residue:</strong> Residue encoding relies heavily
+on dimensions of 2, 4, and 8. Lower frequency partitions with higher
+energy often use smaller dimensions (such as 2 or 4) to preserve
+fidelity, while higher, less critical frequency bands may use dimension
+8 to maximize data reduction.</li>
+<li><strong>Spectral Floor:</strong> Floor 0 uses linear predictive
+coding (LPC) representations quantized with low-dimension codebooks
+(typically 1 to 4). Modern Vorbis files primarily use Floor 1, a
+piecewise linear curve that bypasses multi-dimensional VQ in favor of
+point-based scalar techniques.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

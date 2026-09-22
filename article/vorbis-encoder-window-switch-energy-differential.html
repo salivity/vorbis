@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Encoder Window Switch Energy Differential - vorbis</title>
+    <meta name="description" content="This article provides an overview of how the Vorbis audio encoder manages temporal resolution by switching between long and short Modified Discrete Cosine Transform (MDCT) block windows. It details the psychoacoustic transient detection system, the speci">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-encoder-window-switch-energy-differential">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Encoder Window Switch Energy Differential - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-encoder-window-switch-energy-differential" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Vorbis audio encoder manages temporal resolution by switching between long and short Modified Discrete Cosine Transform (MDCT) block windows. It details the psychoacoustic transient detection system, the speci" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-encoder-window-switch-energy-differential">Vorbis Encoder
+Window Switch Energy Differential</h1>
+<p>This article provides an overview of how the Vorbis audio encoder
+manages temporal resolution by switching between long and short Modified
+Discrete Cosine Transform (MDCT) block windows. It details the
+psychoacoustic transient detection system, the specific energy
+differential thresholds that trigger a switch, and how this mechanism
+prevents pre-echo artifacts in compressed audio.</p>
+<h3 id="the-purpose-of-mdct-window-switching">The Purpose of MDCT Window
+Switching</h3>
+<p>The Vorbis audio codec uses MDCT window switching to balance
+frequency resolution and time resolution. Stationary signals require
+long windows (typically 2048 samples at standard sample rates) to
+provide sharp spectral selectivity and maximize coding efficiency.
+Rapid, unpredictable audio events—known as transients, such as
+percussive drum hits or castanets—require short windows (typically 256
+samples) to localize quantization distortion in time, preventing audible
+pre-echo artifacts.</p>
+<h3 id="the-energy-differential-trigger">The Energy Differential
+Trigger</h3>
+<p>In the reference Vorbis implementation (<code>libvorbis</code>),
+window switching decisions are made during the psychoacoustic analysis
+phase via temporal transient detection. The encoder calculates the
+short-term energy of sub-divided frames across specific critical bands,
+focusing heavily on upper-frequency bins where human temporal acuity to
+pre-echo is highest.</p>
+<p>A window switch from long to short is triggered when the energy ratio
+between consecutive short-term analysis blocks exceeds the transient
+threshold. While this threshold varies slightly based on the selected
+quality mode (VBR settings from <code>-q 0</code> to
+<code>-q 10</code>), the psychoacoustic model typically requires an
+energy differential of <strong>10 dB to 12 dB</strong> (a three- to
+four-fold increase in raw acoustic energy) over a short time window
+(sub-blocks of 128 to 256 samples) to flag a transient event.</p>
+<p>If the energy increase remains below roughly <strong>6 dB</strong>,
+the masking threshold of the ear is deemed sufficient to hide pre-echo
+distortion, and the encoder retains the long window to preserve spectral
+efficiency. When the differential surpasses the calibrated 10 dB to 12
+dB threshold, the transient flag is set, forcing an MDCT block
+switch.</p>
+<h3 id="window-transition-mechanics">Window Transition Mechanics</h3>
+<p>Because MDCT requires 50% overlap-add to ensure time-domain aliasing
+cancellation (TDAC), an encoder cannot transition abruptly between a
+standard long window and a standard short window. When the transient
+detector identifies a differential crossing the threshold, it triggers a
+sequenced transition:</p>
+<ol type="1">
+<li><strong>Long Window:</strong> Used during steady-state audio prior
+to the transient.</li>
+<li><strong>Long-to-Short Transition Window:</strong> A half-long,
+half-short hybrid window that overlaps with the preceding long window on
+its left half and matches the short window size on its right half.</li>
+<li><strong>Short Window(s):</strong> Centered over the transient attack
+to capture the high-energy burst with low temporal smear.</li>
+<li><strong>Short-to-Long Transition Window:</strong> A half-short,
+half-long hybrid window that seamlessly bridges back into standard long
+blocks once the energy stabilizes below the differential threshold.</li>
+</ol>
+<p>By tying this transition to a strict energy differential threshold,
+Vorbis prevents pre-echo artifacts on sharp attacks while avoiding
+unnecessary bit allocation on steady-state sounds.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

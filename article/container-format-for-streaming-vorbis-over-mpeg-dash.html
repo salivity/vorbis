@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Format for Streaming Vorbis Over MPEG-DASH - vorbis</title>
+    <meta name="description" content="Streaming the Vorbis audio codec over Dynamic Adaptive Streaming over HTTP (MPEG-DASH) requires the WebM container format. While standard MPEG-DASH implementations commonly deploy fragmented MP4 (ISOBMFF) for audio codecs like AAC, Vorbis streaming relie">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/container-format-for-streaming-vorbis-over-mpeg-dash">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Container Format for Streaming Vorbis Over MPEG-DASH - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/container-format-for-streaming-vorbis-over-mpeg-dash" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Streaming the Vorbis audio codec over Dynamic Adaptive Streaming over HTTP (MPEG-DASH) requires the WebM container format. While standard MPEG-DASH implementations commonly deploy fragmented MP4 (ISOBMFF) for audio codecs like AAC, Vorbis streaming relie" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="container-format-for-streaming-vorbis-over-mpeg-dash">Container
+Format for Streaming Vorbis Over MPEG-DASH</h1>
+<p>Streaming the Vorbis audio codec over Dynamic Adaptive Streaming over
+HTTP (MPEG-DASH) requires the <strong>WebM</strong> container format.
+While standard MPEG-DASH implementations commonly deploy fragmented MP4
+(ISOBMFF) for audio codecs like AAC, Vorbis streaming relies on the WebM
+container profile designed for DASH. This article explains why the WebM
+container is required, how it encapsulates Vorbis data, and how it
+integrates into DASH Media Presentation Description (MPD) manifests.</p>
+<h2 id="the-webm-container-format">The WebM Container Format</h2>
+<p>To deliver Vorbis audio via MPEG-DASH, media engines use the WebM
+container format (a restricted subset of the Matroska/EBML
+specification). The standard ISO Base Media File Format (ISOBMFF/fMP4)
+lacks native, standardized commercial adoption for the Vorbis bitstream
+structure. As a result, the WebM Project introduced the WebM DASH
+profile to enable adaptive streaming of open codecs—pairing VP8/VP9
+video with Vorbis or Opus audio.</p>
+<p>When streaming Vorbis over DASH using WebM, the container is split
+into two primary components:</p>
+<ul>
+<li><strong>Initialization Segment:</strong> Contains the EBML header,
+segment information, and track headers. For Vorbis, this segment must
+include the codec private data, which carries the three required Vorbis
+setup header packets (identification, comments, and setup codebooks).
+Without this initialization data, decoders cannot parse the subsequent
+audio packets.</li>
+<li><strong>Media Segments:</strong> Composed of standard WebM
+<code>Cluster</code> elements containing sequential
+<code>SimpleBlock</code> structures. Each <code>SimpleBlock</code> holds
+raw Vorbis audio frames.</li>
+</ul>
+<h2 id="integration-in-the-dash-manifest-mpd">Integration in the DASH
+Manifest (MPD)</h2>
+<p>To inform adaptive streaming players (such as Shaka Player or
+Dash.js) of the stream format, the DASH MPD manifest explicitly defines
+the WebM container and the Vorbis codec within the audio representation
+elements:</p>
+<ul>
+<li><strong>MIME Type:</strong> <code>audio/webm</code></li>
+<li><strong>Codecs Parameter:</strong> <code>vorbis</code></li>
+<li><strong>Segment Templates:</strong> Segments can be referenced via
+<code>$Number$</code> or <code>$Time$</code> addressing, referencing
+standalone segment files or byte-range requests inside a single WebM
+file using an index segment (Cues).</li>
+</ul>
+<p>By packaging Vorbis into segmented WebM files and declaring the
+<code>audio/webm; codecs="vorbis"</code> MIME type, DASH players can
+demux the clusters and decode the underlying audio stream
+adaptively.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

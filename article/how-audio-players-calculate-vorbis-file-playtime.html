@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Audio Players Calculate Vorbis File Playtime - vorbis</title>
+    <meta name="description" content="Audio players calculate the exact playtime of an Ogg Vorbis file by dividing the total number of audio samples by the stream's sample rate. Because the Vorbis format does not include a direct "duration" field in its metadata, the player must extract the">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-audio-players-calculate-vorbis-file-playtime">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Audio Players Calculate Vorbis File Playtime - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-audio-players-calculate-vorbis-file-playtime" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Audio players calculate the exact playtime of an Ogg Vorbis file by dividing the total number of audio samples by the stream's sample rate. Because the Vorbis format does not include a direct "duration" field in its metadata, the player must extract the" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-audio-players-calculate-vorbis-file-playtime">How Audio
+Players Calculate Vorbis File Playtime</h1>
+<p>Audio players calculate the exact playtime of an Ogg Vorbis file by
+dividing the total number of audio samples by the stream's sample rate.
+Because the Vorbis format does not include a direct "duration" field in
+its metadata, the player must extract the sample rate from the stream's
+header, seek to the end of the file to retrieve the final sample count
+recorded in the container, and perform a simple division to determine
+the duration down to the exact millisecond.</p>
+<h3 id="reading-the-sample-rate">Reading the Sample Rate</h3>
+<p>When an audio player opens an Ogg Vorbis file, it first reads the
+initial Vorbis identification header found inside the first logical
+packet of the Ogg bitstream. This header contains essential decoding
+parameters, including the audio channel count and the sample rate
+(measured in Hz, such as 44,100 Hz or 48,000 Hz). The sample rate
+defines how many individual audio samples make up one second of playback
+time.</p>
+<h3 id="locating-the-final-granule-position">Locating the Final Granule
+Position</h3>
+<p>Because the total duration is not declared upfront, the player must
+determine the total number of PCM samples contained within the file.
+Vorbis streams are encapsulated in the Ogg container format, which
+divides data into pages marked by a 4-byte capture pattern
+(<code>OggS</code>).</p>
+<p>Each Ogg page header contains a 64-bit integer known as the
+<code>granulepos</code> (granule position). In Vorbis, the granule
+position explicitly indicates the cumulative number of discrete audio
+samples decoded up to the end of that specific page.</p>
+<p>To avoid decoding the entire audio file just to find its length, a
+player with access to a seekable file will:</p>
+<ol type="1">
+<li>Seek directly to the end of the file or stream.</li>
+<li>Scan backwards through the final few kilobytes to locate the last
+valid Ogg page header.</li>
+<li>Read the 64-bit <code>granulepos</code> field stored in that final
+page's header.</li>
+</ol>
+<h3 id="calculating-the-total-duration">Calculating the Total
+Duration</h3>
+<p>Once the player has the final sample count and the sample rate, the
+mathematical formula to find the exact duration in seconds is:</p>
+<p><span class="math display">\[\text{Playtime (seconds)} =
+\frac{\text{Final Granule Position}}{\text{Sample Rate
+(Hz)}}\]</span></p>
+<p>For example, if the final page has a granule position of 8,820,000
+samples and the identification header specifies a sample rate of 44,100
+Hz, the playtime is exactly 200 seconds.</p>
+<h3 id="edge-cases-chained-streams-and-non-seekable-media">Edge Cases:
+Chained Streams and Non-Seekable Media</h3>
+<p>In standard, single-stream files, checking the start and end of the
+file is sufficient. However, audio players must handle specific
+variations:</p>
+<ul>
+<li><strong>Chained Bitstreams:</strong> Some Ogg files consist of
+multiple concatenated logical bitstreams (chained streams), each with
+its own sample rate and granule counters. For chained files, the player
+must seek through the boundaries of each link in the chain, calculate
+the duration of each individual stream, and sum them together to yield
+the total playtime.</li>
+<li><strong>Non-Zero Start Positions:</strong> Certain files may have a
+first audio page that does not start at sample zero (for example, if a
+file was edited or clipped). Players check the first audio page's
+granule position and subtract it from the final granule position to
+ensure accurate timing.</li>
+<li><strong>Unseekable Streams:</strong> In live internet radio or
+non-seekable streams, the player cannot jump to the end of the file. In
+these scenarios, the exact total playtime cannot be calculated in
+advance, and the player can only display an elapsed playback time as it
+decodes incoming pages.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

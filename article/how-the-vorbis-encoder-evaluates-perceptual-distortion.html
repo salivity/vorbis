@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How the Vorbis Encoder Evaluates Perceptual Distortion - vorbis</title>
+    <meta name="description" content="The Vorbis audio compression format relies on an advanced psychoacoustic model to balance file size against acoustic fidelity by eliminating sounds imperceptible to the human ear. Rather than calculating simple mathematical differences between original a">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-the-vorbis-encoder-evaluates-perceptual-distortion">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How the Vorbis Encoder Evaluates Perceptual Distortion - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-the-vorbis-encoder-evaluates-perceptual-distortion" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio compression format relies on an advanced psychoacoustic model to balance file size against acoustic fidelity by eliminating sounds imperceptible to the human ear. Rather than calculating simple mathematical differences between original a" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-the-vorbis-encoder-evaluates-perceptual-distortion">How the
+Vorbis Encoder Evaluates Perceptual Distortion</h1>
+<p>The Vorbis audio compression format relies on an advanced
+psychoacoustic model to balance file size against acoustic fidelity by
+eliminating sounds imperceptible to the human ear. Rather than
+calculating simple mathematical differences between original and
+compressed waveforms, the Vorbis encoder evaluates perceptual distortion
+metrics using frequency masking thresholds, critical band analysis, and
+noise-to-mask ratios. This approach ensures that quantization noise
+remains hidden beneath louder spectral components, preserving subjective
+listening quality even at low bitrates.</p>
+<h3 id="psychoacoustic-masking-thresholds">Psychoacoustic Masking
+Thresholds</h3>
+<p>The core of the Vorbis perceptual evaluation is the human auditory
+system's masking phenomenon. The encoder converts the time-domain audio
+signal into the frequency domain via a Modified Discrete Cosine
+Transform (MDCT). Once in the frequency domain, the encoder estimates
+two primary thresholds:</p>
+<ul>
+<li><strong>Simultaneous Masking:</strong> When a prominent sound (tonal
+or noisy) renders adjacent weaker frequencies inaudible.</li>
+<li><strong>Absolute Threshold of Hearing (ATH):</strong> The baseline
+quietest sound audible to the human ear across specific frequencies in a
+silent room.</li>
+</ul>
+<p>Vorbis maps MDCT frequency bins to the Bark scale—a psychoacoustic
+scale matching the critical bands of human hearing. By calculating the
+energy spread of tonal and noise components within these critical bands,
+the encoder defines an auditory masking curve representing the maximum
+allowable noise floor before distortion becomes audible.</p>
+<h3 id="the-floor-representation">The Floor Representation</h3>
+<p>Vorbis uniquely structures audio data by dividing the MDCT spectrum
+into two components: the spectral envelope (the "Floor") and the fine
+spectral detail (the "Residue").</p>
+<p>The Floor curve serves as the encoder's direct approximation of the
+perceptual masking threshold. In modern Vorbis implementations
+(specifically using Floor 1), this threshold is encoded as a piecewise
+linear curve on a logarithmic frequency and amplitude scale. The encoder
+evaluates distortion by determining how accurately this Floor envelope
+tracks the calculated masking threshold:</p>
+<ol type="1">
+<li>The psychoacoustic engine calculates the target masking energy
+across all Bark bands.</li>
+<li>The Floor 1 generator fits a series of control points to this target
+curve using vector quantization.</li>
+<li>The encoder computes the difference between the fitted curve and the
+target threshold to ensure no critical band receives an artificially low
+masking curve (which wastes bits) or an excessively high curve (which
+introduces audible noise).</li>
+</ol>
+<h3 id="noise-to-mask-ratio-nmr">Noise-to-Mask Ratio (NMR)</h3>
+<p>To determine whether quantization noise will be audible, Vorbis uses
+a variation of the Noise-to-Mask Ratio (NMR). Standard mathematical
+metrics like Mean Squared Error (MSE) or Signal-to-Noise Ratio (SNR)
+treat all errors equally across the spectrum. In contrast, Vorbis
+evaluates error relative to the masking curve:</p>
+<p><span class="math display">\[\text{Perceptual Error} =
+\text{Quantization Noise Energy} - \text{Masking Threshold}\]</span></p>
+<p>If the quantization noise in a specific critical band stays below the
+masking threshold (negative NMR in decibels), the distortion is judged
+imperceptible, regardless of its raw amplitude. If the noise exceeds the
+threshold (positive NMR), the encoder flags this band as perceptually
+degraded.</p>
+<h3 id="dynamic-bit-allocation-and-quantization">Dynamic Bit Allocation
+and Quantization</h3>
+<p>During the encoding of the Residue, the encoder applies the evaluated
+distortion metrics to guide quantization:</p>
+<ul>
+<li><strong>Iterative Rate-Distortion Optimization:</strong> The encoder
+tests quantization step sizes against the perceptual threshold. Bands
+with excess masking headroom receive coarser quantization to save
+bits.</li>
+<li><strong>Noise Shaping:</strong> The Residue is divided by the Floor
+envelope prior to quantization. This normalizes the spectrum,
+automatically concentrating quantization noise into high-energy regions
+where the masking threshold is naturally highest.</li>
+<li><strong>Pre-Echo Detection:</strong> Vorbis monitors rapid temporal
+energy transients to prevent "pre-echo" distortion—noise preceding an
+attack transient. When sudden bursts of energy are detected, the encoder
+switches from long MDCT blocks (typically 2048 samples) to short blocks
+(typically 256 samples) to restrict temporal distortion to an inaudible
+time window.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

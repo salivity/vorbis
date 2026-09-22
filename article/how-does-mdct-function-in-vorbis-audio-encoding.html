@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Does MDCT Function in Vorbis Audio Encoding? - vorbis</title>
+    <meta name="description" content="The Modified Discrete Cosine Transform (MDCT) is the core mathematical engine used in Vorbis audio compression to convert continuous time-domain waveforms into frequency-domain coefficients. By employing a 50% overlapping windowing scheme and Time-Domain">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-does-mdct-function-in-vorbis-audio-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Does MDCT Function in Vorbis Audio Encoding? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-does-mdct-function-in-vorbis-audio-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Modified Discrete Cosine Transform (MDCT) is the core mathematical engine used in Vorbis audio compression to convert continuous time-domain waveforms into frequency-domain coefficients. By employing a 50% overlapping windowing scheme and Time-Domain" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-does-mdct-function-in-vorbis-audio-encoding">How Does MDCT
+Function in Vorbis Audio Encoding?</h1>
+<p>The Modified Discrete Cosine Transform (MDCT) is the core
+mathematical engine used in Vorbis audio compression to convert
+continuous time-domain waveforms into frequency-domain coefficients. By
+employing a 50% overlapping windowing scheme and Time-Domain Aliasing
+Cancellation (TDAC), MDCT prevents audible boundary discontinuities
+between consecutive frames while preserving critical spectral
+information. In Vorbis, this transform enables psychoacoustic masking,
+dynamic block switching, and high-efficiency quantization, allowing the
+encoder to discard inaudible audio data without introducing severe
+compression artifacts.</p>
+<h2 id="the-role-of-mdct-in-audio-compression">The Role of MDCT in Audio
+Compression</h2>
+<p>Standard audio signals consist of time-based pressure changes sampled
+at specific rates, such as 44.1 kHz. Processing these continuous streams
+in isolated, rectangular segments creates abrupt boundaries at frame
+edges, resulting in high-frequency spectral splatter known as blocking
+artifacts.</p>
+<p>MDCT resolves this boundary issue through a lapped orthogonal
+transform design. Instead of analyzing discrete blocks independently,
+MDCT operates on overlapping data windows where the second half of a
+preceding frame overlaps with the first half of the following frame.
+Through linear algebra identities inherent to the cosine basis
+functions, MDCT introduces deliberate time-domain aliasing during the
+forward transform that cancels out completely when overlapping frames
+are summed during the Inverse MDCT (IMDCT) reconstruction.</p>
+<h2 id="windowing-and-time-domain-aliasing-cancellation">Windowing and
+Time-Domain Aliasing Cancellation</h2>
+<p>The transform process begins by applying a window function to <span
+class="math inline">\(2N\)</span> consecutive audio samples. Vorbis
+typically uses a specialized window derived from sine functions or the
+Vorbis window:</p>
+<p><span class="math display">\[w[n] = \sin\left(\frac{\pi}{2}
+\sin^2\left(\frac{\pi (n + 0.5)}{2N}\right)\right)\]</span></p>
+<p>This window tapers smoothly to zero at the frame edges and meets the
+Princen-Bradley condition:</p>
+<p><span class="math display">\[w^2[n] + w^2[n + N] = 1\]</span></p>
+<p>Once windowed, the <span class="math inline">\(2N\)</span> samples
+are transformed into <span class="math inline">\(N\)</span> spectral
+coefficients using the forward MDCT formula:</p>
+<p><span class="math display">\[X[k] = \sum_{n=0}^{2N-1} x[n]
+\cos\left[\frac{\pi}{N} \left(n + \frac{1}{2} + \frac{N}{2}\right)
+\left(k + \frac{1}{2}\right)\right]\]</span></p>
+<p>Because <span class="math inline">\(2N\)</span> time samples yield
+only <span class="math inline">\(N\)</span> output coefficients, the
+transform operates at critical sampling—meaning no redundant data points
+are added to the stream. While this reduction induces mirror-image
+aliasing along the time axis, the reconstruction stage reverses the
+process:</p>
+<ol type="1">
+<li>The decoder applies the IMDCT to reconstruct a <span
+class="math inline">\(2N\)</span>-sample aliased block.</li>
+<li>The synthesis window is applied to shape the block edges.</li>
+<li>The overlapping regions of adjacent frames are added together.</li>
+<li>The positive and negative components of the induced aliasing cancel
+out entirely, leaving an exact reconstruction of the original
+signal.</li>
+</ol>
+<h2
+id="integration-with-vorbis-psychoacoustics-and-floor-curves">Integration
+with Vorbis Psychoacoustics and Floor Curves</h2>
+<p>Transforming the signal into <span class="math inline">\(N\)</span>
+spectral bins allows Vorbis to analyze audio according to the human
+auditory system. MDCT coefficients isolate tonal components and noise
+bands across the audible spectrum.</p>
+<p>Vorbis separates the MDCT output into two distinct components: the
+spectral floor and the spectral residue. The floor represents the rough
+spectral envelope and perceived volume across critical frequency bands,
+modeled using Line Spectral Frequencies (Floor 1) or low-resolution
+curves. The encoder calculates the psychoacoustic masking threshold—the
+level below which softer sounds are rendered inaudible by louder,
+neighboring frequencies—directly against these MDCT bins.</p>
+<p>The MDCT coefficients are then divided by this floor curve, producing
+the residue. Spectral regions falling below the psychoacoustic masking
+threshold receive fewer bits or are quantized to zero, concentrating
+available bandwidth exclusively on psychoacoustically significant
+components.</p>
+<h2 id="dynamic-block-switching">Dynamic Block Switching</h2>
+<p>Audio material varies between sustained stationary tones and sharp,
+transient impulses such as drum hits or castanets. Using a long MDCT
+window on transient signals causes quantization noise to smear across
+the entire frame, generating audible distortion prior to the impact
+known as pre-echo.</p>
+<p>Vorbis addresses this challenge by dynamically switching between two
+block sizes:</p>
+<ul>
+<li><strong>Long blocks (typically 2048 or 4096 samples):</strong>
+Provide high frequency resolution to compress sustained harmonic tones
+efficiently.</li>
+<li><strong>Short blocks (typically 256 or 512 samples):</strong>
+Provide high temporal resolution to confine transient energy and
+eliminate pre-echo.</li>
+</ul>
+<p>To preserve the zero-aliasing guarantee of MDCT across transitions,
+Vorbis uses asymmetric window shapes when switching sizes. A transition
+block uses half of a long window on the stationary side and half of a
+short window on the transient side. This maintains the Princen-Bradley
+overlap requirements with adjacent frames while allowing the encoder to
+adapt its time-frequency resolution to the input signal.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

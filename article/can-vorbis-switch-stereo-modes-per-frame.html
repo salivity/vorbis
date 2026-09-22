@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can Vorbis Switch Stereo Modes Per Frame? - vorbis</title>
+    <meta name="description" content="The Ogg Vorbis audio compression format is fully capable of dynamically switching stereo modes on a frame-by-frame basis. By leveraging a flexible channel coupling mechanism within its packet structure, an encoder can evaluate the stereo image of each in">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-vorbis-switch-stereo-modes-per-frame">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can Vorbis Switch Stereo Modes Per Frame? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-vorbis-switch-stereo-modes-per-frame" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Ogg Vorbis audio compression format is fully capable of dynamically switching stereo modes on a frame-by-frame basis. By leveraging a flexible channel coupling mechanism within its packet structure, an encoder can evaluate the stereo image of each in" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-vorbis-switch-stereo-modes-per-frame">Can Vorbis Switch
+Stereo Modes Per Frame?</h1>
+<p>The Ogg Vorbis audio compression format is fully capable of
+dynamically switching stereo modes on a frame-by-frame basis. By
+leveraging a flexible channel coupling mechanism within its packet
+structure, an encoder can evaluate the stereo image of each individual
+audio frame and dynamically toggle between discrete dual-channel stereo,
+lossless mid/side stereo, and lossy point stereo. This frame-level
+adaptability enables Vorbis to maximize compression efficiency while
+preventing psychoacoustic artifacts.</p>
+<h3 id="channel-coupling-and-modes">Channel Coupling and Modes</h3>
+<p>Unlike older formats that enforce a fixed stereo mode across an
+entire file or require complex container-level signaling, Vorbis handles
+stereo relationships internally through its floor and residue
+architecture. Vorbis defines audio configuration using setup headers
+that declare multiple "modes" and "mappings."</p>
+<p>Every individual audio frame (packet) in a Vorbis bitstream begins
+with a short bitmask that indicates which mode applies to that specific
+frame. These modes govern:</p>
+<ul>
+<li>Block size (short windows for transients, long windows for steady
+tones).</li>
+<li>Windowing functions.</li>
+<li>Channel mappings and coupling rules.</li>
+</ul>
+<p>Because each packet explicitly selects its active mode, an encoder
+can instantaneously switch between different stereo handling strategies
+without resetting the decoder or altering the container structure.</p>
+<h3 id="polar-mapping-midside-and-point-stereo">Polar Mapping: Mid/Side
+and Point Stereo</h3>
+<p>Vorbis implements stereo coupling in the frequency domain using a
+polar coordinate representation (magnitude and angle) rather than
+traditional Cartesian sum-and-difference matrices. This system allows
+for two primary types of coupling that can be toggled or combined
+dynamically:</p>
+<ol type="1">
+<li><strong>Lossless Polar Coupling (Mid/Side):</strong> When both
+channels share significant spectral content, the encoder treats one
+channel as the combined energy magnitude and the other as the phase
+angle. This functions similarly to traditional Mid/Side (M/S) stereo,
+drastically reducing bitrate for centered audio signals without
+discarding any spatial information.</li>
+<li><strong>Point Stereo (Intensity Coupling):</strong> At lower
+bitrates or in higher frequency bands where the human ear relies on
+energy envelopes rather than phase differences for spatial localization,
+Vorbis can discard phase information entirely. It encodes a single
+shared spectrum with directional panning coefficients applied to each
+channel.</li>
+</ol>
+<h3 id="dynamic-switching-in-practice">Dynamic Switching in
+Practice</h3>
+<p>During encoding, the psychoacoustic analyzer examines the input
+signal in real time. If a sound source is panned dead center or shares
+common ambient reverb, the encoder routes the frame through a mode
+utilizing polar channel coupling.</p>
+<p>If the audio suddenly transitions to independent, hard-panned
+elements with conflicting phase relationships, coupling the channels
+could introduce audible phase cancellation or crosstalk artifacts. In
+this scenario, the encoder immediately switches the next frame to an
+uncoupled mode, encoding the left and right channels entirely
+independently.</p>
+<p>This per-frame agility ensures that bit allocation is continuously
+optimized for current acoustic conditions, delivering high fidelity
+during complex spatial passages and high compression during correlated
+sections.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

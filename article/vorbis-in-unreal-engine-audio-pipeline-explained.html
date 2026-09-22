@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis in Unreal Engine: Audio Pipeline Explained - vorbis</title>
+    <meta name="description" content="This article provides an overview of how Ogg Vorbis is integrated into Unreal Engine's audio pipeline, detailing its role as a lossy compression format for game audio assets. It covers the journey of an audio asset from initial import as raw PCM data thr">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-in-unreal-engine-audio-pipeline-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis in Unreal Engine: Audio Pipeline Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-in-unreal-engine-audio-pipeline-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how Ogg Vorbis is integrated into Unreal Engine's audio pipeline, detailing its role as a lossy compression format for game audio assets. It covers the journey of an audio asset from initial import as raw PCM data thr" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-in-unreal-engine-audio-pipeline-explained">Vorbis in
+Unreal Engine: Audio Pipeline Explained</h1>
+<p>This article provides an overview of how Ogg Vorbis is integrated
+into Unreal Engine's audio pipeline, detailing its role as a lossy
+compression format for game audio assets. It covers the journey of an
+audio asset from initial import as raw PCM data through cooking and
+compression, down to real-time streaming, runtime decoding, and mixing
+within the engine's AudioMixer architecture.</p>
+<h2 id="asset-import-and-compression-configuration">Asset Import and
+Compression Configuration</h2>
+<p>Unreal Engine requires all source audio files to be imported as
+uncompressed, pulse-code modulated (PCM) 16-bit WAV files at any sample
+rate. The engine does not store raw Vorbis files directly upon import;
+instead, it retains the high-fidelity source WAV in the asset
+package.</p>
+<p>Within the Sound Wave asset settings, developers specify compression
+and platform settings. Vorbis is configured primarily through the
+"Quality" slider (ranging from 1 to 100), which directly maps to Vorbis
+encoding quality metrics. Lower values introduce higher compression and
+smaller file footprints at the expense of high-frequency fidelity, while
+higher values preserve transient response and clarity for critical
+elements like dialogue or weapons.</p>
+<h2 id="the-cooking-phase">The Cooking Phase</h2>
+<p>During the cooking process, the Unreal Engine build pipeline converts
+the source PCM data into the runtime format tailored to the target
+platform. For standard desktop and mobile platforms, Unreal Engine
+traditionally defaults to <code>libvorbis</code> for compressed audio
+chunks.</p>
+<p>The engine splits the audio asset into two potential domains based on
+the asset's "Loading Behavior":</p>
+<ul>
+<li><strong>In-Memory/Pre-cache:</strong> The Vorbis stream is
+compressed as a single continuous block, stored within the cooked asset
+package (<code>.pak</code> or <code>.ucas</code>/<code>.utoc</code>),
+and loaded into system RAM prior to playback.</li>
+<li><strong>Streaming Chunks:</strong> Long audio files, such as ambient
+beds or musical scores, are partitioned into distinct Vorbis-encoded
+chunks (typically defined in the platform's audio settings, e.g., 32KB
+to 64KB blocks). Only the initial chunk is preloaded to ensure
+zero-latency triggering, while subsequent chunks stream on demand from
+storage.</li>
+</ul>
+<h2 id="runtime-decoding-and-multithreading">Runtime Decoding and
+Multithreading</h2>
+<p>Unreal Engine’s modern audio engine (AudioMixer) completely decouples
+audio decoding from the main game thread. When a Sound Wave using Vorbis
+compression is triggered:</p>
+<ol type="1">
+<li><strong>Worker Threads:</strong> The audio streaming manager
+initiates read requests for streaming assets or references cached Vorbis
+data in memory.</li>
+<li><strong>Decoding to PCM:</strong> Using the integrated
+<code>libvorbis</code> decoder, a background worker thread decodes the
+compressed Vorbis bitstream back into a raw 32-bit floating-point or
+16-bit integer PCM buffer.</li>
+<li><strong>Double Buffering:</strong> For streaming audio, a ring
+buffer or double-buffering scheme ensures that the next Vorbis packet is
+decoded and decompressed before the current playback buffer is
+exhausted, preventing audio starvation or stuttering.</li>
+</ol>
+<h2 id="integration-with-the-audiomixer-and-dsp-graph">Integration with
+the AudioMixer and DSP Graph</h2>
+<p>Once the Vorbis bitstream is decoded back into uncompressed PCM
+samples, it enters the core synthesis and mixing pipeline. The Vorbis
+format itself is strictly an intermediary storage and bandwidth-saving
+mechanism; it does not take part in digital signal processing (DSP).</p>
+<p>The decoded PCM samples are fed directly into the source's processing
+chain, where Unreal Engine applies:</p>
+<ul>
+<li>Spatialization (panning, HRTF, third-party binaural algorithms)</li>
+<li>Attenuation and distance-based filtering</li>
+<li>Source bus sends, submix routing, and real-time DSP effects (such as
+EQ, convolution reverb, and compression)</li>
+</ul>
+<p>Finally, the processed audio passes to the Master Submix, where all
+active sources are combined into the final channel format (such as
+stereo, 5.1, or 7.1.4 surround sound) and handed over to the platform’s
+low-level audio output API.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

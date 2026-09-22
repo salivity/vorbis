@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Decoder Trig Lookup Table Initialization - vorbis</title>
+    <meta name="description" content="This article explains how the Vorbis audio decoder initializes its trigonometric lookup tables during decoder startup. It details the necessity of precomputed tables for the Inverse Modified Discrete Cosine Transform (IMDCT), how stream headers dictate t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-decoder-trig-lookup-table-initialization">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Decoder Trig Lookup Table Initialization - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-decoder-trig-lookup-table-initialization" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the Vorbis audio decoder initializes its trigonometric lookup tables during decoder startup. It details the necessity of precomputed tables for the Inverse Modified Discrete Cosine Transform (IMDCT), how stream headers dictate t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-decoder-trig-lookup-table-initialization">Vorbis Decoder
+Trig Lookup Table Initialization</h1>
+<p>This article explains how the Vorbis audio decoder initializes its
+trigonometric lookup tables during decoder startup. It details the
+necessity of precomputed tables for the Inverse Modified Discrete Cosine
+Transform (IMDCT), how stream headers dictate table dimensions, the
+specific mathematical steps used to generate twiddle factors, and how
+these structures streamline runtime synthesis.</p>
+<p>In the Vorbis audio codec, time-domain audio signals are
+reconstructed from frequency coefficients using the IMDCT. Evaluating
+standard trigonometric calls such as <code>sin()</code> and
+<code>cos()</code> dynamically for every sample of every audio frame
+would incur severe CPU penalties. To ensure real-time decoding
+efficiency, the decoder computes and stores all required trigonometric
+values in lookup tables during the startup phase.</p>
+<p>The initialization process begins when the decoder parses the
+identification and setup headers of the Vorbis bitstream. The headers
+define two transform block sizes: a short block and a long block, both
+powers of two (commonly spanning 64 to 8192 samples). Because an audio
+stream alternates between these two block sizes depending on signal
+transients, the decoder initializes dedicated transform lookup
+structures for both lengths during the execution of initialization
+routines such as <code>mdct_init</code>.</p>
+<p>Once the block lengths (<span class="math inline">\(N\)</span>) are
+known, the decoder allocates memory for the trigonometric arrays. In
+reference implementations such as <code>libvorbis</code>, the IMDCT is
+calculated using an <span class="math inline">\(N/4\)</span>-point
+complex Fast Fourier Transform (FFT) algorithm rather than a naive <span
+class="math inline">\(N\)</span>-point transform. This optimization
+requires three main sets of trigonometric data: pre-rotation twiddle
+factors, standard FFT butterfly twiddle factors, and post-rotation
+factors.</p>
+<p>The decoder computes these tables by looping through fractionally
+stepped angles using high-precision standard math library functions:</p>
+<ol type="1">
+<li><strong>Pre-rotation and Post-rotation Tables:</strong> Angles are
+calculated based on fractional offsets of <span
+class="math inline">\(\frac{\pi}{N}\)</span>. In standard libvorbis
+implementations, these entries scale trigonometric angles with shifts
+such as <span class="math inline">\((2i + 0.125)\frac{\pi}{N}\)</span>
+or similar fractional phase adjustments. The resulting sine and cosine
+values are stored sequentially in arrays to handle the folding and
+unfolding of the MDCT spectrum into and out of the complex FFT
+engine.</li>
+<li><strong>FFT Butterfly Twiddle Tables:</strong> A sub-table is
+generated for the core butterfly passes of the sub-transform. The
+initialization routine computes the complex roots of unity, generating
+pairs of <span class="math inline">\(\cos\left(\frac{2\pi
+k}{M}\right)\)</span> and <span
+class="math inline">\(\sin\left(\frac{2\pi k}{M}\right)\)</span> across
+decreasing power-of-two stages (<span class="math inline">\(M\)</span>)
+down to the radix base.</li>
+</ol>
+<p>In addition to calculating raw floating-point trigonometric values,
+the startup process frequently computes associated bit-reversal
+permutation tables. Aligning the trigonometric arrays with the
+bit-reversed indexing schemes allows the decoder's inner synthesis loops
+to access twiddle factors sequentially. Once these arrays are fully
+populated in memory, the initialization routine finishes, enabling the
+decoder to process subsequent audio packets purely via pointer
+arithmetic and multiply-accumulate operations without runtime
+trigonometric overhead.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

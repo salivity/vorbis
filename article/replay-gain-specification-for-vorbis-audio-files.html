@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplayGain Specification for Vorbis Audio Files - vorbis</title>
+    <meta name="description" content="The ReplayGain specification for Vorbis audio files outlines how players and encoders store and interpret loudness normalization metadata within Ogg Vorbis streams. Unlike formats that rely on specialized binary headers or ID3 tags, Vorbis implements Rep">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/replay-gain-specification-for-vorbis-audio-files">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ReplayGain Specification for Vorbis Audio Files - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/replay-gain-specification-for-vorbis-audio-files" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The ReplayGain specification for Vorbis audio files outlines how players and encoders store and interpret loudness normalization metadata within Ogg Vorbis streams. Unlike formats that rely on specialized binary headers or ID3 tags, Vorbis implements Rep" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="replaygain-specification-for-vorbis-audio-files">ReplayGain
+Specification for Vorbis Audio Files</h1>
+<p>The ReplayGain specification for Vorbis audio files outlines how
+players and encoders store and interpret loudness normalization metadata
+within Ogg Vorbis streams. Unlike formats that rely on specialized
+binary headers or ID3 tags, Vorbis implements ReplayGain using standard
+Vorbis comment fields. This approach allows compatible media players to
+automatically adjust playback volume to achieve a consistent perceived
+loudness across different tracks and albums without altering the
+underlying audio data.</p>
+<h3 id="how-replaygain-works-in-vorbis">How ReplayGain Works in
+Vorbis</h3>
+<p>ReplayGain operates non-destructively by analyzing the perceived
+loudness of an audio file using an algorithm based on human hearing
+curves. The resulting calculation is stored as metadata. When a file is
+decoded, the player reads these values and applies a gain adjustment
+during playback. If a player does not support ReplayGain, it simply
+ignores the tags and plays the file at its standard encoded volume.</p>
+<h3 id="standard-vorbis-comment-fields">Standard Vorbis Comment
+Fields</h3>
+<p>In Vorbis audio files, ReplayGain metadata is stored within standard,
+human-readable UTF-8 Vorbis comment tags (field-name=value format). The
+specification defines four primary fields, split between track-level and
+album-level calculations:</p>
+<ul>
+<li><strong>REPLAYGAIN_TRACK_GAIN</strong>: A floating-point number
+representing the gain adjustment required to bring the individual track
+to the standard target loudness level (typically 89 dB SPL). The value
+is signed and explicitly followed by the unit <code> dB</code> (e.g.,
+<code>-4.52 dB</code> or <code>+1.20 dB</code>).</li>
+<li><strong>REPLAYGAIN_TRACK_PEAK</strong>: A floating-point number
+representing the peak signal level of the individual track, expressed as
+a ratio where <code>1.0</code> corresponds to digital full-scale (0
+dBFS). For example, a value might be <code>0.985421</code>.</li>
+<li><strong>REPLAYGAIN_ALBUM_GAIN</strong>: A signed floating-point
+number specifying the gain adjustment required to normalize the entire
+album while preserving the intentional relative volume differences
+between tracks. Like track gain, it includes the <code> dB</code> suffix
+(e.g., <code>-3.10 dB</code>).</li>
+<li><strong>REPLAYGAIN_ALBUM_PEAK</strong>: A floating-point ratio
+representing the maximum peak signal across the entire album relative to
+full-scale (<code>1.0</code>).</li>
+</ul>
+<p>An optional fifth field,
+<strong>REPLAYGAIN_REFERENCE_LOUDNESS</strong>, is sometimes included to
+denote the reference level used during the initial calculation (for
+example, <code>89.0 dB</code>), though modern implementations generally
+rely on the 89 dB SPL standard by default.</p>
+<h3 id="formatting-rules">Formatting Rules</h3>
+<p>Vorbis field names are case-insensitive according to the Vorbis
+comment specification, but ReplayGain implementations conventionally
+write them in uppercase. Gain values must always include the sign
+(<code>+</code> or <code>-</code>), at least one decimal place, and the
+<code> dB</code> unit suffix to ensure maximum compatibility across
+various decoders. Peak values should be written with standard decimal
+notation rather than exponential notation.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

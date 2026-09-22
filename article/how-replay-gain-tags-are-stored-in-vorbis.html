@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How ReplayGain Tags Are Stored in Vorbis - vorbis</title>
+    <meta name="description" content="This article explains how ReplayGain metadata—specifically REPLAYGAINTRACKGAIN and REPLAYGAINALBUMGAIN—is structured and stored within the Vorbis audio format. In Ogg Vorbis files, ReplayGain values are not saved in custom binary chunks or ID3 frames">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-replay-gain-tags-are-stored-in-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How ReplayGain Tags Are Stored in Vorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-replay-gain-tags-are-stored-in-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how ReplayGain metadata—specifically REPLAYGAINTRACKGAIN and REPLAYGAINALBUMGAIN—is structured and stored within the Vorbis audio format. In Ogg Vorbis files, ReplayGain values are not saved in custom binary chunks or ID3 frames" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-replaygain-tags-are-stored-in-vorbis">How ReplayGain Tags
+Are Stored in Vorbis</h1>
+<p>This article explains how ReplayGain metadata—specifically
+<code>REPLAYGAIN_TRACK_GAIN</code> and
+<code>REPLAYGAIN_ALBUM_GAIN</code>—is structured and stored within the
+Vorbis audio format. In Ogg Vorbis files, ReplayGain values are not
+saved in custom binary chunks or ID3 frames; instead, they are written
+as plain text key-value pairs within the native Vorbis comment metadata
+header block. Understanding this format is essential for properly
+reading, writing, and standardizing audio normalization metadata across
+media players and tag editors.</p>
+<h2 id="the-vorbis-comment-structure">The Vorbis Comment Structure</h2>
+<p>Vorbis metadata is handled by the Vorbis comment specification. In
+this specification, metadata fields are stored as arbitrary, null-less
+UTF-8 strings structured as:</p>
+<p><code>FIELD_NAME=Value</code></p>
+<p>Field names are case-insensitive and restricted to printable ASCII
+characters between 0x20 and 0x7D, with the equals sign (<code>=</code>,
+0x3D) excluded as it serves as the delimiter. While the specification
+treats field names without regard to case, uppercase is the universal
+standard for ReplayGain metadata.</p>
+<h2 id="tag-formatting-for-track-and-album-gain">Tag Formatting for
+Track and Album Gain</h2>
+<p>The specific field names used for volume normalization are:</p>
+<ul>
+<li><code>REPLAYGAIN_TRACK_GAIN</code>: The adjustment applied to
+normalize the volume of an individual track.</li>
+<li><code>REPLAYGAIN_ALBUM_GAIN</code>: The adjustment applied to
+normalize the entire album while maintaining the dynamic range
+differences between tracks.</li>
+</ul>
+<h3 id="value-representation">Value Representation</h3>
+<p>The values for both <code>REPLAYGAIN_TRACK_GAIN</code> and
+<code>REPLAYGAIN_ALBUM_GAIN</code> follow strict string formatting
+conventions:</p>
+<ol type="1">
+<li><strong>Numeric Decibel Value:</strong> The value represents the
+gain adjustment in decibels (dB). It is written as a floating-point
+number, typically rounded to two decimal places (e.g.,
+<code>+1.25</code> or <code>-6.40</code>).</li>
+<li><strong>Explicit Sign:</strong> The value must include an explicit
+sign: either a plus sign (<code>+</code>) for amplification or a minus
+sign (<code>-</code>) for attenuation.</li>
+<li><strong>Unit Suffix:</strong> The number is followed by a space and
+the unit <code>dB</code>.</li>
+</ol>
+<h3 id="examples">Examples</h3>
+<p>In a Vorbis comment packet, these tags appear as:</p>
+<pre class="text"><code>REPLAYGAIN_TRACK_GAIN=-4.52 dB
+REPLAYGAIN_ALBUM_GAIN=-3.10 dB</code></pre>
+<h2 id="accompanying-peak-tags">Accompanying Peak Tags</h2>
+<p>To prevent clipping when these gain adjustments are applied, Vorbis
+comments frequently store companion peak values:</p>
+<ul>
+<li><code>REPLAYGAIN_TRACK_PEAK</code></li>
+<li><code>REPLAYGAIN_ALBUM_PEAK</code></li>
+</ul>
+<p>Unlike the gain fields, peak values do not represent decibels; they
+represent the absolute peak sample value normalized where
+<code>1.0</code> is digital full scale (0 dBFS). These are formatted as
+floating-point numbers without an explicit plus sign or unit suffix (for
+example, <code>REPLAYGAIN_TRACK_PEAK=0.985412</code>).</p>
+<h2 id="binary-storage-inside-the-ogg-stream">Binary Storage Inside the
+Ogg Stream</h2>
+<p>At the bitstream level, the Vorbis comment header is the second
+header packet in an Ogg Vorbis logical stream, following the
+identification header. Each comment entry is stored as a 32-bit unsigned
+little-endian integer indicating the length of the string in bytes,
+immediately followed by the UTF-8 encoded <code>KEY=VALUE</code> string
+itself. ReplayGain values are embedded sequentially within this list
+without requiring special flags, making them easily parseable by
+standard Vorbis comment utilities.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

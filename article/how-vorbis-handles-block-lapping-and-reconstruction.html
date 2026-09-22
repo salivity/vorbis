@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Handles Block Lapping and Reconstruction - vorbis</title>
+    <meta name="description" content="Vorbis reconstructs continuous audio from discrete data packets by using overlapping transform blocks, the Modified Discrete Cosine Transform (MDCT), and an overlap-add process known as Time-Domain Aliasing Cancellation (TDAC). To prevent boundary artifa">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-handles-block-lapping-and-reconstruction">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Handles Block Lapping and Reconstruction - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-handles-block-lapping-and-reconstruction" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis reconstructs continuous audio from discrete data packets by using overlapping transform blocks, the Modified Discrete Cosine Transform (MDCT), and an overlap-add process known as Time-Domain Aliasing Cancellation (TDAC). To prevent boundary artifa" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-handles-block-lapping-and-reconstruction">How Vorbis
+Handles Block Lapping and Reconstruction</h1>
+<p>Vorbis reconstructs continuous audio from discrete data packets by
+using overlapping transform blocks, the Modified Discrete Cosine
+Transform (MDCT), and an overlap-add process known as Time-Domain
+Aliasing Cancellation (TDAC). To prevent boundary artifacts such as
+clicks and time-domain aliasing, Vorbis processes audio in 50%
+overlapping blocks, applies specialized windowing functions, and adds
+the decoded overlapping halves together during playback to achieve
+mathematically perfect reconstruction of the original signal.</p>
+<h3 id="the-role-of-the-mdct-and-time-domain-aliasing">The Role of the
+MDCT and Time-Domain Aliasing</h3>
+<p>Vorbis divides raw PCM audio into framed blocks and transforms them
+from the time domain into the frequency domain using the MDCT. While the
+MDCT allows for high compression efficiency, it is a lossy transform in
+isolation because it introduces time-domain aliasing—mirror-image
+distortions folded into each transformed frame.</p>
+<p>To eliminate this aliasing during decoding, Vorbis relies on
+Time-Domain Aliasing Cancellation (TDAC). TDAC requires that each block
+overlaps its neighbor by exactly 50%. When the inverse MDCT (IMDCT) is
+computed at the decoder, the resulting time-domain samples still contain
+aliasing, but the aliased components in the second half of the current
+block have the exact opposite sign of the aliased components in the
+first half of the subsequent block.</p>
+<h3 id="windowing-in-vorbis">Windowing in Vorbis</h3>
+<p>Before the MDCT is applied during encoding—and again after the IMDCT
+is calculated during decoding—the audio samples are shaped using a
+window function. Vorbis uses a custom window derived from a sine
+function, defined as:</p>
+<p><span class="math display">\[w(n) = \sin\left(\frac{\pi}{2}
+\sin^2\left(\frac{\pi (n + 0.5)}{N}\right)\right)\]</span></p>
+<p>where <span class="math inline">\(N\)</span> is the block length.</p>
+<p>This window satisfies the Princen-Bradley condition (<span
+class="math inline">\(w^2(n) + w^2(n + N/2) = 1\)</span>), which ensures
+that when two adjacent windows overlap by 50% and are squared (once at
+analysis and once at synthesis), the sum of their squared weights equals
+exactly 1.0 across the entire overlapping region. This preserves flat
+energy response and smooths boundary discontinuities to zero.</p>
+<h3 id="block-sizes-and-transition-handling">Block Sizes and Transition
+Handling</h3>
+<p>Vorbis employs two block sizes within a single stream to optimize the
+trade-off between time resolution and frequency resolution:</p>
+<ul>
+<li><strong>Long blocks</strong> provide high frequency resolution,
+ideal for stationary or tonal sounds.</li>
+<li><strong>Short blocks</strong> provide high temporal resolution,
+ideal for transient sounds to prevent pre-echo artifacts.</li>
+</ul>
+<p>Because blocks can vary in size, Vorbis cannot always perform a
+simple 50% overlap between identical window shapes. To handle
+transitions between short and long blocks, Vorbis dynamically adjusts
+the window shape of the long block using two single-bit flags in the
+packet header: <code>previous_window_flag</code> and
+<code>next_window_flag</code>.</p>
+<ol type="1">
+<li><strong>Long-to-Long</strong>: A symmetric long window is used. The
+left and right halves both span <span
+class="math inline">\(N_{\text{long}} / 2\)</span>.</li>
+<li><strong>Short-to-Short</strong>: A symmetric short window is used.
+The left and right halves both span <span
+class="math inline">\(N_{\text{short}} / 2\)</span>.</li>
+<li><strong>Long-to-Short</strong>: The left half of the long block uses
+the standard long window shape. The right half is modified: it remains
+flat at a value of 1.0 for a period, tapers down over a duration equal
+to <span class="math inline">\(N_{\text{short}} / 2\)</span> to match
+the short block's slope, and pads the remaining space with zeros.</li>
+<li><strong>Short-to-Long</strong>: The inverse occurs; the left half of
+the block tapers up over <span class="math inline">\(N_{\text{short}} /
+2\)</span> to lap properly with the preceding short block, and the right
+half behaves like a standard long window.</li>
+</ol>
+<h3 id="the-reconstruction-process-at-the-decoder">The Reconstruction
+Process at the Decoder</h3>
+<p>During playback, the decoder executes the following steps to
+reconstruct contiguous PCM samples:</p>
+<ol type="1">
+<li><strong>IMDCT</strong>: The decoder performs the inverse MDCT on the
+incoming spectral coefficients to produce intermediate time-domain
+samples of length <span class="math inline">\(N\)</span>.</li>
+<li><strong>Synthesis Windowing</strong>: The decoder applies the
+appropriate window shape (determined by the block size and transition
+flags) to the IMDCT output.</li>
+<li><strong>Overlap-Add</strong>: The decoder adds the first half of the
+newly windowed block to the buffered second half of the previous
+windowed block. Due to TDAC, the aliased components cancel out
+completely, yielding the final, artifact-free PCM audio for that
+segment.</li>
+<li><strong>Buffer Storage</strong>: The second half of the current
+block is stored in a temporary buffer, awaiting the arrival of the next
+frame to repeat the overlap-add cycle.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highest Sample Rate Tested with libvorbis - vorbis</title>
+    <meta name="description" content="The libvorbis audio codec is technically capable of supporting a vast range of sample rates due to its open and flexible architecture. While the underlying Vorbis I bitstream specification technically permits sample rates up to the 32-bit unsigned intege">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/highest-sample-rate-tested-with-libvorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Highest Sample Rate Tested with libvorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/highest-sample-rate-tested-with-libvorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The libvorbis audio codec is technically capable of supporting a vast range of sample rates due to its open and flexible architecture. While the underlying Vorbis I bitstream specification technically permits sample rates up to the 32-bit unsigned intege" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="highest-sample-rate-tested-with-libvorbis">Highest Sample Rate
+Tested with libvorbis</h1>
+<p>The libvorbis audio codec is technically capable of supporting a vast
+range of sample rates due to its open and flexible architecture. While
+the underlying Vorbis I bitstream specification technically permits
+sample rates up to the 32-bit unsigned integer maximum of roughly 4.29
+GHz, the highest officially validated and tested sample rate within the
+standard reference encoder implementation (<code>libvorbis</code>) is
+192 kHz. This article details the testing limits of libvorbis, how the
+codec handles high-resolution audio, and why practical tests rarely
+exceed this threshold.</p>
+<h3 id="standard-supported-sample-rates">Standard Supported Sample
+Rates</h3>
+<p>In standard production environments, libvorbis is formally tuned and
+qualified for sample rates between 8 kHz and 192 kHz. The development
+team at Xiph.Org explicitly designed and tested the standard
+psychoacoustic profiles up to 192 kHz to support high-definition audio
+formats (such as 24-bit/192 kHz studio master recordings). Across the
+official documentation and test suites, 192,000 Hz represents the
+highest standard sample rate subjected to systematic performance,
+fidelity, and quality tuning.</p>
+<h3 id="bitstream-vs-implementation-limits">Bitstream vs. Implementation
+Limits</h3>
+<p>There is a distinct difference between what the Vorbis bitstream
+format allows and what the <code>libvorbis</code> reference encoder
+actively supports:</p>
+<ul>
+<li><strong>Format Specification Limit:</strong> The Vorbis stream
+header stores the sample rate as a 32-bit unsigned integer
+(<code>vorbis_info.rate</code>). Consequently, the raw bitstream
+structure theoretically supports any sample rate from 1 Hz up to
+4,294,967,295 Hz (~4.29 GHz).</li>
+<li><strong>Encoder Implementation Limits:</strong> In practical
+testing, feeding arbitrary rates higher than 192 kHz into
+<code>libvorbis</code> produces varying results. Developers and
+researchers working on ultrasonic recording—such as capturing bat
+vocalizations or underwater acoustic signals—have experimentally pushed
+libvorbis to encode data at 384 kHz and 500 kHz. However, these rates
+bypass the codec's calibrated psychoacoustic tables.</li>
+</ul>
+<h3 id="why-testing-caps-at-192-khz">Why Testing Caps at 192 kHz</h3>
+<p>Testing higher sample rates provides diminishing returns for standard
+lossy compression:</p>
+<ol type="1">
+<li><strong>Psychoacoustic Models:</strong> Vorbis is a perceptual audio
+codec designed to eliminate sounds the human ear cannot perceive. Human
+hearing tops out around 20 kHz. At a 192 kHz sample rate, the Nyquist
+frequency allows capture up to 96 kHz—far beyond human perception.
+Higher rates lack optimized perceptual quantization tables.</li>
+<li><strong>Frequency Masking:</strong> The floor and residue curves in
+libvorbis are tuned against the Bark scale. Beyond 192 kHz, libvorbis
+cannot effectively model perceptual masking, often defaulting to less
+efficient generic quantization that behaves more like raw data
+compression than optimized perceptual encoding.</li>
+</ol>
+<p>In conclusion, while experimental scientific users have fed
+ultrasonic data up to 384 kHz and beyond through custom configurations,
+<strong>192 kHz</strong> remains the highest sample rate ever
+systematically and successfully tested with full encoder tuning in
+official libvorbis development.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

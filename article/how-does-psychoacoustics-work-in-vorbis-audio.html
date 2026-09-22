@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Does Psychoacoustics Work in Vorbis Audio? - vorbis</title>
+    <meta name="description" content="Psychoacoustic modeling is the perceptual engine of Ogg Vorbis compression, determining which audio details are audible to human ears and which can be discarded without noticeable degradation. By analyzing frequency masking, temporal masking, and absolut">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-does-psychoacoustics-work-in-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Does Psychoacoustics Work in Vorbis Audio? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-does-psychoacoustics-work-in-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Psychoacoustic modeling is the perceptual engine of Ogg Vorbis compression, determining which audio details are audible to human ears and which can be discarded without noticeable degradation. By analyzing frequency masking, temporal masking, and absolut" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-does-psychoacoustics-work-in-vorbis-audio">How Does
+Psychoacoustics Work in Vorbis Audio?</h1>
+<p>Psychoacoustic modeling is the perceptual engine of Ogg Vorbis
+compression, determining which audio details are audible to human ears
+and which can be discarded without noticeable degradation. By analyzing
+frequency masking, temporal masking, and absolute thresholds of hearing,
+Vorbis converts complex raw audio waveforms into an optimized spectral
+representation. Instead of attempting to preserve the exact waveform
+mathematically, the encoder leverages biological limitations in human
+auditory processing to achieve high compression ratios while maintaining
+perceived acoustic transparency.</p>
+<h2 id="fundamentals-of-auditory-perception">Fundamentals of Auditory
+Perception</h2>
+<p>Human hearing does not perceive all sound frequencies and amplitudes
+equally. The human auditory system exhibits finite resolution and
+distinct sensitivities across the audible spectrum, typically bounded
+between 20 Hz and 20 kHz.</p>
+<p>The absolute threshold of hearing establishes the minimum sound
+pressure level required for an acoustic tone to be registered by the
+human ear in total silence. Frequencies between 2 kHz and 5 kHz are
+perceived with the highest sensitivity due to the acoustic resonance of
+the human ear canal, whereas deep bass and ultra-high frequencies
+require significantly higher energy to be detected. Vorbis uses this
+curve as a baseline to identify and eliminate sub-threshold spectral
+energy that would otherwise consume storage bits.</p>
+<h2 id="masking-effects-in-vorbis-encoding">Masking Effects in Vorbis
+Encoding</h2>
+<p>Beyond static thresholds, the human auditory system is vulnerable to
+masking, a phenomenon where a prominent sound obscures concurrent or
+adjacent weaker sounds. Vorbis calculates dynamic masking thresholds to
+guide its quantization routines.</p>
+<ul>
+<li><strong>Simultaneous Masking:</strong> When a loud tone or
+narrow-band noise occurs, it elevates the hearing threshold for nearby
+frequencies in what is known as a critical band. Weaker frequency
+components falling beneath this temporary masking curve are rendered
+imperceptible. Vorbis identifies these dominant spectral peaks and
+aggressive suppresses the overshadowed frequencies.</li>
+<li><strong>Temporal Masking:</strong> Auditory masking extends across
+time. Forward masking occurs after a loud sound ceases, momentarily
+desensitizing hearing for up to several hundred milliseconds.
+Pre-masking occurs directly before a sudden transient sound, where the
+brain fails to process faint sounds occurring milliseconds prior. Vorbis
+tracks these temporal boundaries to shape quantization noise around
+sharp acoustic attacks.</li>
+</ul>
+<h2 id="the-floor-and-residue-architecture">The Floor and Residue
+Architecture</h2>
+<p>Vorbis implements psychoacoustic modeling through a distinct two-part
+spectral decomposition consisting of a spectral envelope, termed the
+"Floor," and the detailed spectral fine structure, termed the
+"Residue."</p>
+<p>The encoder applies a Modified Discrete Cosine Transform (MDCT) to
+transform input PCM time-domain signals into the frequency domain. The
+psychoacoustic model evaluates this frequency domain representation and
+computes an approximate, continuous spectral curve known as the Floor
+curve. This curve acts as a dynamic threshold of hearing for that
+specific audio frame.</p>
+<p>Once the Floor curve is determined, the actual spectral data is
+divided by the curve to produce the Residue. The Residue represents only
+the fine deviations from the Floor envelope. Because the Floor already
+reflects the psychoacoustic significance across different critical
+bands, the Residue values can be quantized and vector-encoded
+efficiently using codebooks. Quantization noise is effectively shaped so
+that it stays safely beneath the Floor curve, remaining imperceptible to
+the listener.</p>
+<h2 id="mitigating-compression-artifacts">Mitigating Compression
+Artifacts</h2>
+<p>Without an adaptive psychoacoustic model, lossy transform codecs are
+prone to audible artifacts, the most notorious being pre-echo. Pre-echo
+arises when a sharp transient, such as a castanet strike or cymbal
+crash, introduces quantization noise that spreads throughout an entire
+transform window. If the window is too long, the noise emerges prior to
+the transient, creating an unnatural smear.</p>
+<p>Vorbis mitigates this using psychoacoustically driven dynamic window
+switching. The model continuously scans for high-energy transients. When
+a transient is detected, the encoder rapidly switches from long
+transform blocks (typically 2048 samples) to short transform blocks
+(typically 256 samples). Short blocks constrain the quantization noise
+strictly within the short window of the temporal pre-masking period,
+preserving crisp attacks without wasting bits during steady-state
+musical passages.</p>
+<h2 id="perceptual-bit-allocation">Perceptual Bit Allocation</h2>
+<p>Unlike older perceptual formats that allocate fixed bitrates across
+static sub-bands, Vorbis is architected around variable bitrate (VBR)
+paradigms guided entirely by psychoacoustic quality metrics. The user
+specifies a target perceptual quality level rather than a rigid
+bitrate.</p>
+<p>The Vorbis psychoacoustic analyzer assesses the instantaneous
+complexity of the audio, evaluating the masking headroom available
+across every critical band. Simple passages or silence receive minimal
+data allocation, while intricate acoustic textures receive greater bit
+density. By aligning data distribution directly with human auditory
+limits, psychoacoustic modeling enables Vorbis to deliver fidelity
+comparable to older standards at markedly lower file sizes.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

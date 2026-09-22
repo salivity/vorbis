@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Bark Scale and Vorbis Critical Band Analysis - vorbis</title>
+    <meta name="description" content="This article explores the Bark scale, a psychoacoustic frequency scale based on human hearing, and examines its critical role in lossy audio compression. It details how the human ear processes sound frequencies into distinct auditory filters known as cri">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/the-bark-scale-and-vorbis-critical-band-analysis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Bark Scale and Vorbis Critical Band Analysis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/the-bark-scale-and-vorbis-critical-band-analysis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores the Bark scale, a psychoacoustic frequency scale based on human hearing, and examines its critical role in lossy audio compression. It details how the human ear processes sound frequencies into distinct auditory filters known as cri" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="the-bark-scale-and-vorbis-critical-band-analysis">The Bark Scale
+and Vorbis Critical Band Analysis</h1>
+<p>This article explores the Bark scale, a psychoacoustic frequency
+scale based on human hearing, and examines its critical role in lossy
+audio compression. It details how the human ear processes sound
+frequencies into distinct auditory filters known as critical bands, and
+explains how the open-source Ogg Vorbis audio codec implements this
+biological model to calculate masking thresholds, shape quantization
+noise, and discard imperceptible audio data for efficient
+compression.</p>
+<h2 id="what-is-the-bark-scale">What is the Bark Scale?</h2>
+<p>The Bark scale, introduced by German acoustician Eberhard Zwicker in
+1961, is a psychoacoustic scale that measures frequency based on the
+human ear's subjective perception of pitch. The scale is divided into 24
+distinct critical bands (spanning roughly 20 Hz to 15,500 Hz),
+corresponding directly to the physical behavior of the cochlea inside
+the inner ear.</p>
+<p>Human auditory perception is not linear. Along the basilar membrane
+in the cochlea, different physical regions resonate in response to
+different frequencies:</p>
+<ul>
+<li><strong>Below 500 Hz:</strong> The response is relatively linear,
+with critical bands maintaining a width of roughly 100 Hz.</li>
+<li><strong>Above 500 Hz:</strong> The response becomes logarithmic,
+meaning the width of each critical band increases dramatically as
+frequency rises.</li>
+</ul>
+<p>A critical band represents the frequency resolution of the human ear.
+If two distinct tones fall within the same critical band, they interact
+and interfere with one another, leading to a phenomenon known as
+auditory masking.</p>
+<h2 id="understanding-auditory-masking">Understanding Auditory
+Masking</h2>
+<p>Auditory masking occurs when the perception of one sound is
+suppressed or rendered inaudible by the presence of another sound within
+the same critical band:</p>
+<ul>
+<li><strong>Simultaneous Masking:</strong> A loud tone (the masker)
+prevents the ear from hearing a quieter tone (the maskee) that occurs at
+the same time within the same critical band.</li>
+<li><strong>Noise Masking:</strong> Noise spread over a critical band
+raises the auditory threshold for detecting any pure tones within that
+same band.</li>
+</ul>
+<p>Because any acoustic energy below the masking threshold cannot be
+perceived by human listeners, lossy audio codecs can safely discard or
+heavily quantize this data to reduce file size without reducing
+perceived quality.</p>
+<h2 id="how-vorbis-uses-the-bark-scale">How Vorbis Uses the Bark
+Scale</h2>
+<p>Ogg Vorbis is a general-purpose, perceptual lossy audio codec
+designed to encode sound by discarding inaudible acoustic details. To
+achieve this, Vorbis heavily utilizes the Bark scale to construct its
+psychoacoustic model.</p>
+<h3 id="1-frequency-to-bark-mapping">1. Frequency-to-Bark Mapping</h3>
+<p>Vorbis transforms time-domain audio samples into the frequency domain
+using the Modified Discrete Cosine Transform (MDCT). This produces a
+linear spectrum of frequency bins.</p>
+<p>Because linear bins do not reflect human hearing, Vorbis translates
+these linear frequencies into Bark units using mathematical
+approximations of the Zwicker scale. This warps the linear spectrum into
+a psychoacoustically uniform representation where each unit of bandwidth
+carries an approximately equal perceptual weight.</p>
+<h3 id="2-spectral-floor-modeling-floor-1">2. Spectral Floor Modeling
+(Floor 1)</h3>
+<p>Vorbis separates the audio spectrum into two primary components: the
+spectral "envelope" (called the <strong>Floor</strong>) and the fine
+detail (the <strong>Residue</strong>).</p>
+<p>The primary envelope mechanism, known as <strong>Floor 1</strong>,
+relies directly on Bark-like critical band analysis:</p>
+<ul>
+<li>Vorbis distributes control points (nodes) along a non-linear
+frequency axis spaced according to the Bark scale.</li>
+<li>Lower frequencies receive a high density of nodes, matching the
+ear's fine frequency resolution at low registers.</li>
+<li>Higher frequencies receive wider-spaced nodes, matching the ear's
+broader critical bands.</li>
+<li>Vorbis interpolates between these points to generate a smooth
+spectral envelope curve that acts as the baseline masking
+threshold.</li>
+</ul>
+<h3 id="3-masking-threshold-calculation">3. Masking Threshold
+Calculation</h3>
+<p>Once the spectrum is mapped onto the Bark scale, Vorbis calculates
+the noise masking threshold for each critical band:</p>
+<ol type="1">
+<li><strong>Energy Summation:</strong> The codec integrates the total
+energy within each Bark band.</li>
+<li><strong>Spreading Function:</strong> Acoustic energy in one critical
+band bleeds into neighboring bands. Vorbis applies a psychoacoustic
+"spreading function" across the Bark domain to model how loud sounds
+mask quieter sounds in adjacent frequency bands.</li>
+<li><strong>Threshold Curve Generation:</strong> The result defines the
+maximum allowable quantization noise at any given frequency that remains
+below the threshold of human hearing.</li>
+</ol>
+<h3 id="4-noise-shaping-and-bit-allocation">4. Noise Shaping and Bit
+Allocation</h3>
+<p>Vorbis uses the calculated Bark-scale masking curve to guide the
+quantization of the Residue:</p>
+<ul>
+<li>Spectral areas with high masking thresholds (e.g., regions near a
+dominant, loud tone within a Bark band) are quantized aggressively using
+fewer bits. The resulting quantization noise is physically present in
+the decoded audio, but it is psychoacoustically masked.</li>
+<li>Spectral areas with low masking thresholds are quantized precisely
+using more bits to prevent audible distortion.</li>
+</ul>
+<p>By restructuring the linear frequency spectrum around the biological
+constraints of the Bark scale, Vorbis achieves high perceptual audio
+fidelity while significantly reducing data rates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Are Vorbis Comments and How Do They Work? - vorbis</title>
+    <meta name="description" content="Vorbis comments are a lightweight metadata container format originally designed for Ogg Vorbis audio streams, serving a role similar to ID3 tags in MP3 files. Unlike older, fixed-field tagging systems, Vorbis comments use an open, key-value text pairing">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/what-are-vorbis-comments-and-how-do-they-work">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Are Vorbis Comments and How Do They Work? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/what-are-vorbis-comments-and-how-do-they-work" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis comments are a lightweight metadata container format originally designed for Ogg Vorbis audio streams, serving a role similar to ID3 tags in MP3 files. Unlike older, fixed-field tagging systems, Vorbis comments use an open, key-value text pairing" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-are-vorbis-comments-and-how-do-they-work">What Are Vorbis
+Comments and How Do They Work?</h1>
+<p>Vorbis comments are a lightweight metadata container format
+originally designed for Ogg Vorbis audio streams, serving a role similar
+to ID3 tags in MP3 files. Unlike older, fixed-field tagging systems,
+Vorbis comments use an open, key-value text pairing approach encoded
+strictly in UTF-8. This article explores the purpose of Vorbis comments,
+examines their low-level binary layout, outlines standard field
+conventions, and details how modern formats like FLAC and Opus utilize
+them.</p>
+<h2 id="the-purpose-and-design-philosophy">The Purpose and Design
+Philosophy</h2>
+<p>Created by the Xiph.Org Foundation, the Vorbis comment specification
+was developed to avoid the arbitrary constraints of early tagging
+schemes such as ID3v1, which enforced rigid character limits and limited
+field types.</p>
+<p>The core philosophy focuses on simplicity, flexibility, and
+internationalization:</p>
+<ul>
+<li><strong>UTF-8 Encoding:</strong> All textual values are encoded in
+UTF-8, ensuring complete support for all languages, alphabets, and
+special characters without encoding ambiguities.</li>
+<li><strong>Open Schema:</strong> Fields are dynamic rather than fixed.
+Anyone can introduce a custom tag name without breaking parser
+compatibility.</li>
+<li><strong>Repeatable Keys:</strong> A key can appear multiple times,
+making multi-artist tracks or multi-genre tagging clean and
+straightforward without requiring custom separator characters.</li>
+</ul>
+<h2 id="structural-anatomy-and-binary-layout">Structural Anatomy and
+Binary Layout</h2>
+<p>At the byte level, a Vorbis comment block is structured as a
+continuous byte stream containing string lengths followed by actual
+string data. All integers in the comment header are stored as unsigned
+32-bit little-endian values.</p>
+<p>The binary block is laid out in the following sequential order:</p>
+<ol type="1">
+<li><strong>Vendor Length (32 bits):</strong> An unsigned 32-bit integer
+indicating the length in bytes of the vendor string.</li>
+<li><strong>Vendor String:</strong> A UTF-8 string identifying the
+software or library that encoded or edited the file (e.g.,
+<code>reference libVorbis 1.3.7</code>).</li>
+<li><strong>User Comment List Length (32 bits):</strong> An unsigned
+32-bit integer indicating the total count of user-defined comment fields
+that follow.</li>
+<li><strong>User Comments (Repeated Sequence):</strong> For each user
+comment, the stream contains:</li>
+</ol>
+<ul>
+<li><strong>Comment Length (32 bits):</strong> The length of the
+upcoming comment string in bytes.</li>
+<li><strong>Comment String:</strong> The actual data formatted as
+<code>FIELD_NAME=Value</code>.</li>
+</ul>
+<ol start="5" type="1">
+<li><strong>Framing Bit (1 bit):</strong> A trailing single bit set to
+<code>1</code> (usually rounded out to a byte depending on container
+alignment) to ensure stream validity.</li>
+</ol>
+<h2 id="field-syntax-and-key-conventions">Field Syntax and Key
+Conventions</h2>
+<p>Each user comment string follows a simple <code>NAME=VALUE</code>
+syntax. The field name is separated from the value by an ASCII equals
+sign (<code>=</code>).</p>
+<p>The specification defines specific constraints for field names:</p>
+<ul>
+<li>Only printable ASCII characters from 0x20 to 0x7D are allowed,
+excluding the equals sign (0x3D).</li>
+<li>Field names are case-insensitive (<code>ARTIST</code>,
+<code>artist</code>, and <code>Artist</code> refer to the identical
+field), though capitalized names are considered standard
+convention.</li>
+<li>Values can be of arbitrary length, limited only by the 32-bit
+integer ceiling (approximately 4 gigabytes), and can contain any valid
+UTF-8 characters.</li>
+</ul>
+<p>Commonly adopted standard field names include:</p>
+<ul>
+<li><code>TITLE</code>: Track or work name.</li>
+<li><code>ARTIST</code>: Primary recording artist or creator.</li>
+<li><code>ALBUM</code>: Collection or album name.</li>
+<li><code>TRACKNUMBER</code>: Position of the track within the
+release.</li>
+<li><code>DISCNUMBER</code>: Disc set identifier.</li>
+<li><code>DATE</code>: Date of recording or release, typically following
+the ISO 8601 standard (<code>YYYY-MM-DD</code>).</li>
+<li><code>GENRE</code>: Musical or media genre.</li>
+</ul>
+<p>Because keys can be repeated, multiple artists are represented as two
+separate fields—<code>ARTIST=Alice</code> and
+<code>ARTIST=Bob</code>—rather than a single delimited string like
+<code>ARTIST=Alice / Bob</code>.</p>
+<h2 id="adoption-beyond-ogg-vorbis">Adoption Beyond Ogg Vorbis</h2>
+<p>While originally created for Ogg Vorbis (<code>.ogg</code>), the
+Vorbis comment format proved versatile enough to become the default
+metadata mechanism across several modern audio codecs:</p>
+<ul>
+<li><strong>FLAC:</strong> Uses the Vorbis comment specification
+directly inside its native <code>METADATA_BLOCK_VORBIS_COMMENT</code>
+structure.</li>
+<li><strong>Opus:</strong> Implements Vorbis comments inside an Ogg
+stream wrapper as part of its <code>OpusTags</code> header packet.</li>
+<li><strong>Theora and Speex:</strong> Use identical comment packets for
+video and speech streams within Ogg containers.</li>
+</ul>
+<p>Due to its simple key-value design, lack of rigid length constraints,
+and native Unicode compliance, the Vorbis comment structure remains one
+of the most reliable and widely supported metadata formats in digital
+media.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Psychoacoustic Spreading Function Explained - vorbis</title>
+    <meta name="description" content="This article examines the psychoacoustic spreading function used in Ogg Vorbis audio encoding, detailing how it simulates frequency masking in the human auditory system. You will learn the mechanics behind critical band energy dispersion, how the encoder">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-psychoacoustic-spreading-function-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Psychoacoustic Spreading Function Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-psychoacoustic-spreading-function-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the psychoacoustic spreading function used in Ogg Vorbis audio encoding, detailing how it simulates frequency masking in the human auditory system. You will learn the mechanics behind critical band energy dispersion, how the encoder" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-psychoacoustic-spreading-function-explained">Vorbis
+Psychoacoustic Spreading Function Explained</h1>
+<p>This article examines the psychoacoustic spreading function used in
+Ogg Vorbis audio encoding, detailing how it simulates frequency masking
+in the human auditory system. You will learn the mechanics behind
+critical band energy dispersion, how the encoder distinguishes between
+tonal and noise-like maskers, and how this data shapes the final
+quantization noise floor to achieve efficient compression without
+audible degradation.</p>
+<h3 id="the-role-of-psychoacoustic-masking-in-vorbis">The Role of
+Psychoacoustic Masking in Vorbis</h3>
+<p>The Ogg Vorbis audio format relies on lossy compression, discarding
+audio details that the human ear cannot perceive. The human inner ear
+(cochlea) acts as a biological spectrum analyzer organized into critical
+bands, often measured using the Bark scale. When a sound of significant
+energy occurs within a specific critical band, it reduces the ear's
+sensitivity to neighboring frequencies. This phenomenon is known as
+simultaneous frequency masking.</p>
+<p>To determine which frequencies are inaudible, the Vorbis
+psychoacoustic model calculates a masking threshold. Quantization noise
+introduced during compression must stay below this threshold to remain
+imperceptible.</p>
+<h3 id="what-is-the-spreading-function">What Is the Spreading
+Function?</h3>
+<p>The spreading function is a mathematical curve that describes how
+masking energy propagates away from a masking sound (the masker) into
+adjacent frequency bands. In a biological cochlea, a loud sound excites
+a localized region of the basilar membrane, but that physical vibration
+also spreads to adjacent areas. The spreading function models this
+physical bleed.</p>
+<p>In Vorbis, the frequency spectrum obtained via the Modified Discrete
+Cosine Transform (MDCT) is grouped into Bark critical bands. The energy
+in each band does not stay isolated; instead, Vorbis convolves the
+spectral energy profile with the spreading function to determine the
+total excitation pattern across the entire spectrum.</p>
+<h3 id="mathematical-behavior-and-asymmetry">Mathematical Behavior and
+Asymmetry</h3>
+<p>The spreading function used in Vorbis noise modeling is distinctly
+asymmetric, reflecting biological hearing traits:</p>
+<ul>
+<li><strong>Lower Frequency Slope (Upward Spread):</strong> The slope
+toward lower frequencies is steep (typically around 25 to 30 dB per
+Bark). This means a higher-frequency sound does very little to mask
+sounds lower in pitch than itself.</li>
+<li><strong>Higher Frequency Slope (Downward Spread):</strong> The slope
+toward higher frequencies is much shallower (often between 10 to 15 dB
+per Bark) and varies with sound intensity. As the masker's amplitude
+increases, the high-frequency slope flattens, meaning loud low-frequency
+sounds mask a wider range of higher frequencies.</li>
+</ul>
+<p>The spreading function approximates this behavior using piecewise
+exponential or linear curves in the decibel-Bark domain.</p>
+<h3 id="tonality-and-masker-offsets">Tonality and Masker Offsets</h3>
+<p>Not all sounds mask neighboring frequencies equally. A pure tone
+requires a greater signal-to-noise ratio to mask adjacent noise than a
+burst of noise requires to mask a tone. Vorbis measures the "tonality"
+or spectral flatness of the audio to classify maskers along a spectrum
+from pure tones to white noise.</p>
+<p>Once the tonality is determined, Vorbis shifts the spreading function
+vertically using a masking offset:</p>
+<ul>
+<li><strong>Tone-masking-noise:</strong> Offers less masking headroom
+(the offset is larger, keeping the masking threshold closer to the
+masker's floor).</li>
+<li><strong>Noise-masking-tone:</strong> Offers greater masking headroom
+(the offset is smaller, permitting more quantization noise).</li>
+</ul>
+<h3 id="translating-spread-energy-to-vorbis-floors">Translating Spread
+Energy to Vorbis Floors</h3>
+<p>After applying the spreading function across all critical bands, the
+encoder computes the global masking threshold. Vorbis translates this
+threshold into its spectral envelope representation, known as the
+"Floor."</p>
+<p>Vorbis modern profiles primarily use <strong>Floor 1</strong>, a
+piecewise-linear approximation curve defined by a series of node points
+in the log-frequency/decibel domain. The Floor 1 curve is synthesized
+directly from the smoothed excitation pattern generated by the spreading
+function. The MDCT residual spectrum is then divided by this floor
+curve, ensuring that the resulting quantization noise is dynamically
+shaped to conform to the calculated psychoacoustic masking limits across
+all frequencies.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

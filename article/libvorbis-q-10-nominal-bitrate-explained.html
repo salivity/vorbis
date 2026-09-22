@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libvorbis -q 10 Nominal Bitrate Explained - vorbis</title>
+    <meta name="description" content="This article examines the nominal bitrate associated with the highest quality setting, -q 10, in the libvorbis audio encoder. It outlines the exact bitrate target, how the variable bitrate (VBR) mechanism behaves at this level, and where this setting fit">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/libvorbis-q-10-nominal-bitrate-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Libvorbis -q 10 Nominal Bitrate Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/libvorbis-q-10-nominal-bitrate-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the nominal bitrate associated with the highest quality setting, -q 10, in the libvorbis audio encoder. It outlines the exact bitrate target, how the variable bitrate (VBR) mechanism behaves at this level, and where this setting fit" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="libvorbis--q-10-nominal-bitrate-explained">Libvorbis -q 10
+Nominal Bitrate Explained</h1>
+<p>This article examines the nominal bitrate associated with the highest
+quality setting, <code>-q 10</code>, in the libvorbis audio encoder. It
+outlines the exact bitrate target, how the variable bitrate (VBR)
+mechanism behaves at this level, and where this setting fits within the
+overall Vorbis quality scale.</p>
+<h3 id="the-nominal-bitrate-for--q-10">The Nominal Bitrate for -q
+10</h3>
+<p>In libvorbis, the quality setting <code>-q 10</code> corresponds to a
+nominal bitrate of <strong>500 kbps</strong> (kilobits per second) for a
+standard stereo track.</p>
+<p>This represents the maximum official quality setting provided by the
+standard reference encoder.</p>
+<h3 id="how-libvorbis-quality-mapping-works">How libvorbis Quality
+Mapping Works</h3>
+<p>Vorbis encodes audio using Variable Bitrate (VBR) by default. Instead
+of forcing a specific bitrate, the encoder targets a fidelity level
+defined by the <code>-q</code> parameter, which generally ranges from
+<code>-1</code> (lowest) to <code>10</code> (highest). Fractional values
+(such as <code>9.5</code>) are also valid.</p>
+<p>Below is the standard nominal bitrate mapping for stereo audio across
+key quality levels:</p>
+<ul>
+<li><strong>-q 0:</strong> ~64 kbps</li>
+<li><strong>-q 1:</strong> ~80 kbps</li>
+<li><strong>-q 2:</strong> ~96 kbps</li>
+<li><strong>-q 3:</strong> ~112 kbps</li>
+<li><strong>-q 4:</strong> ~128 kbps</li>
+<li><strong>-q 5:</strong> ~160 kbps (perceptual transparency for most
+listeners)</li>
+<li><strong>-q 6:</strong> ~192 kbps</li>
+<li><strong>-q 7:</strong> ~224 kbps</li>
+<li><strong>-q 8:</strong> ~256 kbps</li>
+<li><strong>-q 9:</strong> ~320 kbps</li>
+<li><strong>-q 10:</strong> ~500 kbps</li>
+</ul>
+<h3 id="behavior-and-characteristics-of--q-10">Behavior and
+Characteristics of -q 10</h3>
+<ul>
+<li><strong>Dynamic Range:</strong> Because Vorbis is a true VBR format,
+a file encoded at <code>-q 10</code> will not stay strictly at 500 kbps.
+Simple passages (such as silence or solo instruments) may drop well
+below 400 kbps, while dense, complex passages can exceed 500 kbps.</li>
+<li><strong>Diminishing Returns:</strong> For almost all listening
+environments and equipment, perceptual transparency
+(indistinguishability from uncompressed source audio) is reached between
+<code>-q 5</code> (~160 kbps) and <code>-q 7</code> (~224 kbps).</li>
+<li><strong>Use Case:</strong> Using <code>-q 10</code> minimizes
+compression artifacts to the theoretical limit of the Vorbis format.
+However, it results in substantially larger file sizes, often
+approaching roughly half the size of uncompressed 16-bit/44.1 kHz PCM
+audio. If fidelity higher than <code>-q 8</code> or <code>-q 9</code> is
+strictly required, lossless codecs like FLAC are typically preferred
+over lossy compression at 500 kbps.</li>
+</ul>
+<h3 id="example-usage">Example Usage</h3>
+<p>To encode audio to <code>-q 10</code> using FFmpeg:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input.wav <span class="at">-c:a</span> libvorbis <span class="at">-q:a</span> 10 output.ogg</span></code></pre></div>
+<p>To encode audio using the reference <code>oggenc</code> tool:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">oggenc</span> <span class="at">-q</span> 10 input.wav <span class="at">-o</span> output.ogg</span></code></pre></div></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

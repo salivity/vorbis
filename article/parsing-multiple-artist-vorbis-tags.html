@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parsing Multiple ARTIST Vorbis Tags - vorbis</title>
+    <meta name="description" content="This article explains how software music players handle multiple occurrences of the ARTIST= Vorbis comment within digital audio files such as FLAC, Ogg Vorbis, and Opus. While the underlying specification explicitly supports repeated field names to repre">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/parsing-multiple-artist-vorbis-tags">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Parsing Multiple ARTIST Vorbis Tags - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/parsing-multiple-artist-vorbis-tags" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how software music players handle multiple occurrences of the ARTIST= Vorbis comment within digital audio files such as FLAC, Ogg Vorbis, and Opus. While the underlying specification explicitly supports repeated field names to repre" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="parsing-multiple-artist-vorbis-tags">Parsing Multiple ARTIST
+Vorbis Tags</h1>
+<p>This article explains how software music players handle multiple
+occurrences of the <code>ARTIST=</code> Vorbis comment within digital
+audio files such as FLAC, Ogg Vorbis, and Opus. While the underlying
+specification explicitly supports repeated field names to represent
+distinct entries, media players differ significantly in how they parse,
+store, and display this data. Below is a breakdown of the standard
+mechanisms players use, ranging from native multi-value support and
+string concatenation to destructive key-value overwrites.</p>
+<h2 id="the-vorbis-comment-standard">The Vorbis Comment Standard</h2>
+<p>The Vorbis comment specification natively supports repeated field
+names. Unlike metadata containers that require all values to reside in a
+single delimited string, a Vorbis comment block can contain separate,
+identical field names:</p>
+<pre class="text"><code>ARTIST=Alice
+ARTIST=Bob</code></pre>
+<p>According to Xiph.Org, field names are not required to be unique, and
+repeated fields are the intended method for handling multiple attributes
+of the same type. Despite this standard, downstream software music
+players parse this structure using one of three primary approaches.</p>
+<h2 id="1-native-array-storage-multi-value-support">1. Native Array
+Storage (Multi-Value Support)</h2>
+<p>Modern, library-focused music players—such as MusicBee, Foobar2000,
+and Quod Libet—follow the official specification.</p>
+<ul>
+<li><strong>Internal Parsing:</strong> The parser reads the tag stream
+sequentially. When it encounters multiple <code>ARTIST=</code> fields,
+it appends each value into a list or array associated with the track
+object (e.g., <code>artists: ["Alice", "Bob"]</code>).</li>
+<li><strong>Library Indexing:</strong> The database engine indexes the
+file under both entries independently. A search or filter for "Alice"
+returns the track, and a search for "Bob" returns the exact same
+track.</li>
+<li><strong>Display Rendering:</strong> In the user interface, the
+player temporarily joins the array elements using a user-configurable
+visual separator (commonly a comma, semicolon, or slash) without
+modifying the underlying raw metadata.</li>
+</ul>
+<h2 id="2-in-memory-string-concatenation">2. In-Memory String
+Concatenation</h2>
+<p>Some media engines read all instances of the tag but do not store
+them as discrete array items in their internal database.</p>
+<ul>
+<li><strong>Internal Parsing:</strong> During the initial file scan, the
+parser detects repeated <code>ARTIST=</code> keys and merges them into a
+single string using a fixed hardcoded delimiter (such as
+<code>; </code>, <code>/</code>, or <code>&amp;</code>).</li>
+<li><strong>Library Indexing:</strong> The database treats the
+concatenated string as a single artist name (e.g.,
+<code>Alice; Bob</code>). Unless the player includes specific logic to
+split fields on that delimiter during queries, the software will not
+categorize the track under "Alice" or "Bob" individually.</li>
+<li><strong>Display Rendering:</strong> The user sees the merged string
+directly, which can cause inconsistent formatting if different files use
+different metadata styles.</li>
+</ul>
+<h2 id="3-key-value-overwriting-dictionary-collision">3. Key-Value
+Overwriting (Dictionary Collision)</h2>
+<p>Simpler, legacy, or mobile audio players often parse metadata into a
+basic key-value map (such as a standard hash table or dictionary) where
+keys must be unique.</p>
+<ul>
+<li><strong>Last-Write Wins:</strong> As the parser iterates through the
+metadata, each subsequent <code>ARTIST=</code> tag overwrites the
+previous entry stored at the <code>ARTIST</code> key. In a file
+containing <code>ARTIST=Alice</code> followed by
+<code>ARTIST=Bob</code>, the player only retains <code>Bob</code>.</li>
+<li><strong>First-Write Wins:</strong> Alternatively, some parsers check
+if the key already exists and ignore any subsequent duplicates,
+discarding <code>Bob</code> and retaining only <code>Alice</code>.</li>
+<li><strong>Result:</strong> The track is only indexed and displayed
+under one contributor, causing incomplete library searches and incorrect
+display metadata.</li>
+</ul>
+<h2 id="external-services-and-scrobbling-complications">External
+Services and Scrobbling Complications</h2>
+<p>Parsing behavior directly impacts external integrations like Last.fm
+scrobbling and streaming server syncing (such as Subsonic or Plex). Most
+external APIs expect a single artist string per track. As a result, even
+players with native array handling must flatten multiple
+<code>ARTIST=</code> tags into a single string prior to transmitting
+data, often selecting the first encountered tag or joining them with a
+forward slash.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

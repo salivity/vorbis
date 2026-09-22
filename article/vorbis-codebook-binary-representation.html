@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Codebook Binary Representation - vorbis</title>
+    <meta name="description" content="This article provides an overview of the binary representation of a Huffman-encoded Vorbis codebook, detailing how the Vorbis audio codec serializes vector quantization dictionaries and prefix-free trees. It covers the exact bitstream layout defined in t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-codebook-binary-representation">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Codebook Binary Representation - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-codebook-binary-representation" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the binary representation of a Huffman-encoded Vorbis codebook, detailing how the Vorbis audio codec serializes vector quantization dictionaries and prefix-free trees. It covers the exact bitstream layout defined in t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-codebook-binary-representation">Vorbis Codebook Binary
+Representation</h1>
+<p>This article provides an overview of the binary representation of a
+Huffman-encoded Vorbis codebook, detailing how the Vorbis audio codec
+serializes vector quantization dictionaries and prefix-free trees. It
+covers the exact bitstream layout defined in the Vorbis specification,
+including the synchronization header, codebook dimensions, codeword
+length packing strategies, canonical Huffman tree construction, and the
+associated vector value lookup tables.</p>
+<h2 id="header-fields">Header Fields</h2>
+<p>A Vorbis codebook begins with identification and dimension metadata
+written directly to the bitstream in little-endian bit order:</p>
+<ul>
+<li><strong>Sync Pattern (24 bits):</strong> The static byte sequence
+<code>0x56</code>, <code>0x43</code>, <code>0x42</code> (ASCII "BCV" for
+<em>Book Code Vorbis</em>).</li>
+<li><strong>Dimensions (16 bits):</strong> An unsigned integer defining
+the vector dimensionality of each codebook entry (1 to 65,535).</li>
+<li><strong>Entries (24 bits):</strong> An unsigned integer defining the
+total number of entries in the codebook (up to 16,777,215).</li>
+</ul>
+<h2 id="codeword-length-assignment-huffman-tree-definition">Codeword
+Length Assignment (Huffman Tree Definition)</h2>
+<p>Vorbis does not transmit the Huffman tree nodes directly. Instead, it
+transmits the bit length of each entry's codeword. Because Vorbis uses
+canonical Huffman codes, a decoder reconstructs the exact prefix-free
+tree purely from this ordered list of lengths.</p>
+<p>The binary format encodes lengths using one of two primary strategies
+indicated by a single flag bit:</p>
+<h3 id="1-ordered-representation-ordered_flag--1">1. Ordered
+Representation (<code>ordered_flag = 1</code>)</h3>
+<p>When codeword lengths are sorted in non-decreasing order, Vorbis uses
+run-length encoding:</p>
+<ul>
+<li><strong>Current Length (5 bits):</strong> The initial codeword
+length minus one (representing lengths 1 to 32).</li>
+<li><strong>Run Length:</strong> For each length step, the bitstream
+stores the count of entries sharing this length using
+<code>ceil(log2(remaining_entries))</code> bits. The length increments
+by one for each subsequent run until all entries are accounted for.</li>
+</ul>
+<h3 id="2-unordered-representation-ordered_flag--0">2. Unordered
+Representation (<code>ordered_flag = 0</code>)</h3>
+<p>When lengths are not sorted, Vorbis evaluates whether the codebook is
+sparse:</p>
+<ul>
+<li><strong>Sparse Flag (1 bit):</strong>
+<ul>
+<li>If <code>0</code> (dense): Every entry exists. The bitstream reads 5
+bits per entry sequentially to denote each codeword's length (encoded as
+length minus one). A length value of zero indicates an unused
+entry.</li>
+<li>If <code>1</code> (sparse): Entries may be omitted. Each entry
+begins with a 1-bit presence flag. If <code>1</code>, it is followed by
+5 bits specifying the codeword length. If <code>0</code>, the entry is
+skipped and assigned an unused status.</li>
+</ul></li>
+</ul>
+<h2 id="reconstructing-the-canonical-huffman-codes">Reconstructing the
+Canonical Huffman Codes</h2>
+<p>Once all entry lengths are parsed, the decoder assigns binary
+codewords using canonical construction rules:</p>
+<ol type="1">
+<li>Entry lengths of zero are discarded.</li>
+<li>The remaining entries are sorted primarily by bit length,
+maintaining their original index order as a secondary key.</li>
+<li>The first entry receives a codeword of all zeros with a length equal
+to its assigned length.</li>
+<li>Each subsequent entry increments the integer value of the preceding
+codeword by one, then left-shifts the result if the current entry's
+length is greater than the previous entry's length.</li>
+<li>In the bitstream, these Huffman codewords are read least-significant
+bit (LSB) first.</li>
+</ol>
+<h2 id="vector-lookup-tables">Vector Lookup Tables</h2>
+<p>Following the codeword definitions, the bitstream specifies how
+vector scalar values are mapped to each codeword:</p>
+<ul>
+<li><strong>Lookup Type (4 bits):</strong>
+<ul>
+<li><code>0</code>: No lookup table (the codebook index itself is the
+output, or values are unused).</li>
+<li><code>1</code>: Implicitly generated lattice-based vector
+quantization table.</li>
+<li><code>2</code>: Explicitly stored multidimensional vector
+quantization table.</li>
+</ul></li>
+</ul>
+<p>If the lookup type is <code>1</code> or <code>2</code>, the stream
+unpacks the following quantization parameters:</p>
+<ul>
+<li><strong>Minimum Value (32 bits):</strong> Stored as a custom
+low-precision IEEE 754-like float.</li>
+<li><strong>Delta / Step Size (32 bits):</strong> Stored as the same
+32-bit float format, indicating the step size between quantization
+levels.</li>
+<li><strong>Value Bits (4 bits):</strong> The bit depth minus one used
+to unpack each quantization multiplier.</li>
+<li><strong>Sequence Flag (1 bit):</strong> Indicates whether values in
+a vector are absolute or sequential deltas.</li>
+<li><strong>Multipliers List:</strong> A sequence of values unpacked
+using <code>value_bits + 1</code> bits each. For lookup type 1, it reads
+<code>floor(entries^(1/dimensions))</code> multipliers; for lookup type
+2, it reads <code>entries * dimensions</code> multipliers.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Unity Uses Vorbis for Audio Compression - vorbis</title>
+    <meta name="description" content="This article provides an overview of how the Unity game engine implements Ogg Vorbis for compressed in-game audio assets. By relying on an underlying FMOD audio subsystem, Unity integrates Vorbis into its asset import pipeline to convert raw audio files">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-unity-uses-vorbis-for-audio-compression">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Unity Uses Vorbis for Audio Compression - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-unity-uses-vorbis-for-audio-compression" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Unity game engine implements Ogg Vorbis for compressed in-game audio assets. By relying on an underlying FMOD audio subsystem, Unity integrates Vorbis into its asset import pipeline to convert raw audio files" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-unity-uses-vorbis-for-audio-compression">How Unity Uses
+Vorbis for Audio Compression</h1>
+<p>This article provides an overview of how the Unity game engine
+implements Ogg Vorbis for compressed in-game audio assets. By relying on
+an underlying FMOD audio subsystem, Unity integrates Vorbis into its
+asset import pipeline to convert raw audio files into memory-efficient
+formats, giving developers granular control over bitrate, memory
+footprint, and CPU decoding costs through distinct runtime loading
+behaviors.</p>
+<h3 id="the-underlying-engine-fmod-integration">The Underlying Engine:
+FMOD Integration</h3>
+<p>Unity does not use a proprietary audio decoding pipeline. Instead, it
+builds its sound architecture on top of Firelight Technologies' FMOD
+Core engine. When Unity processes audio, FMOD handles the low-level
+tasks: parsing container formats, decoding compressed streams, mixing
+channels, and applying DSP effects. Unity’s Vorbis implementation relies
+entirely on FMOD's integrated Vorbis codecs (including standard
+<code>libvorbis</code> for floating-point systems and optimized
+integer-based decoders like Tremor for mobile platforms) to execute
+decoding operations natively on target hardware.</p>
+<h3 id="asset-import-and-encoding-pipeline">Asset Import and Encoding
+Pipeline</h3>
+<p>When an uncompressed sound asset (such as a 16-bit or 24-bit WAV or
+AIFF file) is imported into a Unity project, the Unity Editor's
+<code>AudioImporter</code> handles conversion during the project build
+step:</p>
+<ol type="1">
+<li><strong>Format Selection:</strong> In the Audio Clip Inspector,
+selecting <strong>Vorbis</strong> designates the codec for the target
+platform. Vorbis serves as Unity's default lossy compression choice for
+non-mobile platforms and a primary option for Android and iOS when MP3
+or ADPCM is not preferred.</li>
+<li><strong>Quality vs. Bitrate Mapping:</strong> Unity presents a
+<strong>Quality</strong> slider ranging from 1% to 100%. This slider
+does not represent a static bitrate; rather, it maps directly to
+Vorbis’s Variable Bitrate (VBR) quality tiers (roughly spanning 0.1 to
+1.0 quality factors, or roughly 56 kbps to 320 kbps). This ensures that
+dynamic passages receive appropriate data allocation without wasting
+bits on silence or simple waveforms.</li>
+<li><strong>Master Container:</strong> At build time, Unity encodes the
+source audio into Ogg Vorbis bitstreams and packages the output into
+Unity’s proprietary serialized asset bundles or <code>.assets</code>
+files rather than leaving standalone <code>.ogg</code> files on
+disk.</li>
+</ol>
+<h3 id="runtime-memory-and-decoding-configurations">Runtime Memory and
+Decoding Configurations</h3>
+<p>The primary advantage of Unity's Vorbis implementation lies in its
+three selectable <code>Load Type</code> configurations, which dictate
+how FMOD schedules decompression:</p>
+<ul>
+<li><strong>Decompress On Load:</strong> Unity reads the Vorbis data
+from disk during scene load and immediately decodes it into raw PCM
+(pulse-code modulation) memory. This approach maximizes RAM usage (as
+uncompressed audio requires significantly more memory) but reduces
+runtime CPU overhead to zero during playback, making it ideal for short,
+frequently triggered sound effects like UI clicks and gunshots.</li>
+<li><strong>Compressed In Memory:</strong> The Vorbis stream remains
+compressed in RAM until playback is requested. When triggered, FMOD uses
+a small internal ring buffer to decode chunks of the Vorbis stream in
+real-time. This configuration offers a balance, significantly reducing
+RAM usage for medium-length audio clips at the expense of a slight,
+temporary CPU cost during decoding.</li>
+<li><strong>Streaming:</strong> Unity keeps neither the compressed asset
+nor the decompressed PCM in system RAM. Instead, it reads the Vorbis
+stream directly from disk in real-time and pipes it through FMOD’s
+decode buffer. This eliminates audio RAM overhead, making it the
+standard choice for background music, ambient soundscapes, and long
+voiceover tracks, though it places consistent demands on disk I/O and
+continuous CPU decoding.</li>
+</ul>
+<h3 id="platform-specific-decoding-optimization">Platform-Specific
+Decoding Optimization</h3>
+<p>To prevent performance drops on low-power devices, Unity dynamically
+adjusts its decoding strategy. On desktop and modern console hardware
+with robust floating-point units (FPUs), Unity relies on standard
+multi-threaded SIMD-accelerated floating-point Vorbis decoding routines.
+On resource-constrained or mobile hardware, the engine takes advantage
+of fixed-point implementations to prevent audio decoding from competing
+with physics and rendering threads.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

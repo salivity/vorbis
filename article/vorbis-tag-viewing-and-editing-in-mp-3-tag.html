@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Tag Viewing and Editing in Mp3tag - vorbis</title>
+    <meta name="description" content="Mp3tag provides extensive support for viewing and editing Vorbis comments across audio formats like FLAC, Ogg Vorbis, and Opus. This guide outlines Mp3tag's specific Vorbis metadata features, including multi-field editing, custom comment creation, embedd">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-tag-viewing-and-editing-in-mp-3-tag">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Tag Viewing and Editing in Mp3tag - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-tag-viewing-and-editing-in-mp-3-tag" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Mp3tag provides extensive support for viewing and editing Vorbis comments across audio formats like FLAC, Ogg Vorbis, and Opus. This guide outlines Mp3tag's specific Vorbis metadata features, including multi-field editing, custom comment creation, embedd" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-tag-viewing-and-editing-in-mp3tag">Vorbis Tag Viewing and
+Editing in Mp3tag</h1>
+<p>Mp3tag provides extensive support for viewing and editing Vorbis
+comments across audio formats like FLAC, Ogg Vorbis, and Opus. This
+guide outlines Mp3tag's specific Vorbis metadata features, including
+multi-field editing, custom comment creation, embedded cover art
+management, and advanced batch automation.</p>
+<h3 id="supported-vorbis-file-formats">Supported Vorbis File
+Formats</h3>
+<p>Mp3tag natively handles the Vorbis comment metadata standard across
+various container formats, including:</p>
+<ul>
+<li><strong>Ogg Vorbis</strong> (<code>.ogg</code>)</li>
+<li><strong>FLAC</strong> (<code>.flac</code>)</li>
+<li><strong>Opus</strong> (<code>.opus</code>)</li>
+<li><strong>Ogg FLAC</strong> and <strong>Speex</strong>
+(<code>.spx</code>)</li>
+</ul>
+<h3 id="viewing-capabilities">Viewing Capabilities</h3>
+<ul>
+<li><strong>File List and Tag Panel Display:</strong> Basic Vorbis
+comments—such as <code>TITLE</code>, <code>ARTIST</code>,
+<code>ALBUM</code>, <code>TRACKNUMBER</code>, <code>DATE</code>, and
+<code>GENRE</code>—are instantly visible and customizable within the
+main file list and the side Tag Panel.</li>
+<li><strong>Extended Tags Window:</strong> Accessible via
+<code>View &gt; Extended Tags</code> (or <code>Alt + T</code>), this
+dialog displays the complete list of all Vorbis comment fields stored
+inside the file, including technical, non-standard, and proprietary
+vendor tags.</li>
+<li><strong>Multiple Values per Field:</strong> Vorbis comments natively
+permit repeating the same field name multiple times (such as multiple
+<code>ARTIST</code> or <code>GENRE</code> tags). Mp3tag visualizes
+multi-value fields clearly, typically delimiting them with a double
+backslash (<code>\\</code>).</li>
+<li><strong>Technical Information:</strong> Along with metadata, Mp3tag
+displays container-level stream properties, such as audio bitrate,
+sample rate, channels, and duration.</li>
+</ul>
+<h3 id="editing-capabilities">Editing Capabilities</h3>
+<ul>
+<li><strong>Batch Editing:</strong> Users can select hundreds of
+Vorbis-based files simultaneously to apply identical changes to standard
+tags, track counters, or custom fields in a single operation.</li>
+<li><strong>Custom Field Creation:</strong> Unlike formats with rigid
+frames, Vorbis comments accept arbitrary field names. Mp3tag allows
+users to create, modify, or delete any custom key-value pair (such as
+<code>ORGANIZATION</code>, <code>DISCSUBTITLE</code>, or
+<code>CATALOGNUMBER</code>) through the Extended Tags dialog.</li>
+<li><strong>Multi-Value Field Editing:</strong> Users can add multiple
+distinct entries for the same field or split existing single-string
+values into separate Vorbis comment blocks using actions or the
+<code>\\</code> separator.</li>
+<li><strong>Embedded Artwork Management:</strong> Mp3tag supports
+embedding, extracting, replacing, and removing cover art within FLAC and
+Ogg containers. It allows setting image types (such as Front Cover, Back
+Cover, or Artist) and handles standard
+<code>METADATA_BLOCK_PICTURE</code> structures compliant with Vorbis
+specifications.</li>
+</ul>
+<h3 id="advanced-metadata-tools">Advanced Metadata Tools</h3>
+<ul>
+<li><strong>Tag to Filename / Filename to Tag:</strong> Automatically
+extract Vorbis tag information from directory and file structures, or
+rename files based on internal Vorbis metadata using flexible pattern
+placeholders.</li>
+<li><strong>Online Database Integration:</strong> Automatically query
+online databases such as Discogs and MusicBrainz to pull accurate
+metadata and write it directly into Vorbis comment fields.</li>
+<li><strong>Action Groups (Batch Automation):</strong> Create reusable
+macros to automate repetitive tasks, including case conversion, regular
+expression replacements, merging multiple fields, and removing unwanted
+Vorbis tags.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Point Stereo Reduces Bitrate in Vorbis Audio - vorbis</title>
+    <meta name="description" content="Point stereo is an advanced joint-stereo coding technique used by the Vorbis audio codec to dramatically reduce bitrate in high-frequency spectral regions. By exploiting the limitations of human spatial hearing, Vorbis merges the complex waveform data of">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-point-stereo-reduces-bitrate-in-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Point Stereo Reduces Bitrate in Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-point-stereo-reduces-bitrate-in-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Point stereo is an advanced joint-stereo coding technique used by the Vorbis audio codec to dramatically reduce bitrate in high-frequency spectral regions. By exploiting the limitations of human spatial hearing, Vorbis merges the complex waveform data of" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-point-stereo-reduces-bitrate-in-vorbis-audio">How Point
+Stereo Reduces Bitrate in Vorbis Audio</h1>
+<p>Point stereo is an advanced joint-stereo coding technique used by the
+Vorbis audio codec to dramatically reduce bitrate in high-frequency
+spectral regions. By exploiting the limitations of human spatial
+hearing, Vorbis merges the complex waveform data of multiple audio
+channels into a single shared representation at higher frequencies,
+maintaining perceived spatial positioning using minimal directional
+metadata. This approach eliminates the need to encode redundant spectral
+details across separate channels, freeing up substantial bit budget
+without introducing noticeable loss in audio fidelity.</p>
+<h3 id="psychoacoustic-foundations">Psychoacoustic Foundations</h3>
+<p>The human auditory system localizes sound using two primary cues:
+Interaural Time Differences (ITD) and Interaural Level Differences
+(ILD). At low frequencies (typically below 1.5 kHz), the brain relies
+primarily on ITD, tracking phase differences between sound waves
+arriving at each ear.</p>
+<p>At higher frequencies, where sound wavelengths are shorter than the
+physical distance between human ears, phase information becomes
+ambiguous. The auditory system ceases to track fine phase details and
+instead relies almost entirely on ILD—evaluating the relative energy and
+intensity envelope between the ears to pinpoint direction. Point stereo
+takes direct advantage of this psychoacoustic boundary by discarding
+phase differences that the human ear cannot detect in high-frequency
+regions.</p>
+<h3 id="shared-spectral-representation">Shared Spectral
+Representation</h3>
+<p>In standard dual-channel encoding or basic mid/side stereo,
+high-frequency bands require separate spectral residue coefficients to
+describe the fine structure of each channel. Because high-frequency
+bands cover wide frequency ranges in terms of raw bandwidth (such as 8
+kHz to 20 kHz), encoding independent spectral details across multiple
+channels consumes a massive portion of the overall bitrate.</p>
+<p>Point stereo replaces discrete channel coding in these upper
+registers with a single combined carrier signal. Vorbis computes a
+composite spectrum that captures the total spectral energy and fine
+detail across the channels. Instead of transmitting two distinct sets of
+high-frequency frequency-domain coefficients, the encoder transmits only
+one.</p>
+<h3 id="panning-vectors-and-floor-allocation">Panning Vectors and Floor
+Allocation</h3>
+<p>To preserve the illusion of a full stereo field, Vorbis separates
+audio data into two main components: the spectral floor (the overall
+spectral envelope) and the residue (the fine harmonic peaks and
+noise).</p>
+<p>In point stereo regions:</p>
+<ol type="1">
+<li><strong>Single Residue:</strong> The high-frequency residue is
+collapsed into a single, shared stream of spectral values.</li>
+<li><strong>Angle Parameters:</strong> The encoder calculates simple
+directional parameters—often conceptualized as an energy ratio or
+angular scalar—for specific critical bands.</li>
+<li><strong>Reconstruction:</strong> During decoding, the single residue
+signal is duplicated across both the left and right channels, scaled in
+amplitude by the directional parameters and spectral floor values
+assigned to each channel.</li>
+</ol>
+<p>Because a single panning scalar requires vastly fewer bits to encode
+than thousands of individual spectral coefficients, the overhead for
+spatial reproduction becomes negligible.</p>
+<h3 id="direct-impact-on-bitrate">Direct Impact on Bitrate</h3>
+<p>High-frequency audio components typically exhibit noise-like
+characteristics and wide dispersion, which inherently demand higher
+entropy and more bits to compress losslessly or near-losslessly.
+Collapsing the high-frequency residue nearly halves the data
+requirements for that portion of the frequency spectrum.</p>
+<p>By eliminating inter-channel redundancy and substituting raw waveform
+data with lightweight amplitude ratios, point stereo allows Vorbis to
+maintain high perceived sample rates (such as retaining frequencies up
+to 20 kHz or 22 kHz) even at low target bitrates, avoiding the severe
+low-pass filtering that would otherwise be necessary.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

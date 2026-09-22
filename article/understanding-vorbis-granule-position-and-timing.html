@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Vorbis Granule Position and Timing - vorbis</title>
+    <meta name="description" content="A granule position is a 64-bit value embedded within the transport layer of an Ogg Vorbis stream that serves as the primary timekeeping and sample-indexing mechanism. Instead of using arbitrary wall-clock timestamps like milliseconds, the Vorbis granule">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/understanding-vorbis-granule-position-and-timing">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Understanding Vorbis Granule Position and Timing - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/understanding-vorbis-granule-position-and-timing" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="A granule position is a 64-bit value embedded within the transport layer of an Ogg Vorbis stream that serves as the primary timekeeping and sample-indexing mechanism. Instead of using arbitrary wall-clock timestamps like milliseconds, the Vorbis granule" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="understanding-vorbis-granule-position-and-timing">Understanding
+Vorbis Granule Position and Timing</h1>
+<p>A granule position is a 64-bit value embedded within the transport
+layer of an Ogg Vorbis stream that serves as the primary timekeeping and
+sample-indexing mechanism. Instead of using arbitrary wall-clock
+timestamps like milliseconds, the Vorbis granule position measures time
+directly in terms of completed PCM audio samples. This system provides
+absolute sample accuracy, allowing decoders to calculate stream
+duration, synchronize audio with video tracks, and perform precise
+seeking operations without needing to decode the entire bitstream from
+the beginning.</p>
+<h3 id="how-granule-position-works">How Granule Position Works</h3>
+<p>In an Ogg stream, audio packets are grouped into pages, and the page
+header contains the granule position field. For Vorbis audio, this value
+represents the exact count of the last PCM sample that has been fully
+decoded and output by the end of that specific page.</p>
+<p>If an Ogg page ends with a granule position of 44,100 on a stream
+sampled at 44.1 kHz, it indicates that exactly one second of playable
+audio has been completely rendered up to that point. Any packet ending
+on that page contributes to reaching that exact sample count.</p>
+<h3 id="the-role-of-windowing-and-overlapping-blocks">The Role of
+Windowing and Overlapping Blocks</h3>
+<p>Vorbis relies on the Modified Discrete Cosine Transform (MDCT) and
+uses overlapping windows (typically alternating between short and long
+blocks) to reconstruct audio. Because adjacent blocks overlap by 50%, a
+single packet cannot be fully converted into independent PCM samples on
+its own; it requires data from both the current packet and the previous
+packet to complete the overlap-add process.</p>
+<p>Because of this overlapping nature, raw packet boundaries do not
+cleanly align with distinct, non-overlapping chunks of audio. The
+granule position resolves this ambiguity by ignoring intermediate
+transform boundaries and strictly recording the cumulative count of
+fully synthesized output samples ready for playback.</p>
+<h3 id="handling-pre-roll-and-stream-truncation">Handling Pre-roll and
+Stream Truncation</h3>
+<p>The granule position plays a critical role at the boundaries of an
+audio stream:</p>
+<ul>
+<li><strong>Stream Start (Pre-roll):</strong> The initial Vorbis audio
+packet cannot produce complete audio because it lacks a preceding block
+for the overlap-add phase. The granule position accounts for this
+encoder delay by establishing when valid output actually begins, often
+starting at zero only after the first valid window overlap is
+resolved.</li>
+<li><strong>Stream End (Padding Truncation):</strong> Audio encoders
+generally process fixed-size transform blocks, which rarely align
+perfectly with the original audio's exact final sample. The granule
+position on the final Ogg page explicitly defines the terminal sample.
+The decoder uses this value to discard any trailing padding samples
+generated by the final MDCT block, ensuring gapless playback.</li>
+</ul>
+<h3 id="practical-applications">Practical Applications</h3>
+<p>By indexing timing directly to the output sample count, the Vorbis
+granule position provides three major functional benefits:</p>
+<ol type="1">
+<li><strong>Fast, Accurate Seeking:</strong> Media players can use a
+bisection search across Ogg page headers to locate a target time offset
+rapidly. Once the correct page is found, the decoder only needs to
+decode the immediate pre-roll packets to begin outputting
+sample-accurate audio.</li>
+<li><strong>Exact Duration Calculation:</strong> Subtracting the initial
+granule position from the final page's granule position and dividing the
+result by the audio sample rate yields the exact duration of the stream
+down to the individual sample.</li>
+<li><strong>A/V Synchronization:</strong> In multiplexed containers
+carrying both video (such as Theora) and audio (Vorbis), the granule
+position allows the player's clock to synchronize disparate media
+streams using their native temporal units.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis IMDCT Works in Audio Decoding - vorbis</title>
+    <meta name="description" content="The Inverse Modified Discrete Cosine Transform (IMDCT) is the mathematical core of the Vorbis audio decoding pipeline, responsible for converting frequency-domain spectral coefficients back into time-domain audio samples. During this stage, the decoder t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-imdct-works-in-audio-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis IMDCT Works in Audio Decoding - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-imdct-works-in-audio-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Inverse Modified Discrete Cosine Transform (IMDCT) is the mathematical core of the Vorbis audio decoding pipeline, responsible for converting frequency-domain spectral coefficients back into time-domain audio samples. During this stage, the decoder t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-imdct-works-in-audio-decoding">How Vorbis IMDCT Works
+in Audio Decoding</h1>
+<p>The Inverse Modified Discrete Cosine Transform (IMDCT) is the
+mathematical core of the Vorbis audio decoding pipeline, responsible for
+converting frequency-domain spectral coefficients back into time-domain
+audio samples. During this stage, the decoder takes processed floor and
+residue vectors, applies a computationally optimized inverse transform
+to reconstruct a raw audio block, shapes it with a window function, and
+merges it with preceding data using an overlap-add routine. This process
+cancels out deliberate time-domain aliasing introduced during encoding,
+yielding seamless, high-fidelity pulse-code modulation (PCM) audio.</p>
+<h3 id="1-preparation-of-the-spectral-vector">1. Preparation of the
+Spectral Vector</h3>
+<p>Before the IMDCT executes, the Vorbis decoder reconstructs the
+frequency envelope (the floor) and the fine spectral detail (the
+residue). It multiplies these components together to yield the final
+vector of spectral coefficients.</p>
+<p>For a Vorbis audio block of length <span
+class="math inline">\(N\)</span> (where <span
+class="math inline">\(N\)</span> is typically 256 to 8192 samples
+depending on block mode), the input to the IMDCT consists of exactly
+<span class="math inline">\(N/2\)</span> frequency coefficients. These
+coefficients represent the amplitude of cosine bases distributed
+linearly across the audible spectrum.</p>
+<h3 id="2-the-core-mathematical-transformation">2. The Core Mathematical
+Transformation</h3>
+<p>The theoretical IMDCT formula expands <span
+class="math inline">\(N/2\)</span> frequency values back into an <span
+class="math inline">\(N\)</span>-length time-domain signal:</p>
+<p><span class="math display">\[x_n = \sum_{k=0}^{\frac{N}{2}-1} X_k
+\cos\left[ \frac{\pi}{N} \left( n + \frac{1}{2} + \frac{N}{4} \right)
+\left( k + \frac{1}{2} \right) \right]\]</span></p>
+<p>Because calculating this sum directly requires <span
+class="math inline">\(O(N^2)\)</span> operations, Vorbis decoders
+implement a fast transform algorithm that operates in <span
+class="math inline">\(O(N \log N)\)</span> time. This optimization
+breaks down into three sub-steps:</p>
+<ul>
+<li><strong>Pre-Rotation (Pre-Twiddle):</strong> The <span
+class="math inline">\(N/2\)</span> real spectral inputs are rearranged
+and modulated by complex phase factors, packing them into an <span
+class="math inline">\(N/4\)</span>-length complex array.</li>
+<li><strong>Complex Inverse FFT:</strong> A standard complex Inverse
+Fast Fourier Transform (IFFT) of length <span
+class="math inline">\(N/4\)</span> processes the rotated values.</li>
+<li><strong>Post-Rotation (Post-Twiddle) and Unfolding:</strong> The
+IFFT output undergoes a second phase rotation. The decoder then unfolds
+and mirrors the resulting values using intrinsic trigonometric
+symmetries to generate all <span class="math inline">\(N\)</span>
+time-domain values.</li>
+</ul>
+<h3 id="3-windowing-and-block-adaptation">3. Windowing and Block
+Adaptation</h3>
+<p>The <span class="math inline">\(N\)</span> samples produced directly
+by the IMDCT contain intentional time-domain aliasing. To prepare them
+for alias cancellation, the decoder applies a window function to every
+sample.</p>
+<p>Vorbis uses a custom window derived from a sine function:</p>
+<p><span class="math display">\[w(n) = \sin\left( \frac{\pi}{2}
+\sin^2\left( \frac{\pi (n + 0.5)}{N} \right) \right)\]</span></p>
+<p>This window provides steeper attenuation and better energy
+concentration than a standard Hann or sine window.</p>
+<p>If the current block transitions between different block sizes (for
+example, switching between a long block for steady tones and a short
+block for transients), the Vorbis window adjusts dynamically. The
+decoder constructs an asymmetric hybrid window using the appropriate
+half-window shapes for the left and right halves to ensure continuous
+energy preservation across block boundaries.</p>
+<h3 id="4-overlap-add-and-aliasing-cancellation">4. Overlap-Add and
+Aliasing Cancellation</h3>
+<p>Because the MDCT is a lapped transform, individual reconstructed
+blocks cannot be played directly; each block contains symmetric
+time-domain aliasing in its left and right halves.</p>
+<p>Vorbis eliminates this aliasing using Time-Domain Aliasing
+Cancellation (TDAC) via an overlap-add procedure:</p>
+<ol type="1">
+<li>The left half (first <span class="math inline">\(N/2\)</span>
+samples) of the current windowed block overlaps with the right half
+(last <span class="math inline">\(N/2\)</span> samples) of the
+previously decoded block.</li>
+<li>The overlapping samples from both blocks are summed together
+algebraically.</li>
+<li>Due to the mathematical properties of the transform and the window
+function, the aliasing components have identical magnitude but opposite
+signs, causing them to cancel out completely.</li>
+<li>The summed overlapping section forms the final, artifact-free PCM
+output for that segment.</li>
+<li>The right half of the current block is saved in a state buffer,
+where it waits to be overlapped and summed with the left half of the
+subsequent frame.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

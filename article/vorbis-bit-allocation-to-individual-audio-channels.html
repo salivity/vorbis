@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Bit Allocation to Individual Audio Channels - vorbis</title>
+    <meta name="description" content="Ogg Vorbis fully supports allocating different numbers of bits to individual audio channels. Because Vorbis is natively a variable bitrate (VBR) audio format governed by psychoacoustic modeling, it dynamically distributes its bit budget across channels b">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-bit-allocation-to-individual-audio-channels">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Bit Allocation to Individual Audio Channels - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-bit-allocation-to-individual-audio-channels" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Ogg Vorbis fully supports allocating different numbers of bits to individual audio channels. Because Vorbis is natively a variable bitrate (VBR) audio format governed by psychoacoustic modeling, it dynamically distributes its bit budget across channels b" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-bit-allocation-to-individual-audio-channels">Vorbis Bit
+Allocation to Individual Audio Channels</h1>
+<p>Ogg Vorbis fully supports allocating different numbers of bits to
+individual audio channels. Because Vorbis is natively a variable bitrate
+(VBR) audio format governed by psychoacoustic modeling, it dynamically
+distributes its bit budget across channels based on instantaneous
+complexity and human auditory thresholds. This article explains the
+technical mechanics behind Vorbis’s channel-specific bit distribution,
+including dynamic psychoacoustic analysis, stereo coupling techniques,
+and multichannel optimization.</p>
+<h2 id="psychoacoustic-masking-and-dynamic-distribution">Psychoacoustic
+Masking and Dynamic Distribution</h2>
+<p>Vorbis processes audio in the frequency domain using the Modified
+Discrete Cosine Transform (MDCT). Bit allocation is not divided equally
+or statically among channels. Instead, the encoder evaluates the masking
+curve of each channel independently:</p>
+<ul>
+<li><strong>Signal Complexity:</strong> Channels containing transients,
+wide frequency ranges, or complex harmonic structures demand lower
+quantization noise to avoid artifacts, prompting the encoder to assign
+them more bits.</li>
+<li><strong>Auditory Masking:</strong> If an event in one channel
+produces high energy that masks details in another, or if a channel is
+relatively quiet, the encoder quantizes the less audible channel more
+aggressively, consuming significantly fewer bits.</li>
+</ul>
+<p>Because Vorbis encodes to a perceptual quality metric rather than an
+enforced per-channel bandwidth limit, channel bit allocation fluctuates
+frame by frame.</p>
+<h2 id="channel-coupling-stereo-and-multichannel-mechanics">Channel
+Coupling: Stereo and Multichannel Mechanics</h2>
+<p>Vorbis handles multi-channel audio through two primary coupling
+techniques that dictate how data is split:</p>
+<h3 id="1-midside-lossless-coupling">1. Mid/Side (Lossless
+Coupling)</h3>
+<p>In stereo tracks with correlated content, Vorbis converts left and
+right channels into "mid" (sum) and "side" (difference) components.
+Because the difference signal typically contains far less energy than
+the sum signal, it requires substantially fewer bits to encode. The bit
+allocation between the actual stereo fields becomes naturally
+asymmetric.</p>
+<h3 id="2-point-stereo-lossy-psychoacoustic-coupling">2. Point Stereo
+(Lossy Psychoacoustic Coupling)</h3>
+<p>At lower bitrates or higher frequencies, Vorbis employs point stereo.
+This technique retains the spectral shape of the combined signal while
+retaining directional phase cues. High-frequency energy across separate
+channels is pooled, allowing the dominant channel to preserve spatial
+position while drastically reducing the bit consumption of the secondary
+channel.</p>
+<h2 id="multichannel-audio-efficiency">Multichannel Audio
+Efficiency</h2>
+<p>In surround setups (such as 5.1 or 7.1 layouts), asymmetrical bit
+allocation becomes especially critical:</p>
+<ul>
+<li><strong>Dialogue and Front Channels:</strong> Left, center, and
+right channels usually carry the majority of dynamic acoustic
+information, naturally claiming the largest portion of the available
+bitstream.</li>
+<li><strong>Surround Channels:</strong> Ambient sound effects or room
+reverberation in rear channels typically present lower complexity,
+allowing the encoder to throttle bit usage down automatically.</li>
+<li><strong>Low-Frequency Effects (LFE):</strong> The dedicated
+subwoofer channel occupies a narrow frequency band (typically below 120
+Hz). Vorbis naturally uses a fraction of the data rate for the LFE
+channel compared to full-range channels, ensuring bandwidth is not
+wasted on inaudible frequencies.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

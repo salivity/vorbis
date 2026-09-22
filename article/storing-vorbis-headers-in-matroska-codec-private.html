@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storing Vorbis Headers in Matroska CodecPrivate - vorbis</title>
+    <meta name="description" content="This article details how the three essential Vorbis header packets—Identification, Comment, and Setup—are encapsulated within the Matroska CodecPrivate element. Because Matroska stores these initialization packets as a single contiguous binary block">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/storing-vorbis-headers-in-matroska-codec-private">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Storing Vorbis Headers in Matroska CodecPrivate - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/storing-vorbis-headers-in-matroska-codec-private" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article details how the three essential Vorbis header packets—Identification, Comment, and Setup—are encapsulated within the Matroska CodecPrivate element. Because Matroska stores these initialization packets as a single contiguous binary block" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="storing-vorbis-headers-in-matroska-codecprivate">Storing Vorbis
+Headers in Matroska CodecPrivate</h1>
+<p>This article details how the three essential Vorbis header
+packets—Identification, Comment, and Setup—are encapsulated within the
+Matroska <code>CodecPrivate</code> element. Because Matroska stores
+these initialization packets as a single contiguous binary block rather
+than individual stream packets, it employs a specific multiplexing
+structure known as Xiph-style lacing. Understanding this format is
+necessary for demuxing Matroska streams containing <code>A_VORBIS</code>
+audio and correctly initializing a Vorbis decoder.</p>
+<h3 id="the-vorbis-initialization-requirement">The Vorbis Initialization
+Requirement</h3>
+<p>The Vorbis audio specification mandates three distinct header packets
+at the start of a stream, delivered in strict sequential order:</p>
+<ol type="1">
+<li><strong>Identification Header:</strong> Contains stream parameters
+like sample rate, channels, and bitrates.</li>
+<li><strong>Comment Header:</strong> Contains human-readable metadata
+(Vorbis comments).</li>
+<li><strong>Setup Header:</strong> Contains complex codebook, floor, and
+residue configurations required to decode the audio packets.</li>
+</ol>
+<p>In Ogg containers, these exist as individual sequential packets. In
+Matroska, all three are combined into a single byte array located inside
+the track's <code>CodecPrivate</code> element (<code>0x63A2</code>).</p>
+<h3 id="the-binary-layout-of-codecprivate">The Binary Layout of
+<code>CodecPrivate</code></h3>
+<p>Matroska uses an initial count byte followed by Xiph-style lacing to
+indicate packet boundaries, succeeded immediately by the concatenated
+packet payloads. The complete payload inside <code>CodecPrivate</code>
+is laid out as follows:</p>
+<ol type="1">
+<li><p><strong>Packet Count Indicator (1 byte):</strong> Represents the
+total number of packets minus one (<span class="math inline">\(N -
+1\)</span>). For Vorbis, which always uses three headers, this value is
+<code>0x02</code> (<span class="math inline">\(3 - 1 =
+2\)</span>).</p></li>
+<li><p><strong>Packet Sizes (Xiph Lacing):</strong> The sizes of the
+first <span class="math inline">\(N - 1\)</span> packets (the
+Identification and Comment headers) are encoded consecutively using Xiph
+lacing. The size of the final packet (the Setup header) is omitted
+because it is derived mathematically.</p>
+<ul>
+<li><strong>Xiph Lacing Mechanism:</strong> A size is encoded as a
+sequence of <code>0xFF</code> (255) bytes, terminated by a byte less
+than <code>0xFF</code>. The total packet size is the sum of these bytes.
+For example:
+<ul>
+<li>A size of 30 bytes is encoded as <code>0x1E</code>.</li>
+<li>A size of 512 bytes is encoded as <code>0xFF</code>,
+<code>0xFF</code>, <code>0x02</code> (<span class="math inline">\(255 +
+255 + 2 = 512\)</span>).</li>
+</ul></li>
+<li>First, the size of Packet 1 (Identification) is written using Xiph
+lacing.</li>
+<li>Immediately following, the size of Packet 2 (Comment) is written
+using Xiph lacing.</li>
+</ul></li>
+<li><p><strong>Implicit Final Packet Size:</strong> The size of Packet 3
+(Setup) is calculated by taking the total length of the
+<code>CodecPrivate</code> buffer and subtracting the byte length of the
+packaging overhead (count byte + lacing bytes) along with the computed
+lengths of Packet 1 and Packet 2.</p></li>
+<li><p><strong>Concatenated Header Data:</strong> Immediately following
+the last lacing byte, the raw data for all three packets is stored
+contiguously:</p>
+<ul>
+<li>Identification Header Data</li>
+<li>Comment Header Data</li>
+<li>Setup Header Data</li>
+</ul></li>
+</ol>
+<h3 id="demuxing-procedure">Demuxing Procedure</h3>
+<p>To extract and pass these headers to a Vorbis decoder (such as
+<code>libvorbis</code> via <code>vorbis_synthesis_headerin</code>), a
+parser executes the following steps:</p>
+<ol type="1">
+<li>Read the first byte of <code>CodecPrivate</code> to confirm the
+packet count equals 2.</li>
+<li>Decode the Xiph-laced size of the first packet (<span
+class="math inline">\(L_1\)</span>).</li>
+<li>Decode the Xiph-laced size of the second packet (<span
+class="math inline">\(L_2\)</span>).</li>
+<li>Note the offset in the buffer where lacing ends (<span
+class="math inline">\(O_{data}\)</span>).</li>
+<li>Compute the size of the third packet: <span
+class="math inline">\(L_3 = \text{TotalBufferLength} - O_{data} - L_1 -
+L_2\)</span>.</li>
+<li>Slice the buffer:
+<ul>
+<li><strong>Identification:</strong> Bytes from <span
+class="math inline">\(O_{data}\)</span> to <span
+class="math inline">\(O_{data} + L_1\)</span></li>
+<li><strong>Comment:</strong> Bytes from <span
+class="math inline">\(O_{data} + L_1\)</span> to <span
+class="math inline">\(O_{data} + L_1 + L_2\)</span></li>
+<li><strong>Setup:</strong> Bytes from <span
+class="math inline">\(O_{data} + L_1 + L_2\)</span> to the end of the
+buffer.</li>
+</ul></li>
+</ol>
+<p>Once extracted, these three distinct byte buffers can be fed directly
+to the Vorbis initialization routines in their original order.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

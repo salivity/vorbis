@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARM NEON Assembly Routines for Vorbis Decoding - vorbis</title>
+    <meta name="description" content="Assembly-optimized routines for Vorbis decoding on ARM NEON do exist and are actively used in several high-performance multimedia libraries. Because Vorbis decoding relies heavily on floating-point or fixed-point vector math—especially during synthesis">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/arm-neon-assembly-routines-for-vorbis-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ARM NEON Assembly Routines for Vorbis Decoding - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/arm-neon-assembly-routines-for-vorbis-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Assembly-optimized routines for Vorbis decoding on ARM NEON do exist and are actively used in several high-performance multimedia libraries. Because Vorbis decoding relies heavily on floating-point or fixed-point vector math—especially during synthesis" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="arm-neon-assembly-routines-for-vorbis-decoding">ARM NEON
+Assembly Routines for Vorbis Decoding</h1>
+<p>Assembly-optimized routines for Vorbis decoding on ARM NEON do exist
+and are actively used in several high-performance multimedia libraries.
+Because Vorbis decoding relies heavily on floating-point or fixed-point
+vector math—especially during synthesis, inverse coupling, and
+time-domain transformations—developers have implemented hand-tuned ARM
+NEON instructions to replace generic C routines. These SIMD (Single
+Instruction, Multiple Data) optimizations drastically reduce CPU cycle
+consumption and improve power efficiency on ARM platforms.</p>
+<h3 id="primary-implementations-with-neon-support">Primary
+Implementations with NEON Support</h3>
+<h4 id="1-ffmpeg-and-libav">1. FFmpeg and Libav</h4>
+<p>The native Vorbis decoder in FFmpeg includes dedicated ARM NEON
+assembly files. Located within <code>libavcodec/arm/</code>, the decoder
+leverages routines defined in <code>vorbisdsp_neon.S</code> (interfaced
+via <code>vorbisdsp_init_arm.c</code>). FFmpeg utilizes 128-bit NEON
+vector registers to parallelize the most compute-heavy stages of the
+decode pipeline:</p>
+<ul>
+<li><strong>Inverse Coupling:</strong> Processing left/right magnitude
+and angle vectors concurrently.</li>
+<li><strong>Windowing and Overlap-Add:</strong> Vectorizing the
+multiply-accumulate operations needed to blend audio frames.</li>
+</ul>
+<h4 id="2-tremor-libvorbisidec-and-tremolo">2. Tremor (libvorbisidec)
+and Tremolo</h4>
+<p>Tremor is the official integer-only (fixed-point) branch of the
+reference Vorbis decoder, tailored for embedded systems lacking
+floating-point hardware.</p>
+<ul>
+<li><strong>Tremolo:</strong> A specialized fork of Tremor created by
+Broadcom and later integrated into the Android Open Source Project
+(AOSP). It replaces critical C loops with highly tuned ARM assembly and
+NEON intrinsics.</li>
+<li><strong>AOSP Integrations:</strong> Found in Android’s external
+source trees (<code>external/tremolo</code>), this implementation
+provides optimized floor decoding, residue synthesis, and integer-based
+IMDCT calculations for ARM architectures.</li>
+</ul>
+<h4 id="3-standard-libvorbis-forks">3. Standard libvorbis Forks</h4>
+<p>The reference Xiph.Org <code>libvorbis</code> is written mostly in
+portable floating-point C. While the upstream master repository
+prioritizes portability and x86 SSE optimizations over ARM, several
+vendor-specific forks (such as those maintained by Linaro,
+STMicroelectronics, and various Linux-on-ARM projects) maintain patches
+that substitute standard C synthesis routines with NEON-accelerated
+floating-point math.</p>
+<h3 id="critical-kernels-accelerated-by-neon">Critical Kernels
+Accelerated by NEON</h3>
+<p>NEON optimizations in Vorbis focus on three primary computational
+bottlenecks:</p>
+<ul>
+<li><strong>Inverse Modified Discrete Cosine Transform (IMDCT):</strong>
+The mathematical core of Vorbis audio reconstruction. NEON processes
+multiple butterfly stages of the fast Fourier transform (FFT) equivalent
+simultaneously, operating on four 32-bit floats (or 32-bit integers in
+Tremolo) per instruction.</li>
+<li><strong>Synthesis Windowing:</strong> Once frequency-domain data is
+transformed, it must be multiplied by a Vorbis window function and
+accumulated with the previous frame buffer. NEON’s vector
+multiply-accumulate (<code>VMLA</code> / <code>FMLA</code>) instructions
+allow processing up to four audio samples per cycle.</li>
+<li><strong>Channel Decoupling:</strong> Reconstructing stereo channels
+from zero-frequency and phase components is vector-parallel, mapping
+directly to NEON SIMD operations.</li>
+</ul>
+<h3 id="practical-availability">Practical Availability</h3>
+<p>For modern application development, the easiest way to access
+hand-written NEON routines for Vorbis is through FFmpeg or the Android
+Open Source Project's Tremolo repository. Both codebases detect NEON
+support at runtime or build time, automatically bypassing the scalar C
+fallback functions in favor of optimized assembly routines.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

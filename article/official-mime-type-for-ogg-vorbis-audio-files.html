@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official MIME Type for Ogg Vorbis Audio Files - vorbis</title>
+    <meta name="description" content="The officially registered MIME type for Ogg Vorbis audio files is audio/ogg. This article outlines the official standard established by the Internet Engineering Task Force (IETF), explains the context behind its registration, and covers legacy types and">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/official-mime-type-for-ogg-vorbis-audio-files">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Official MIME Type for Ogg Vorbis Audio Files - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/official-mime-type-for-ogg-vorbis-audio-files" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The officially registered MIME type for Ogg Vorbis audio files is audio/ogg. This article outlines the official standard established by the Internet Engineering Task Force (IETF), explains the context behind its registration, and covers legacy types and" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="official-mime-type-for-ogg-vorbis-audio-files">Official MIME
+Type for Ogg Vorbis Audio Files</h1>
+<p>The officially registered MIME type for Ogg Vorbis audio files is
+<code>audio/ogg</code>. This article outlines the official standard
+established by the Internet Engineering Task Force (IETF), explains the
+context behind its registration, and covers legacy types and best
+practices for server configuration when serving Ogg Vorbis media.</p>
+<h3 id="the-official-standard-rfc-5334">The Official Standard: RFC
+5334</h3>
+<p>According to RFC 5334 (which updates RFC 3534), the official media
+type for an Ogg bitstream containing only audio content is
+<code>audio/ogg</code>.</p>
+<p>Before this standard was finalized, Ogg files were categorized under
+the generic <code>application/ogg</code> MIME type. To improve how web
+browsers and operating systems handle media streams, the IETF split Ogg
+media types based on content:</p>
+<ul>
+<li><strong><code>audio/ogg</code></strong>: Specifically for audio-only
+streams, including Vorbis, FLAC, and Opus inside an Ogg container.</li>
+<li><strong><code>video/ogg</code></strong>: For streams containing
+video (such as Theora), which may also contain audio.</li>
+<li><strong><code>application/ogg</code></strong>: Retained as a
+fallback for multiplexed or non-audio/video media.</li>
+</ul>
+<h3 id="using-the-codecs-parameter">Using the Codecs Parameter</h3>
+<p>When serving Ogg Vorbis content over HTTP—especially for HTML5
+<code>&lt;audio&gt;</code> playback—you can provide an optional
+<code>codecs</code> parameter to explicitly inform the client of the
+underlying encoding without requiring the browser to download and
+inspect the stream header:</p>
+<pre class="http"><code>Content-Type: audio/ogg; codecs=vorbis</code></pre>
+<h3 id="legacy-and-unofficial-mime-types">Legacy and Unofficial MIME
+Types</h3>
+<p>Prior to the formal adoption of <code>audio/ogg</code>, several
+non-standard or older types were in circulation:</p>
+<ul>
+<li><code>application/ogg</code>: The original RFC 3534 specification.
+While still recognized by many systems, modern web standards require
+<code>audio/ogg</code> for audio files.</li>
+<li><code>audio/x-vorbis</code>: An unofficial, vendor-prefixed type
+used before standardization.</li>
+<li><code>audio/vorbis</code>: A proposed type that was ultimately
+superseded by container-based naming.</li>
+</ul>
+<h3 id="web-server-configuration">Web Server Configuration</h3>
+<p>To ensure web browsers handle <code>.ogg</code> or <code>.oga</code>
+Vorbis files correctly, web servers should be configured to return the
+<code>audio/ogg</code> header.</p>
+<ul>
+<li><p><strong>Apache (<code>.htaccess</code> or
+<code>mime.types</code>):</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode apache"><code class="sourceCode apache"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>AddType<span class="st"> audio/ogg .ogg .oga</span></span></code></pre></div></li>
+<li><p><strong>NGINX (<code>mime.types</code>):</strong></p>
+<pre class="nginx"><code>types {
+    audio/ogg ogg oga;
+}</code></pre></li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

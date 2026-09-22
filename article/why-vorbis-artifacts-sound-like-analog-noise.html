@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Vorbis Artifacts Sound Like Analog Noise - vorbis</title>
+    <meta name="description" content="When lossy audio codecs reach their bit budget limits, they introduce compression artifacts that degrade sound quality. While older formats like MP3 are infamous for producing distinct metallic chirping, ringing, and watery swooshing sounds at low bitrat">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/why-vorbis-artifacts-sound-like-analog-noise">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why Vorbis Artifacts Sound Like Analog Noise - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/why-vorbis-artifacts-sound-like-analog-noise" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When lossy audio codecs reach their bit budget limits, they introduce compression artifacts that degrade sound quality. While older formats like MP3 are infamous for producing distinct metallic chirping, ringing, and watery swooshing sounds at low bitrat" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-vorbis-artifacts-sound-like-analog-noise">Why Vorbis
+Artifacts Sound Like Analog Noise</h1>
+<p>When lossy audio codecs reach their bit budget limits, they introduce
+compression artifacts that degrade sound quality. While older formats
+like MP3 are infamous for producing distinct metallic chirping, ringing,
+and watery swooshing sounds at low bitrates, the Ogg Vorbis codec
+degrades much more gracefully. Instead of unnatural digital glitches,
+heavy Vorbis compression typically manifests as a gentle, uniform
+background hiss or diffuse whispering reminiscent of analog tape noise.
+This article explains the technical reasons behind this phenomenon,
+focusing on Vorbis’s spectral envelope modeling, noise-fill techniques,
+and quantization strategies.</p>
+<h3 id="the-cause-of-digital-chirping-in-legacy-codecs">The Cause of
+Digital Chirping in Legacy Codecs</h3>
+<p>To understand why Vorbis sounds analog, it helps to understand why
+codecs like MP3 sound distinctly digital. MP3 divides audio frequencies
+into rigid, discrete sub-bands using a hybrid filter bank. When bits run
+out, the encoder simply zeroes out high-frequency spectral lines or
+aggressively quantizes narrow frequency bands.</p>
+<p>This process causes two major issues:</p>
+<ol type="1">
+<li><strong>Isolated Tonal Peaks:</strong> Truncating high frequencies
+leaves sporadic, isolated spectral spikes that flicker in and out from
+frame to frame. The human ear interprets these transient high-frequency
+blips as metallic chirping, ringing, or "swimming" artifacts.</li>
+<li><strong>Band Boundary Discontinuities:</strong> Hard cuts across
+discrete scale-factor bands introduce sudden energy mismatches that
+create unnatural, phasey harmonic distortions.</li>
+</ol>
+<h3 id="continuous-spectral-envelope-floor-1">Continuous Spectral
+Envelope (Floor 1)</h3>
+<p>Vorbis avoids isolated frequency spikes through its unique two-step
+spectrum encoding: the <strong>spectral floor</strong> and the
+<strong>residue</strong>.</p>
+<p>Instead of dividing the spectrum into rigid, independent bands,
+Vorbis calculates a continuous, smooth curve—called the spectral
+floor—that outlines the general shape and energy distribution of the
+audio across all frequencies. Vorbis primarily uses "Floor 1," which
+defines this envelope using piecewise linear interpolation in the Bark
+(psychoacoustic) scale.</p>
+<p>Because the floor is encoded as a continuous contour rather than
+independent stepped blocks, the overall energy profile never experiences
+sudden, jagged cutoffs between adjacent frequencies. Even at extremely
+low bitrates where fine details are lost, the general energy shape
+remains smooth and broad, avoiding the sharp spectral edges that
+register as digital chirping.</p>
+<h3 id="noise-like-residual-quantization">Noise-like Residual
+Quantization</h3>
+<p>Once the spectral floor establishes the macro-level energy, the fine
+details (the residue) are encoded using vector quantization. When bits
+are scarce, Vorbis cannot encode the exact positions of high-frequency
+harmonics.</p>
+<p>Rather than leaving empty gaps punctuated by occasional harmonic
+spikes (as MP3 often does), Vorbis's quantization process distributes
+the remaining error across a broad frequency range. If high-frequency
+detail cannot be preserved accurately, the algorithm effectively
+substitutes the missing harmonics with a uniform, low-energy
+residual.</p>
+<p>Because white noise and analog tape hiss are mathematically defined
+as broad, continuous, and decorrelated spectral energy, the human ear
+perceives this broadly distributed error as analog noise rather than an
+unnatural digital artifact.</p>
+<h3 id="psychoacoustic-noise-masking">Psychoacoustic Noise Masking</h3>
+<p>The human auditory system naturally tolerates low-level, wideband
+noise far better than it tolerates foreign, localized tonal bursts.
+Vorbis was deliberately tuned to exploit this psychoacoustic trait.</p>
+<p>When human hearing encounters loud sounds, it naturally masks quieter
+sounds across neighboring frequencies. Vorbis shapes its quantization
+noise so that any audible degradation conforms to the masking threshold
+curves. If the codec must fail to reconstruct the original signal, it
+pushes the reconstruction error into regions where it resembles diffuse
+ambient noise.</p>
+<h3 id="overlapping-window-switching">Overlapping Window Switching</h3>
+<p>Finally, temporal artifacts—such as pre-echo, which causes unnatural
+clicks or rattles before sharp transients—are mitigated using flexible,
+overlapping Modified Discrete Cosine Transform (MDCT) window sizes.
+Vorbis smoothly transitions between long windows (for stable, tonal
+passages) and short windows (for sudden transients). This tight temporal
+control prevents transient smearing from bleeding into adjacent quiet
+passages as metallic ringing, ensuring that any residual time-domain
+error sounds like a brief, soft burst of noise rather than a robotic
+glitch.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

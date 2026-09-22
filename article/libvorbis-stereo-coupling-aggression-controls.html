@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libvorbis Stereo Coupling Aggression Controls - vorbis</title>
+    <meta name="description" content="Libvorbis utilizes multichannel coupling to maximize encoding efficiency by identifying redundancies between audio channels. This article covers the internal psychoacoustic parameters and tuning structures within libvorbis that dictate the aggression of">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/libvorbis-stereo-coupling-aggression-controls">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Libvorbis Stereo Coupling Aggression Controls - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/libvorbis-stereo-coupling-aggression-controls" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Libvorbis utilizes multichannel coupling to maximize encoding efficiency by identifying redundancies between audio channels. This article covers the internal psychoacoustic parameters and tuning structures within libvorbis that dictate the aggression of" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="libvorbis-stereo-coupling-aggression-controls">Libvorbis Stereo
+Coupling Aggression Controls</h1>
+<p>Libvorbis utilizes multichannel coupling to maximize encoding
+efficiency by identifying redundancies between audio channels. This
+article covers the internal psychoacoustic parameters and tuning
+structures within <code>libvorbis</code> that dictate the aggression of
+stereo coupling, particularly the transition between lossless mid/side
+coupling and lossy point stereo coupling across different frequency
+bands and bitrates.</p>
+<h3 id="understanding-vorbis-stereo-coupling-modes">Understanding Vorbis
+Stereo Coupling Modes</h3>
+<p>Libvorbis employs two primary coupling techniques:</p>
+<ol type="1">
+<li><strong>Polar (Mid/Side) Stereo:</strong> A lossless transformation
+where correlated channel data is split into magnitude and angle (sum and
+difference). This maintains stereo imaging without discarding spatial
+information.</li>
+<li><strong>Point (Intensity) Stereo:</strong> A lossy coupling method
+that retains the spectral shape and overall energy distribution across
+channels but discards directional phase information at higher
+frequencies.</li>
+</ol>
+<p>The "aggression" of stereo coupling refers to how low in the
+frequency spectrum point stereo is introduced, how easily the
+psychoacoustic model collapses subtle directional cues into a single
+envelope, and how the encoder responds to transient stereo shifts.</p>
+<h3 id="core-psychoacoustic-parameters-in-vorbis_info_psy">Core
+Psychoacoustic Parameters in <code>vorbis_info_psy</code></h3>
+<p>Fine-grained stereo coupling settings are defined in the
+<code>vorbis_info_psy</code> structure (located internally within
+<code>psy.h</code> and the encoder setup modes). The primary variables
+controlling coupling behavior include:</p>
+<ul>
+<li><strong><code>coupling_point_limit</code></strong>: Defines the
+frequency floor (measured in Bark scale bins or FFT sub-bands) above
+which point stereo coupling is permitted. Decreasing this value forces
+point stereo coupling lower into the mid-range frequencies,
+significantly increasing coupling aggression and saving bits at the cost
+of spatial localization.</li>
+<li><strong><code>coupling_pk_limit</code></strong>: Sets the peak
+energy delta threshold between the left and right channels. If the
+channel disparity exceeds this limit, coupling aggression is scaled back
+on specific frequency peaks to prevent audible panning distortion.
+Lowering this threshold makes the encoder more conservative, while
+raising it forces aggressive channel blending even when stereo
+separation is pronounced.</li>
+<li><strong><code>coupling_pk_post_limit</code></strong>: Works
+alongside <code>coupling_pk_limit</code> to control the post-transient
+decay threshold. This parameter prevents phase collapse immediately
+following sharp directional attacks, ensuring that stereo separation
+snaps back quickly after transient bursts.</li>
+<li><strong><code>coupling_passlimit_ext</code></strong>: Sets
+boundaries on how many subsequent spectral passes may apply secondary
+coupling adjustments. Increasing pass limits allows more aggressive
+iterative reduction of uncorrelated high-frequency material.</li>
+<li><strong><code>sliding_stereo</code></strong>: A flag/state variable
+within the global psychoacoustic configuration that determines whether
+stereo coupling thresholds adapt dynamically based on window energy
+shifts or remain fixed relative to the base quality mode.</li>
+</ul>
+<h3 id="high-level-management-via-mode-templates">High-Level Management
+via Mode Templates</h3>
+<p>At the standard public API level (<code>vorbis/vorbisenc.h</code>),
+libvorbis does not provide dedicated runtime API functions to adjust
+these coupling parameters individually. Instead, coupling aggressiveness
+is mapped internally to nominal quality levels (ranging from
+<code>-0.1</code> to <code>1.0</code> via
+<code>vorbis_encode_setup_vbr</code> or
+<code>vorbis_encode_init_vbr</code>).</p>
+<p>The underlying parameters are configured in the static mode templates
+inside the libvorbis source tree (<code>lib/modes/setup_X.h</code> and
+<code>lib/modes/psych_X.h</code>):</p>
+<ul>
+<li>At lower quality targets (e.g., <code>-q 0</code> to
+<code>-q 3</code>), the templates lower
+<code>coupling_point_limit</code> and raise
+<code>coupling_pk_limit</code>, introducing point stereo deep into the
+audible mid-band.</li>
+<li>At high quality targets (e.g., <code>-q 7</code> and above), point
+stereo coupling is often disabled entirely or constrained strictly to
+the highest frequencies (typically above 10 kHz to 12 kHz), relying
+predominantly on lossless polar stereo.</li>
+</ul>
+<p>Customizing stereo aggression requires modifying these psychoacoustic
+template arrays before calling <code>vorbis_encode_setup_init()</code>,
+or modifying the initialized <code>vorbis_info_psy</code> structures
+prior to the final encoder state allocation.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

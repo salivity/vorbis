@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Chooses Joint Stereo vs Dual-Mono - vorbis</title>
+    <meta name="description" content="The Vorbis audio encoder dynamically switches between joint stereo coupling and discrete dual-mono encoding by evaluating cross-channel correlation, psychoacoustic masking thresholds, and the configured target bitrate. Rather than making a static, track-">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-chooses-joint-stereo-vs-dual-mono">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Chooses Joint Stereo vs Dual-Mono - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-chooses-joint-stereo-vs-dual-mono" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio encoder dynamically switches between joint stereo coupling and discrete dual-mono encoding by evaluating cross-channel correlation, psychoacoustic masking thresholds, and the configured target bitrate. Rather than making a static, track-" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-chooses-joint-stereo-vs-dual-mono">How Vorbis Chooses
+Joint Stereo vs Dual-Mono</h1>
+<p>The Vorbis audio encoder dynamically switches between joint stereo
+coupling and discrete dual-mono encoding by evaluating cross-channel
+correlation, psychoacoustic masking thresholds, and the configured
+target bitrate. Rather than making a static, track-wide selection,
+Vorbis analyzes incoming audio on a per-frame and per-sub-band basis,
+selecting channel coupling to optimize compression efficiency when
+signals share spatial characteristics, or discrete channels to preserve
+precise channel separation when signals diverge.</p>
+<h3 id="spectral-analysis-and-inter-channel-correlation">Spectral
+Analysis and Inter-Channel Correlation</h3>
+<p>Vorbis splits incoming audio into overlapping time-domain windows and
+applies a Modified Discrete Cosine Transform (MDCT) to generate
+frequency spectra. Once in the frequency domain, the psychoacoustic
+engine computes the correlation between the left and right channels
+across distinct frequency sub-bands.</p>
+<p>If the left and right channels exhibit high inter-channel
+correlation—meaning the waveform shapes and harmonic components are
+closely aligned—the encoder determines that treating the channels
+independently would waste bits on redundant data. If the channels
+contain distinct, decorrelated audio events (such as hard-panned
+instruments or completely independent audio streams), the encoder
+maintains discrete, independent channels to prevent cross-talk and phase
+distortion.</p>
+<h3
+id="vorbis-coupling-techniques-polar-mapping-and-point-stereo">Vorbis
+Coupling Techniques: Polar Mapping and Point Stereo</h3>
+<p>When the encoder decides against discrete dual-mono, it uses specific
+forms of joint stereo coupling rather than traditional Mid/Side (M/S)
+stereo:</p>
+<ul>
+<li><strong>Polar Mapping (Lossless Coupling):</strong> Vorbis
+transforms the left and right MDCT spectrum into magnitude and angle
+coordinates (magnitude/phase representation). This allows the encoder to
+preserve the overall signal energy while quantizing directional
+information more coarsely where the human ear cannot detect fine spatial
+differences.</li>
+<li><strong>Point Stereo (Lossy Coupling):</strong> Used predominantly
+at higher frequencies, point stereo collapses stereo information into a
+single mono carrier spectrum paired with energy-distribution vectors
+across channels. Because human hearing relies on envelope and intensity
+cues rather than phase differences for high-frequency localization, this
+mode discards fine phase detail while maintaining perceived spatial
+balance.</li>
+</ul>
+<h3 id="psychoacoustic-masking-thresholds">Psychoacoustic Masking
+Thresholds</h3>
+<p>The choice between discrete coding and coupling is governed by
+psychoacoustic thresholds modeled on human spatial hearing. The encoder
+calculates:</p>
+<ol type="1">
+<li><strong>Binaural Masking Level Differences (BMLD):</strong> The
+auditory system can detect quiet sounds in one ear even when louder
+noise exists in the other, depending on phase. If coupling would cause
+quantization noise to bleed into a channel where it is not masked by
+local signal energy, Vorbis disables coupling for that sub-band to avoid
+audible artifacts.</li>
+<li><strong>Spatial Localization Sensitivity:</strong> Human ears
+localize low-to-mid frequencies via interaural time/phase differences
+and high frequencies via interaural level differences. Vorbis heavily
+favors discrete dual-mono or lossless polar mapping in low-to-mid
+registers, reserving aggressive point-stereo coupling for high-frequency
+bands where phase differences are psychoacoustically negligible.</li>
+</ol>
+<h3 id="the-role-of-quality-and-bitrate-presets">The Role of Quality and
+Bitrate Presets</h3>
+<p>The encoder's internal decision thresholds shift depending on the
+user-selected quality level (<code>-q</code>) or target nominal
+bitrate:</p>
+<ul>
+<li><strong>High Bitrates / High Quality Settings:</strong> The
+tolerance for spatial error is strict. The encoder leans heavily toward
+discrete dual-mono encoding or very mild polar mapping, ensuring maximum
+separation and zero spatial collapse.</li>
+<li><strong>Low Bitrates / Low Quality Settings:</strong> Bit allocation
+constraints force the psychoacoustic model to widen its coupling
+thresholds. The encoder actively couples wider frequency ranges and
+lower octaves into joint stereo to spend the limited bit budget on core
+harmonic structures rather than directional nuances.</li>
+</ul>
+<p>Through this combination of spectral correlation analysis,
+psychoacoustic masking verification, and bitrate constraints, Vorbis
+decides on a granular, sub-band level whether to encode audio channels
+independently or fuse them into coupled representations.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

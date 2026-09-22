@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Vorbis Audio Playback in iOS Frameworks - vorbis</title>
+    <meta name="description" content="Apple's iOS audio frameworks do not natively support the Ogg Vorbis audio format. Neither AVFoundation nor Core Audio includes built-in demuxers or decoders for Vorbis streams. Consequently, achieving playback through native iOS audio pipelines requires">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/native-vorbis-audio-playback-in-i-os-frameworks">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Native Vorbis Audio Playback in iOS Frameworks - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/native-vorbis-audio-playback-in-i-os-frameworks" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Apple's iOS audio frameworks do not natively support the Ogg Vorbis audio format. Neither AVFoundation nor Core Audio includes built-in demuxers or decoders for Vorbis streams. Consequently, achieving playback through native iOS audio pipelines requires" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="native-vorbis-audio-playback-in-ios-frameworks">Native Vorbis
+Audio Playback in iOS Frameworks</h1>
+<p>Apple's iOS audio frameworks do not natively support the Ogg Vorbis
+audio format. Neither AVFoundation nor Core Audio includes built-in
+demuxers or decoders for Vorbis streams. Consequently, achieving
+playback through native iOS audio pipelines requires compiling an
+external decoder, converting the compressed Vorbis data into raw Linear
+Pulse-Code Modulation (PCM), and feeding those uncompressed buffers
+directly into native rendering APIs such as <code>AVAudioEngine</code>
+or Audio Queue Services.</p>
+<h3 id="the-native-support-limitation">The Native Support
+Limitation</h3>
+<p>Apple provides native hardware and software decoders for formats such
+as AAC, ALAC, MP3, FLAC (iOS 11+), and Opus (inside CAF or standard
+containers via Core Audio). Vorbis is excluded from this list. Standard
+system players like <code>AVPlayer</code> and <code>AVAudioPlayer</code>
+cannot parse <code>.ogg</code> containers or decode Vorbis-encoded audio
+streams. Attempting to initialize these players with a Vorbis file
+results in an unsupported file format or decoding error.</p>
+<h3 id="the-implementation-pipeline">The Implementation Pipeline</h3>
+<p>To play Vorbis audio while leveraging native iOS output mechanisms,
+developers must implement a three-stage pipeline:</p>
+<ol type="1">
+<li><strong>Demuxing and Decoding:</strong> The application embeds an
+open-source C/C++ library, such as <code>libogg</code> and
+<code>libvorbis</code> (or a combined library like
+<code>stb_vorbis</code>). This layer reads the compressed bitstream and
+decodes the audio packets into interleaved or non-interleaved 16-bit
+integer or 32-bit floating-point Linear PCM samples.</li>
+<li><strong>Buffer Translation:</strong> The decoded PCM samples are
+packaged into Core Audio data structures, such as an
+<code>AudioBufferList</code>, or wrapped in AVFoundation's
+<code>AVAudioPCMBuffer</code>. The developer must explicitly define the
+audio stream basic description (ASBD), matching the sample rate, bit
+depth, and channel count of the decoded Vorbis source.</li>
+<li><strong>Hardware Playback via Native Frameworks:</strong> The
+populated PCM buffers are scheduled for playback using one of iOS's
+native low-to-mid-level audio APIs.</li>
+</ol>
+<h3 id="native-framework-integration-options">Native Framework
+Integration Options</h3>
+<p>Once decoded to PCM, the audio can be rendered using several native
+iOS subsystems:</p>
+<ul>
+<li><strong>AVAudioEngine:</strong> This modern Objective-C/Swift API
+provides the cleanest integration. Developers attach an
+<code>AVAudioPlayerNode</code> to an <code>AVAudioEngine</code> instance
+and schedule the converted <code>AVAudioPCMBuffer</code> instances
+sequentially using
+<code>scheduleBuffer(_:completionHandler:)</code>.</li>
+<li><strong>Audio Queue Services:</strong> For lower overhead or
+streaming media where chunks arrive continuously over a network, Audio
+Queues offer robust buffer-filling callbacks. The application allocates
+several audio buffers, uses the Vorbis decoder to fill them with PCM
+data, and enqueues them via <code>AudioQueueEnqueueBuffer</code>.</li>
+<li><strong>Audio Unit / Core Audio:</strong> For low-latency needs
+(such as in games), developers implement a render callback via RemoteIO
+or Generic Output Audio Units (<code>AURenderCallback</code>). Inside
+the callback, the Vorbis decoder unpacks data directly into the system's
+requested output buffers.</li>
+</ul>
+<h3 id="modern-alternatives">Modern Alternatives</h3>
+<p>Because Vorbis requires maintaining external C dependencies, projects
+targeting modern iOS versions often transition to Opus. Opus is the
+standardized successor to Vorbis and is natively supported by Core Audio
+and AVFoundation through the Core Audio Format (<code>.caf</code>)
+container.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

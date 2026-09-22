@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can You Distinguish Vorbis -q 8 From Lossless? - vorbis</title>
+    <meta name="description" content="Under standard double-blind testing conditions, the human ear cannot reliably distinguish Ogg Vorbis encoded at quality setting -q 8 from uncompressed master audio. Although Vorbis is a lossy compression format, the -q 8 profile operates at an average va">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-you-distinguish-vorbis-q-8-from-lossless">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can You Distinguish Vorbis -q 8 From Lossless? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-you-distinguish-vorbis-q-8-from-lossless" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Under standard double-blind testing conditions, the human ear cannot reliably distinguish Ogg Vorbis encoded at quality setting -q 8 from uncompressed master audio. Although Vorbis is a lossy compression format, the -q 8 profile operates at an average va" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-you-distinguish-vorbis--q-8-from-lossless">Can You
+Distinguish Vorbis -q 8 From Lossless?</h1>
+<p>Under standard double-blind testing conditions, the human ear cannot
+reliably distinguish Ogg Vorbis encoded at quality setting
+<code>-q 8</code> from uncompressed master audio. Although Vorbis is a
+lossy compression format, the <code>-q 8</code> profile operates at an
+average variable bitrate of approximately 256 kbps, which surpasses the
+threshold required for psychoacoustic transparency across virtually all
+natural music recordings and standard playback systems.</p>
+<h3 id="understanding-vorbis--q-8">Understanding Vorbis
+<code>-q 8</code></h3>
+<p>Vorbis uses an arbitrary quality scale ranging from
+<code>-q -1</code> to <code>-q 10</code>. Instead of targeting a fixed
+bitrate, the encoder targets a specific perceptual fidelity:</p>
+<ul>
+<li><strong>Bitrate:</strong> <code>-q 8</code> yields a variable
+bitrate (VBR) typically averaging between 240 and 270 kbps, depending on
+the complexity of the source material.</li>
+<li><strong>Bandwidth:</strong> At this setting, low-pass filtering is
+virtually non-existent, preserving frequencies up to and beyond 20
+kHz.</li>
+<li><strong>Efficiency:</strong> Vorbis was designed from the ground up
+to eliminate many of the artifact issues present in older formats like
+MP3, handling stereophonic imaging and frequency allocation with greater
+precision.</li>
+</ul>
+<h3 id="the-threshold-of-transparency">The Threshold of
+Transparency</h3>
+<p>In psychoacoustics, "transparency" refers to the point where
+compressed audio sounds identical to the uncompressed source in a
+double-blind trial.</p>
+<p>Extensive blind ABX testing conducted by audio communities and
+researchers shows that modern perceptual codecs—including Vorbis, AAC,
+and Opus—generally achieve transparency for the general population
+between 160 kbps and 192 kbps (<code>-q 5</code> to <code>-q 6</code> in
+Vorbis). By pushing the quality to <code>-q 8</code>, the encoder
+allocates a massive buffer of extra bits to resolve even highly complex
+passages, pushing the compression noise well below the masking threshold
+of the human ear.</p>
+<h3 id="factors-that-influence-detectability">Factors That Influence
+Detectability</h3>
+<p>While the average listener cannot tell the difference, audio
+engineers and critical listeners evaluate several factors:</p>
+<ol type="1">
+<li><strong>Auditory Masking:</strong> Human hearing naturally ignores
+quiet sounds that occur simultaneously with, or immediately after,
+louder sounds at nearby frequencies. Vorbis uses this phenomenon to
+discard data that the brain cannot process. At <code>-q 8</code>, these
+discarded elements are far below the dynamic masking curves.</li>
+<li><strong>"Killer Samples":</strong> Certain atypical audio files—such
+as synthetic square waves, dry castanets, solo harpsichord, or isolated
+glockenspiel strikes—are notoriously difficult for lossy codecs due to
+sharp transients causing "pre-echo" artifacts. While an exceptionally
+trained listener might detect minute differences on these specific
+samples in a controlled ABX loop, real-world musical master tracks
+rarely trigger these flaws at 256 kbps.</li>
+<li><strong>Listening Gear:</strong> High-end electrostatic headphones
+or studio monitors reduce system distortion, allowing listeners to hear
+finer details. However, even with reference-grade monitoring equipment,
+passing an ABX test at <code>-q 8</code> with statistically significant
+confidence (p &lt; 0.05) remains an elusive feat on conventional music
+tracks.</li>
+</ol>
+<h3 id="verdict">Verdict</h3>
+<p>For archival and audio production purposes, uncompressed formats like
+24-bit/96kHz WAV or lossless FLAC remain essential to avoid generation
+loss during editing and processing. However, for playback and
+distribution, Vorbis at <code>-q 8</code> provides complete perceptual
+transparency. The human ear cannot reliably tell it apart from
+uncompressed master audio in typical listening environments.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

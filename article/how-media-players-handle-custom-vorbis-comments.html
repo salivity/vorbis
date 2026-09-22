@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Media Players Handle Custom Vorbis Comments - vorbis</title>
+    <meta name="description" content="Vorbis comments are the standard metadata container used in audio formats such as Ogg Vorbis, FLAC, and Opus. While the specification encourages flexibility by allowing arbitrary key-value pairs, media players vary significantly in how they process, disp">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-media-players-handle-custom-vorbis-comments">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Media Players Handle Custom Vorbis Comments - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-media-players-handle-custom-vorbis-comments" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis comments are the standard metadata container used in audio formats such as Ogg Vorbis, FLAC, and Opus. While the specification encourages flexibility by allowing arbitrary key-value pairs, media players vary significantly in how they process, disp" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-media-players-handle-custom-vorbis-comments">How Media
+Players Handle Custom Vorbis Comments</h1>
+<p>Vorbis comments are the standard metadata container used in audio
+formats such as Ogg Vorbis, FLAC, and Opus. While the specification
+encourages flexibility by allowing arbitrary key-value pairs, media
+players vary significantly in how they process, display, and preserve
+non-standard custom fields. Depending on the software's architecture,
+custom Vorbis tags may be fully integrated into a searchable library,
+relegated to an extended properties window, silently ignored, or, in the
+worst cases, discarded during file re-tagging.</p>
+<h3 id="the-vorbis-comment-structure">The Vorbis Comment Structure</h3>
+<p>Vorbis comments consist of simple UTF-8 text strings formatted as
+<code>FIELD_NAME=Value</code>. The official specification sets few rigid
+boundaries; it defines a small set of recommended field names—such as
+<code>TITLE</code>, <code>ARTIST</code>, and <code>ALBUM</code>—while
+explicitly allowing users and applications to define any field name
+composed of printable ASCII characters. Because the format does not use
+strict binary frames like ID3v2, writing a custom tag requires nothing
+more than choosing a new field name.</p>
+<h3 id="typical-player-behaviors">Typical Player Behaviors</h3>
+<p>Media players generally fall into one of three categories when
+encountering non-standard Vorbis comments:</p>
+<ol type="1">
+<li><p><strong>Complete Ingestion and Custom Mapping (Power-User
+Players)</strong><br />
+Advanced desktop media managers—such as foobar2000, MusicBee, and Quod
+Libet—scan every Vorbis comment in a file regardless of whether it
+matches a standard specification. These players allow users to create
+custom database columns, filters, and auto-playlists based on arbitrary
+keys (such as <code>RELEASETYPE</code>, <code>ORIGINALYEAR</code>, or
+<code>INSTRUMENT</code>). They expose all non-standard fields directly
+in their metadata editors and properties dialogues.</p></li>
+<li><p><strong>Segregated "Extended Info" Display (Standard
+Players)</strong><br />
+General-purpose players, such as VLC Media Player or Clementine, scan
+primary tags to build their internal databases and playback displays.
+When an unrecognized custom tag is encountered, they ignore it for
+search indexing and playlist views. However, if the user opens the file
+information or properties panel, the player will often list the custom
+key-value pairs under an "Extra Metadata" or "Comments"
+section.</p></li>
+<li><p><strong>Silent Omission (Minimalist and Mobile
+Players)</strong><br />
+Mainstream, embedded, and mobile audio players (such as default Android
+or iOS music apps, streaming-focused software, and automotive
+infotainment systems) employ rigid database schemas. These systems look
+strictly for common tags like <code>ARTIST</code>, <code>ALBUM</code>,
+and <code>TRACKNUMBER</code>. Any non-standard comment is discarded
+during the library indexing process to reduce memory footprint and
+maintain UI simplicity. The data remains in the audio file, but the
+player acts as if it does not exist.</p></li>
+</ol>
+<h3 id="multi-value-handling-and-case-sensitivity">Multi-Value Handling
+and Case Sensitivity</h3>
+<p>The Vorbis comment specification states that field names are
+case-insensitive (<code>MY_TAG</code> is equivalent to
+<code>my_tag</code>) and permits the same field to appear multiple times
+to represent arrays of data (e.g., multiple <code>GENRE</code> or
+<code>PERFORMER</code> fields). Media players handle this
+differently:</p>
+<ul>
+<li><strong>Merging:</strong> Robust players concatenate duplicate tags
+using a separator (such as a semicolon or slash) or treat them as native
+lists.</li>
+<li><strong>First-Value Truncation:</strong> Less flexible players read
+only the first instance of a tag and drop any subsequent entries with
+the same key.</li>
+<li><strong>Case Conflict:</strong> Some poorly implemented parsers
+treat differing cases as distinct keys, which can lead to UI bugs or
+redundant entries.</li>
+</ul>
+<h3 id="preservation-during-tag-modification">Preservation During Tag
+Modification</h3>
+<p>A critical distinction among media players is whether they preserve
+non-standard tags when saving changes. Standard-compliant software reads
+the entire comment block into memory, modifies only the edited tags, and
+writes the full block back to disk, keeping custom fields intact.
+However, substandard audio players or poorly designed tag editors may
+overwrite the entire comment structure with a hardcoded template of
+standard tags, unintentionally deleting all custom metadata.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

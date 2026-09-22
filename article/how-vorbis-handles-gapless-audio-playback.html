@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Handles Gapless Audio Playback - vorbis</title>
+    <meta name="description" content="Contiguous audio playback without unwanted pauses or clicks between tracks is a critical feature for live albums, classical music, and concept records. This article explains how the Vorbis audio codec achieves true gapless playback natively, focusing on">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-handles-gapless-audio-playback">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Handles Gapless Audio Playback - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-handles-gapless-audio-playback" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Contiguous audio playback without unwanted pauses or clicks between tracks is a critical feature for live albums, classical music, and concept records. This article explains how the Vorbis audio codec achieves true gapless playback natively, focusing on" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-handles-gapless-audio-playback">How Vorbis Handles
+Gapless Audio Playback</h1>
+<p>Contiguous audio playback without unwanted pauses or clicks between
+tracks is a critical feature for live albums, classical music, and
+concept records. This article explains how the Vorbis audio codec
+achieves true gapless playback natively, focusing on its use of
+sample-accurate metadata within the Ogg container, its handling of
+transform overlap delays, and the elimination of the encoder and decoder
+padding that typically plagues legacy formats like MP3.</p>
+<h3 id="the-challenge-of-gapless-playback-in-lossy-audio">The Challenge
+of Gapless Playback in Lossy Audio</h3>
+<p>Most perceptual audio codecs use the Modified Discrete Cosine
+Transform (MDCT) to convert time-domain audio signals into
+frequency-domain data. Because MDCT requires overlapping analysis
+windows—typically 50% overlap between consecutive frames—the codec
+introduces an inherent delay:</p>
+<ol type="1">
+<li><strong>Encoder Delay (Priming Samples):</strong> The encoder must
+buffer an initial window of silence or partial data before it can
+produce the first valid frame, resulting in a series of prepended empty
+samples.</li>
+<li><strong>Padding (Trailing Samples):</strong> Audio tracks rarely
+divide evenly into fixed-size transform blocks. The encoder must pad the
+final audio block with trailing silence to complete the frame.</li>
+</ol>
+<p>In older formats such as standard MP3, this delay and padding are not
+explicitly defined in the file headers. When a player decodes
+consecutive files, it plays both the trailing silence of the first track
+and the priming silence of the second track, resulting in an audible
+stutter, gap, or click.</p>
+<h3 id="native-support-via-the-ogg-container">Native Support via the Ogg
+Container</h3>
+<p>Unlike formats that rely on third-party header hacks (such as LAME
+tags for MP3), Vorbis was designed from inception to support gapless
+playback natively through its standard transport container, Ogg.</p>
+<h4 id="the-role-of-granule-positions">The Role of Granule
+Positions</h4>
+<p>The primary mechanism for sample accuracy in Vorbis is the
+<strong>granule position</strong> (<code>granulepos</code>), which is
+recorded in the header of each Ogg page:</p>
+<ul>
+<li>The <code>granulepos</code> is a 64-bit integer representing the
+exact number of PCM audio samples encoded up to and including that
+specific page.</li>
+<li>Rather than relying on time-based calculations or frame counting,
+the decoder cross-references the decoded samples against the absolute
+sample count defined by the <code>granulepos</code>.</li>
+</ul>
+<h4 id="handling-initial-and-final-frames">Handling Initial and Final
+Frames</h4>
+<ul>
+<li><strong>Beginning of Stream:</strong> The first audio packet of a
+Vorbis stream generates overlap-add priming samples. Vorbis
+specification mandates that these priming samples are discarded by the
+decoder, ensuring that playback begins on the exact original starting
+sample.</li>
+<li><strong>End of Stream:</strong> On the final Ogg page of a track
+(marked with the End-of-Stream or <code>eos</code> flag), the
+<code>granulepos</code> indicates the exact final valid sample index.
+The Vorbis decoder truncates any surplus padding samples introduced by
+the final MDCT frame.</li>
+</ul>
+<p>Because both the exact start and exact end are mathematically
+defined, the decoded PCM output matches the exact length of the original
+uncompressed source audio.</p>
+<h3 id="track-transitions-and-chained-streams">Track Transitions and
+Chained Streams</h3>
+<p>For continuous playback across multiple files, Vorbis relies on two
+deployment methods:</p>
+<ol type="1">
+<li><strong>Ogg Chaining:</strong> Multiple Vorbis tracks can be
+multiplexed sequentially into a single physical Ogg bitstream (a
+"chained stream"). Each track has its own distinct headers and logical
+bitstream serial number. When the decoder reaches the boundary, it
+seamlessly re-reads the setup headers for the new track without tearing
+down the audio output buffer.</li>
+<li><strong>Player-Side Queueing:</strong> In standalone single-track
+files, compliant audio players use the <code>granulepos</code> to feed a
+continuous, unpadded PCM buffer directly into the audio output pipeline.
+The player pre-decodes the beginning of the next track, trims the
+priming samples, and immediately appends the valid samples to the end of
+the preceding track.</li>
+</ol>
+<p>By standardizing sample-level precision at the container level and
+strictly defining transform window overlap behavior, Vorbis guarantees
+click-free, gapless transitions across tracks without requiring
+proprietary extensions.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Repeated Re-Encoding Affects Vorbis Audio - vorbis</title>
+    <meta name="description" content="Repeatedly saving and re-encoding Vorbis audio leads to a phenomenon known as generation loss, where audio fidelity progressively degrades with each cycle. Because Vorbis is a lossy compression format, each re-encoding pass permanently discards acoustic">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-repeated-re-encoding-affects-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Repeated Re-Encoding Affects Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-repeated-re-encoding-affects-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Repeatedly saving and re-encoding Vorbis audio leads to a phenomenon known as generation loss, where audio fidelity progressively degrades with each cycle. Because Vorbis is a lossy compression format, each re-encoding pass permanently discards acoustic" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-repeated-re-encoding-affects-vorbis-audio">How Repeated
+Re-Encoding Affects Vorbis Audio</h1>
+<p>Repeatedly saving and re-encoding Vorbis audio leads to a phenomenon
+known as generation loss, where audio fidelity progressively degrades
+with each cycle. Because Vorbis is a lossy compression format, each
+re-encoding pass permanently discards acoustic data based on
+psychoacoustic modeling. Over time, this cumulative loss introduces
+noticeable artifacts, alters the frequency response, and significantly
+diminishes the overall clarity and dynamic range of the recording.</p>
+<h3 id="the-mechanics-of-generation-loss-in-vorbis">The Mechanics of
+Generation Loss in Vorbis</h3>
+<p>Vorbis compresses audio by removing frequencies and details that
+human hearing typically cannot perceive, a process governed by
+psychoacoustic algorithms and modified discrete cosine transform (MDCT).
+When an existing Vorbis file is opened in an audio editor, it is first
+decompressed into an uncompressed pulse-code modulation (PCM) state.</p>
+<p>If the file is edited and saved back into the Vorbis format, the
+encoder treats this already degraded PCM data as a brand-new source. It
+re-evaluates the signal, applies quantization, and discards additional
+data. Because the encoder cannot distinguish between original audio
+content and compression artifacts introduced in prior passes, it often
+misinterprets previous compression artifacts as real audio features,
+encoding them alongside the remaining sound.</p>
+<h3 id="audible-artifacts-and-spectral-degradation">Audible Artifacts
+and Spectral Degradation</h3>
+<p>With repeated cycles of re-encoding, distinct acoustic flaws
+emerge:</p>
+<ul>
+<li><strong>High-Frequency Attenuation:</strong> The upper treble range
+is progressively filtered out, causing the audio to sound muffled, dull,
+or lacking "air."</li>
+<li><strong>Metallic Ringing and "Swishing":</strong> Phase distortions
+and quantization noise manifest as unnatural, robotic, or watery
+textures, especially in cymbals, vocals, and transient-heavy
+instruments.</li>
+<li><strong>Pre-Echo and Smearing:</strong> Sharp, sudden sounds (such
+as drum hits or castanets) suffer from pre-echo, where a faint precursor
+sound appears immediately before the transient, softening the attack and
+punch of the mix.</li>
+<li><strong>Dynamic Range Flattening:</strong> Subtle low-level details,
+reverb tails, and ambient background cues are eliminated, making the
+soundstage feel flat and constrained.</li>
+</ul>
+<h3 id="the-role-of-bitrate-and-quality-settings">The Role of Bitrate
+and Quality Settings</h3>
+<p>The rate of degradation depends heavily on the chosen bitrate or
+quality setting (<code>-q</code> values in Vorbis):</p>
+<ul>
+<li><strong>Identical Bitrate Re-encoding:</strong> Re-encoding a file
+at the exact same bitrate (e.g., Q6 to Q6) does not preserve the
+quality. Each generation still applies new quantization, compounding the
+degradation.</li>
+<li><strong>Down-encoding:</strong> Converting from a higher bitrate to
+a lower bitrate accelerates the fidelity loss dramatically.</li>
+<li><strong>Up-encoding:</strong> Re-encoding a low-bitrate Vorbis file
+at a higher bitrate does not restore missing data. It only bloats the
+file size while still introducing minor quantization errors from the
+re-encoding pass.</li>
+</ul>
+<h3 id="mitigating-degradation">Mitigating Degradation</h3>
+<p>To preserve maximum fidelity, audio should never be repeatedly edited
+and saved in Vorbis or any other lossy format. All editing, processing,
+and multi-track mixing should take place using uncompressed or lossless
+formats, such as WAV or FLAC. Vorbis encoding should be reserved
+strictly as the final step for distribution or playback on
+resource-constrained devices.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase Coupling in Multichannel Vorbis Encoding - vorbis</title>
+    <meta name="description" content="Phase coupling in advanced multichannel Vorbis encoding is an audio compression technique that exploits inter-channel redundancy by translating correlated audio channels into shared magnitude and phase (angle) vectors. This article examines the mechanics">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/phase-coupling-in-multichannel-vorbis-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Phase Coupling in Multichannel Vorbis Encoding - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/phase-coupling-in-multichannel-vorbis-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Phase coupling in advanced multichannel Vorbis encoding is an audio compression technique that exploits inter-channel redundancy by translating correlated audio channels into shared magnitude and phase (angle) vectors. This article examines the mechanics" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="phase-coupling-in-multichannel-vorbis-encoding">Phase Coupling
+in Multichannel Vorbis Encoding</h1>
+<p>Phase coupling in advanced multichannel Vorbis encoding is an audio
+compression technique that exploits inter-channel redundancy by
+translating correlated audio channels into shared magnitude and phase
+(angle) vectors. This article examines the mechanics of Vorbis's polar
+channel mapping, its differentiation from traditional stereo coupling
+methods, its psychoacoustic advantages in multichannel configurations
+like 5.1 surround sound, and how it prevents phase cancellation while
+significantly optimizing bitrate efficiency.</p>
+<h3 id="fundamentals-of-vorbis-channel-coupling">Fundamentals of Vorbis
+Channel Coupling</h3>
+<p>In standard lossy audio encoding, storing every channel in a
+multichannel setup (such as 5.1 or 7.1 surround sound) independently
+wastes bandwidth because adjacent channels frequently share identical or
+highly correlated acoustic information. While conventional codecs often
+use simple Mid/Side (M/S) stereo or destructive intensity stereo, Ogg
+Vorbis implements a specialized vector-based approach known as polar
+mapping or phase coupling within its residue encoding stage.</p>
+<p>Vorbis decouples audio into spectral envelopes (floors) and detail
+data (residues). Phase coupling operates directly on these residue
+vectors across selected channel pairs before quantization and entropy
+coding.</p>
+<h3 id="the-polar-mapping-mechanism">The Polar Mapping Mechanism</h3>
+<p>Phase coupling in Vorbis transforms two correlated time-frequency
+domain signals—typically designated as Left and Right, or corresponding
+surround pairs—into a polar coordinate system:</p>
+<ol type="1">
+<li><strong>Magnitude Calculation:</strong> The encoder determines a
+shared magnitude vector representing the dominant energy envelope of the
+combined channels.</li>
+<li><strong>Angle (Phase) Vector:</strong> Instead of encoding the
+secondary channel's absolute waveform, the encoder calculates an angle
+value representing the relative phase and amplitude relationship between
+the two original channels.</li>
+<li><strong>Residue Reconstruction:</strong> During decoding, the
+magnitude and angle are inverted using basic trigonometry or Vorbis's
+canonical polar mapping rules to precisely reconstruct both individual
+output channels.</li>
+</ol>
+<p>When two channels are identical or in phase, the angle vector
+requires minimal to zero information to represent, allowing the encoder
+to allocate nearly all available bits to the shared magnitude.</p>
+<h3 id="phase-coupling-vs-traditional-intensity-stereo">Phase Coupling
+vs. Traditional Intensity Stereo</h3>
+<p>Traditional intensity stereo achieves compression by discarding phase
+information altogether at higher frequencies, keeping only the energy
+envelope and panning coefficients. While effective at low bitrates, it
+often introduces distinct spatial blurring, collapses the stereo image,
+and causes comb-filtering artifacts when downmixed to mono.</p>
+<p>Vorbis phase coupling avoids these problems:</p>
+<ul>
+<li><strong>Dynamic Phase Preservation:</strong> It retains angle
+information dynamically across frequency sub-bands. High-priority
+spatial cues are preserved, while less critical phase components are
+quantized more aggressively according to psychoacoustic thresholds.</li>
+<li><strong>Mono Downmix Integrity:</strong> Because phase relationships
+are explicitly tracked through polar coordinates rather than discarded,
+mono downmixes suffer far less phase cancellation and comb
+filtering.</li>
+</ul>
+<h3 id="role-in-multichannel-and-surround-sound">Role in Multichannel
+and Surround Sound</h3>
+<p>In advanced multichannel configurations (such as 5.1, 6.1, or 7.1
+audio), spatial relationships become multidimensional. Advanced Vorbis
+encoders use phase coupling across multiple channel pairs:</p>
+<ul>
+<li><strong>Front Channels (Left and Right):</strong> Coupled to
+preserve the primary frontal stereo stage.</li>
+<li><strong>Rear/Surround Channels (Left Surround and Right
+Surround):</strong> Coupled to reproduce ambient reverberation and
+directional rear cues without duplicating data.</li>
+<li><strong>Front-to-Center Coupling:</strong> In some tuning profiles,
+the Center channel can be coupled to a combined Left-Right sum,
+maintaining dialogue clarity while eliminating redundant mid-frequency
+information.</li>
+</ul>
+<p>By pairing channels that naturally exhibit acoustic correlation,
+multichannel Vorbis can achieve near-transparent surround sound
+reproduction at bitrates that would typically only support high-quality
+stereo streams.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Identification Header Bitstream Structure - vorbis</title>
+    <meta name="description" content="This article provides a technical overview of the Vorbis identification header, detailing the exact bitstream layout and field requirements necessary to initialize a Vorbis audio decoder. It examines the packet's sequential byte structure, including the">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-identification-header-bitstream-structure">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Identification Header Bitstream Structure - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-identification-header-bitstream-structure" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a technical overview of the Vorbis identification header, detailing the exact bitstream layout and field requirements necessary to initialize a Vorbis audio decoder. It examines the packet's sequential byte structure, including the" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-identification-header-bitstream-structure">Vorbis
+Identification Header Bitstream Structure</h1>
+<p>This article provides a technical overview of the Vorbis
+identification header, detailing the exact bitstream layout and field
+requirements necessary to initialize a Vorbis audio decoder. It examines
+the packet's sequential byte structure, including the initial packet
+type, codec identifier, audio configuration parameters, bitrate limits,
+block size definitions, and the trailing framing bit.</p>
+<h3 id="overview-of-the-identification-header">Overview of the
+Identification Header</h3>
+<p>A Vorbis audio stream begins with three consecutive header packets:
+the identification header, the comment header, and the setup header. The
+identification header is the very first packet in the bitstream. It
+contains fundamental decode parameters such as sample rate, channel
+count, and internal block sizing. The packet is exactly 30 bytes (240
+bits) long. All multi-byte integers are stored in little-endian byte
+order.</p>
+<h3 id="field-by-field-bitstream-structure">Field-by-Field Bitstream
+Structure</h3>
+<p>The 30-byte identification packet consists of the following
+sequential fields:</p>
+<h4 id="1-packet-type-8-bits">1. Packet Type (8 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 1 byte (unsigned integer)</li>
+<li><strong>Value:</strong> <code>0x01</code></li>
+<li><strong>Description:</strong> Identifies the packet as an
+identification header. In Vorbis, header packets use odd values, and
+<code>0x01</code> is reserved strictly for this primary identification
+block.</li>
+</ul>
+<h4 id="2-codec-identifier-48-bits">2. Codec Identifier (48 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 6 bytes (ASCII string)</li>
+<li><strong>Value:</strong>
+<code>0x76, 0x6F, 0x72, 0x62, 0x69, 0x73</code> ("vorbis")</li>
+<li><strong>Description:</strong> A fixed continuous sequence verifying
+that the stream is Vorbis audio.</li>
+</ul>
+<h4 id="3-vorbis-version-32-bits">3. Vorbis Version (32 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 4 bytes (unsigned integer,
+little-endian)</li>
+<li><strong>Value:</strong> <code>0x00000000</code> (Version 0)</li>
+<li><strong>Description:</strong> Represents the Vorbis bitstream
+version. Decoders must reject streams where this field does not equal
+zero.</li>
+</ul>
+<h4 id="4-audio-channels-8-bits">4. Audio Channels (8 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 1 byte (unsigned integer)</li>
+<li><strong>Value:</strong> Greater than zero (e.g., <code>1</code> for
+mono, <code>2</code> for stereo)</li>
+<li><strong>Description:</strong> Specifies the number of independent
+audio channels. Zero is an invalid value and marks an unparseable
+stream.</li>
+</ul>
+<h4 id="5-audio-sample-rate-32-bits">5. Audio Sample Rate (32 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 4 bytes (unsigned integer,
+little-endian)</li>
+<li><strong>Value:</strong> Greater than zero (e.g., <code>44100</code>,
+<code>48000</code>)</li>
+<li><strong>Description:</strong> The sampling frequency of the encoded
+audio signal expressed in Hertz (Hz).</li>
+</ul>
+<h4 id="6-bitrate-maximum-32-bits">6. Bitrate Maximum (32 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 4 bytes (signed integer, little-endian)</li>
+<li><strong>Value:</strong> Rate in bits per second, or set to
+<code>0</code> or <code>-1</code></li>
+<li><strong>Description:</strong> Indicates the upper limit for variable
+bitrate (VBR) streams. If unused or unregulated, it is set to zero (or
+negative).</li>
+</ul>
+<h4 id="7-bitrate-nominal-32-bits">7. Bitrate Nominal (32 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 4 bytes (signed integer, little-endian)</li>
+<li><strong>Value:</strong> Rate in bits per second, or set to
+<code>0</code> or <code>-1</code></li>
+<li><strong>Description:</strong> Indicates the targeted average bitrate
+for the file.</li>
+</ul>
+<h4 id="8-bitrate-minimum-32-bits">8. Bitrate Minimum (32 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 4 bytes (signed integer, little-endian)</li>
+<li><strong>Value:</strong> Rate in bits per second, or set to
+<code>0</code> or <code>-1</code></li>
+<li><strong>Description:</strong> Indicates the lower limit for variable
+bitrate streams. If unused, it is set to zero (or negative).</li>
+</ul>
+<h4 id="9-blocksize-0-and-blocksize-1-8-bits">9. Blocksize 0 and
+Blocksize 1 (8 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 1 byte (split into two 4-bit unsigned values)
+<ul>
+<li><strong>Bits 0–3:</strong> <code>blocksize_0</code></li>
+<li><strong>Bits 4–7:</strong> <code>blocksize_1</code></li>
+</ul></li>
+<li><strong>Description:</strong> Represents the two allowed window
+sizes for the MDCT (Modified Discrete Cosine Transform) calculations.
+The values represent powers of two (<span
+class="math inline">\(2^n\)</span>).
+<ul>
+<li>Valid exponent range: 6 to 13 (corresponding to window sizes of 64
+to 8192 samples).</li>
+<li>Constraint: <code>blocksize_0</code> must be less than or equal to
+<code>blocksize_1</code>.</li>
+</ul></li>
+</ul>
+<h4 id="10-framing-flag-8-bits">10. Framing Flag (8 bits)</h4>
+<ul>
+<li><strong>Size:</strong> 1 byte (primarily a 1-bit boolean followed by
+7 padding bits)</li>
+<li><strong>Value:</strong> <code>0x01</code> (Bit 0 must be
+<code>1</code>, remaining 7 bits are zero)</li>
+<li><strong>Description:</strong> A mandatory termination check ensuring
+bit-level synchronization. If the low bit of this byte is zero, the
+packet is deemed corrupt.</li>
+</ul>
+<h3 id="summary-layout">Summary Layout</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Offset (Bytes)</th>
+<th style="text-align: left;">Field Name</th>
+<th style="text-align: left;">Type / Size</th>
+<th style="text-align: left;">Valid Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">Packet Type</td>
+<td style="text-align: left;"><code>uint8</code></td>
+<td style="text-align: left;"><code>0x01</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">1–6</td>
+<td style="text-align: left;">Identifier</td>
+<td style="text-align: left;"><code>char[6]</code></td>
+<td style="text-align: left;"><code>"vorbis"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">7–10</td>
+<td style="text-align: left;">Version</td>
+<td style="text-align: left;"><code>uint32</code></td>
+<td style="text-align: left;"><code>0x00000000</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">Audio Channels</td>
+<td style="text-align: left;"><code>uint8</code></td>
+<td style="text-align: left;"><span class="math inline">\(&gt;
+0\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">12–15</td>
+<td style="text-align: left;">Audio Sample Rate</td>
+<td style="text-align: left;"><code>uint32</code></td>
+<td style="text-align: left;"><span class="math inline">\(&gt;
+0\)</span> (Hz)</td>
+</tr>
+<tr>
+<td style="text-align: left;">16–19</td>
+<td style="text-align: left;">Bitrate Maximum</td>
+<td style="text-align: left;"><code>int32</code></td>
+<td style="text-align: left;">Bitrate in bps, or non-positive</td>
+</tr>
+<tr>
+<td style="text-align: left;">20–23</td>
+<td style="text-align: left;">Bitrate Nominal</td>
+<td style="text-align: left;"><code>int32</code></td>
+<td style="text-align: left;">Bitrate in bps, or non-positive</td>
+</tr>
+<tr>
+<td style="text-align: left;">24–27</td>
+<td style="text-align: left;">Bitrate Minimum</td>
+<td style="text-align: left;"><code>int32</code></td>
+<td style="text-align: left;">Bitrate in bps, or non-positive</td>
+</tr>
+<tr>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">Block Sizes</td>
+<td style="text-align: left;"><code>uint4 / uint4</code></td>
+<td style="text-align: left;">Exponents <span class="math inline">\(n
+\in [6, 13]\)</span>; <span class="math inline">\(b_0 \le
+b_1\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">Framing Flag</td>
+<td style="text-align: left;"><code>uint8</code></td>
+<td style="text-align: left;"><code>0x01</code> (Bit 0 must be
+<code>1</code>)</td>
+</tr>
+</tbody>
+</table></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

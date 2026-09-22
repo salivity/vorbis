@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adding Custom Metadata to Vorbis Comments - vorbis</title>
+    <meta name="description" content="Users can fully attach custom metadata fields to Vorbis comments beyond the standard tags recommended by the specification. The Vorbis comment format—widely utilized in audio formats such as Ogg Vorbis, FLAC, and Opus—was intentionally engineered as">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/adding-custom-metadata-to-vorbis-comments">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Adding Custom Metadata to Vorbis Comments - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/adding-custom-metadata-to-vorbis-comments" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Users can fully attach custom metadata fields to Vorbis comments beyond the standard tags recommended by the specification. The Vorbis comment format—widely utilized in audio formats such as Ogg Vorbis, FLAC, and Opus—was intentionally engineered as" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="adding-custom-metadata-to-vorbis-comments">Adding Custom
+Metadata to Vorbis Comments</h1>
+<p>Users can fully attach custom metadata fields to Vorbis comments
+beyond the standard tags recommended by the specification. The Vorbis
+comment format—widely utilized in audio formats such as Ogg Vorbis,
+FLAC, and Opus—was intentionally engineered as a flexible, key-value
+system that permits arbitrary field names. This article explains how
+Vorbis metadata handles custom tags, the formatting rules required for
+implementation, and how software compatibility affects custom field
+usage.</p>
+<h3 id="how-vorbis-comments-handle-custom-metadata">How Vorbis Comments
+Handle Custom Metadata</h3>
+<p>Unlike metadata formats like ID3v2, which rely on strictly predefined
+frames, Vorbis comments use a straightforward text-based structure
+formatted as <code>FIELD_NAME=value</code>.</p>
+<p>The official Xiph.Org specification explicitly defines only a minimal
+set of standard tags—such as <code>TITLE</code>, <code>ARTIST</code>,
+<code>ALBUM</code>, <code>DATE</code>, and <code>TRACKNUMBER</code>.
+However, the specification also states that this list is not exhaustive.
+Users and developers are free to define and write arbitrary field names
+to suit their organizational needs, such as <code>CATALOGNUMBER</code>,
+<code>RECORDLABEL</code>, <code>BPM</code>, or
+<code>MIXARTIST</code>.</p>
+<h3 id="formatting-rules-for-custom-tags">Formatting Rules for Custom
+Tags</h3>
+<p>To ensure custom metadata complies with the Vorbis comment
+specification, field names must adhere to the following technical
+rules:</p>
+<ul>
+<li><strong>Character Set:</strong> Field names must contain only
+printable ASCII characters ranging from <code>0x20</code> through
+<code>0x7D</code>, with the exception of the equals sign
+(<code>=</code>, <code>0x3D</code>), which is reserved as the delimiter
+between the key and the value.</li>
+<li><strong>Case Insensitivity:</strong> Field names are
+case-insensitive. A field defined as <code>my_custom_tag</code> is
+treated identically to <code>MY_CUSTOM_TAG</code>. By community
+convention, field names are typically written in uppercase.</li>
+<li><strong>Value Encoding:</strong> The field value after the equals
+sign must be valid UTF-8 text, allowing for international character
+support across all custom data.</li>
+<li><strong>Repeated Fields:</strong> Vorbis comments support
+multi-value fields natively by repeating the key-value pair. For
+instance, multiple instances of <code>ENSEMBLE=Artist A</code> and
+<code>ENSEMBLE=Artist B</code> can be appended independently.</li>
+</ul>
+<h3 id="software-support-and-compatibility">Software Support and
+Compatibility</h3>
+<p>While the file format supports arbitrary fields without corrupting
+the audio or metadata stream, how that data is used depends on the
+software reading it:</p>
+<ul>
+<li><strong>Tag Editors:</strong> Most dedicated audio tag
+editors—including Mp3tag, Foobar2000, MusicBrainz Picard, and Kid3—fully
+support creating, modifying, and saving user-defined Vorbis fields.</li>
+<li><strong>Media Players:</strong> Player support varies. While
+advanced players like Foobar2000 or music server platforms like
+Navidrome and Roon can be configured to read, filter, or display custom
+fields, simpler or mobile-based players usually ignore unrecognized
+metadata keys entirely.</li>
+</ul>
+<p>Any non-standard tag will remain safely preserved in the file
+container, regardless of whether a particular media player chooses to
+display it.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

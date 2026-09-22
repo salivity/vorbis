@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Protocols for Streaming Vorbis Audio - vorbis</title>
+    <meta name="description" content="Vorbis is an open-source, patent-free lossy audio compression format commonly encapsulated in an Ogg container. When distributed across the internet, Vorbis audio relies on several foundational network protocols designed for live broadcasting, on-demand">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/network-protocols-for-streaming-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Network Protocols for Streaming Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/network-protocols-for-streaming-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis is an open-source, patent-free lossy audio compression format commonly encapsulated in an Ogg container. When distributed across the internet, Vorbis audio relies on several foundational network protocols designed for live broadcasting, on-demand" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="network-protocols-for-streaming-vorbis-audio">Network Protocols
+for Streaming Vorbis Audio</h1>
+<p>Vorbis is an open-source, patent-free lossy audio compression format
+commonly encapsulated in an Ogg container. When distributed across the
+internet, Vorbis audio relies on several foundational network protocols
+designed for live broadcasting, on-demand playback, and real-time
+interaction. This article outlines the primary transport mechanisms used
+to deliver Vorbis streams, detailing how protocols such as HTTP,
+RTP/RTSP, and WebSockets facilitate stable audio transmission.</p>
+<h3 id="http-and-https-icecast--shoutcast">HTTP and HTTPS (Icecast /
+SHOUTcast)</h3>
+<p>Hypertext Transfer Protocol (HTTP) and its secure counterpart (HTTPS)
+are the most common protocols used to transmit Ogg Vorbis streams over
+the internet. Internet radio platforms, most notably Icecast, utilize
+HTTP to broadcast continuous audio to listeners.</p>
+<p>In an HTTP-based Ogg Vorbis setup:</p>
+<ul>
+<li><strong>Continuous Streaming:</strong> The server sends an infinite
+HTTP response (<code>Content-Type: audio/ogg</code>) using standard
+TCP.</li>
+<li><strong>Firewall Traversal:</strong> Because HTTP operates over
+ports 80 and 443, streams bypass standard enterprise and residential
+firewall restrictions without requiring custom network
+configurations.</li>
+<li><strong>Metadata Delivery:</strong> HTTP headers transmit stream
+metadata, such as station names, bitrates, and track titles, before the
+audio payload begins.</li>
+</ul>
+<h3 id="rtp-and-rtsp-rfc-5215">RTP and RTSP (RFC 5215)</h3>
+<p>The Real-time Transport Protocol (RTP), often managed alongside the
+Real Time Streaming Protocol (RTSP), is designed for real-time,
+low-latency audio transmission. Unlike HTTP's reliance on TCP, RTP
+primarily runs over the User Datagram Protocol (UDP).</p>
+<p>To transport Vorbis over RTP, the Internet Engineering Task Force
+(IETF) standardized RFC 5215, "RTP Payload Format for Vorbis Encoded
+Audio." This specification addresses the technical challenges unique to
+Vorbis:</p>
+<ul>
+<li><strong>Codebook Delivery:</strong> Vorbis requires setup header
+packets (codebooks) to decode the audio payload. RFC 5215 defines
+methods to transmit these headers reliably—often out-of-band via SDP
+(Session Description Protocol) or through dedicated configuration
+packets—before standard audio packets are parsed.</li>
+<li><strong>Low Latency:</strong> UDP delivery minimizes latency, making
+RTP suitable for live telecommunications, surveillance, and real-time
+conferencing applications where minor packet loss is preferable to
+playback delays.</li>
+</ul>
+<h3 id="websockets">WebSockets</h3>
+<p>For modern web-based audio applications, the WebSocket protocol
+offers a bidirectional, full-duplex communication channel over a single
+TCP connection.</p>
+<p>While not a streaming protocol by native design, WebSockets allow
+servers to push raw Ogg Vorbis byte arrays directly to a client's web
+browser. Client-side JavaScript then feeds the incoming binary data into
+the Web Audio API or a WebAssembly-based Vorbis decoder. This method is
+common in custom browser applications where standard HTTP progressive
+loading introduces too much caching latency.</p>
+<h3 id="the-role-of-the-ogg-transport-layer">The Role of the Ogg
+Transport Layer</h3>
+<p>Vorbis audio rarely travels across a network as raw compressed
+packets. Instead, it is packaged into the Ogg container format, which
+divides the Vorbis bitstream into manageable chunks called "Ogg pages."
+Each page contains framing information, checksums for error detection,
+and timestamp markers (granule positions). Network transport protocols,
+whether operating over TCP or UDP, carry these encapsulated Ogg pages to
+ensure synchronization and data integrity at the receiving endpoint.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

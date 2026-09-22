@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Causes Swishing Artifacts in Vorbis Audio? - vorbis</title>
+    <meta name="description" content="The "swishing" artifact in low-bitrate Vorbis files is a perceptual audio distortion characterized by a distinct watery, flanging, or sweeping noise overlaid onto high-frequency sounds. This article explains the technical mechanisms behind this artifact,">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/what-causes-swishing-artifacts-in-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Causes Swishing Artifacts in Vorbis Audio? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/what-causes-swishing-artifacts-in-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The "swishing" artifact in low-bitrate Vorbis files is a perceptual audio distortion characterized by a distinct watery, flanging, or sweeping noise overlaid onto high-frequency sounds. This article explains the technical mechanisms behind this artifact," />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-causes-swishing-artifacts-in-vorbis-audio">What Causes
+Swishing Artifacts in Vorbis Audio?</h1>
+<p>The "swishing" artifact in low-bitrate Vorbis files is a perceptual
+audio distortion characterized by a distinct watery, flanging, or
+sweeping noise overlaid onto high-frequency sounds. This article
+explains the technical mechanisms behind this artifact, exploring how
+psychoacoustic bit-allocation compromises, coarse quantization of MDCT
+coefficients, stereo coupling methods, and spectral floor modeling
+interact to produce this unnatural acoustic effect.</p>
+<h3 id="understanding-the-swishing-sound">Understanding the Swishing
+Sound</h3>
+<p>In lossy audio compression, the goal is to discard data that the
+human auditory system is least likely to perceive. When the Ogg Vorbis
+codec is forced to operate at very low bitrates (typically below 80–96
+kbps for stereo content), it exhausts its available data budget.</p>
+<p>Listeners perceive the resulting artifact as a phasey, unstable
+"swish" or "underwater" sound. It is most prominent in audio containing
+complex high frequencies, rapid transients, or dense harmonic
+structures—such as cymbals, applause, brass instruments, and vocal
+sibilance ("s" and "t" sounds).</p>
+<h3 id="root-causes-of-the-artifact">Root Causes of the Artifact</h3>
+<p>The artifact is not caused by a single bug, but rather by a
+combination of encoding strategies reaching their limits under extreme
+data constraints.</p>
+<h4 id="1-coarse-quantization-and-spectral-hole-filling">1. Coarse
+Quantization and Spectral Hole-Filling</h4>
+<p>Vorbis uses the Modified Discrete Cosine Transform (MDCT) to convert
+time-domain audio samples into frequency-domain representations. At very
+low bitrates, there are not enough bits to encode the precise amplitude
+of every frequency band. The encoder aggressively quantizes (rounds off)
+or outright zeroes out high-frequency MDCT coefficients.</p>
+<p>Because these coefficients fluctuate wildly between adjacent analysis
+frames, the high-frequency energy rapidly drops in and out from one
+block to the next. The ear interprets this rapid, inconsistent
+modulation of high-frequency energy as a moving, swishing noise floor
+rather than static hiss.</p>
+<h4 id="2-channel-coupling-stereo-phase-smearing">2. Channel Coupling
+(Stereo Phase Smearing)</h4>
+<p>To maximize efficiency at low bitrates, Vorbis uses channel coupling
+techniques, such as point stereo and phase coupling. Instead of storing
+independent left and right audio channels, the encoder combines them
+into a shared spectral representation and transmits directional vectors
+or energy ratios.</p>
+<p>At low bitrates, the phase relationships between channels become
+smeared or lost. When the decoder reconstructs the stereo field, minute
+phase discrepancies fluctuate over time. This phase instability creates
+an acoustic comb-filtering effect, identical to a flanger or phaser
+audio effect, which contributes heavily to the perception of sound
+"swishing" across the stereo field.</p>
+<h4 id="3-spectral-floor-approximation">3. Spectral Floor
+Approximation</h4>
+<p>Vorbis separates audio spectrum encoding into two parts: the "floor"
+(the overall spectral envelope/shape) and the "residue" (the detailed
+spectral peaks and valleys). In low-bitrate modes, the floor
+representation is simplified to conserve bits.</p>
+<p>If the encoded floor cannot adapt smoothly to fast temporal changes
+or sharp tonal peaks, it imparts an artificial temporal modulation to
+the residual noise. As this envelope changes shape frame by frame, it
+sweeps across frequency regions, reinforcing the sweeping, watery
+quality.</p>
+<h4 id="4-time-frequency-resolution-limits-block-switching">4.
+Time-Frequency Resolution Limits (Block Switching)</h4>
+<p>Vorbis switches between short and long MDCT block sizes to balance
+time resolution (for transients) and frequency resolution (for steady
+tones). At low bitrates, the decision thresholds for switching blocks
+become constrained by the bit budget. When a short block cannot be used
+due to bit starvation, transient energy smears over a longer time window
+(pre- and post-echo), diffusing the energy of the transient into a
+prolonged swish.</p>
+<h3 id="mitigation-and-prevention">Mitigation and Prevention</h3>
+<p>The swishing artifact is an inherent consequence of operating Vorbis
+below its intended quality threshold. Several approaches resolve or
+minimize the issue:</p>
+<ul>
+<li><strong>Increase the Bitrate:</strong> Vorbis was designed primarily
+for variable bitrate (VBR) operation. Setting the quality scale to
+<code>-q 4</code> or higher (approximately 128 kbps stereo) generally
+provides sufficient bandwidth to eliminate audible phase smearing and
+spectral holes.</li>
+<li><strong>Use Tuned Encoders:</strong> Tuning branches, such as aoTuV
+(Aoyumi's Tuned Vorbis), modified the psychoacoustic algorithms and
+floor-handling parameters of the reference <code>libvorbis</code>
+library, significantly reducing swishing artifacts at lower
+bitrates.</li>
+<li><strong>Transition to Modern Codecs:</strong> Codecs such as Opus
+(which combines technologies from Skype's SILK and Xiph.Org's CELT)
+incorporate superior noise-band synthesis, transient handling, and
+prediction techniques, allowing clean audio reproduction at bitrates
+where Vorbis exhibits pronounced swishing.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

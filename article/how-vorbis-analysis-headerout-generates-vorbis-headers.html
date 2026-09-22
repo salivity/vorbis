@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How vorbis_analysis_headerout Generates Vorbis Headers - vorbis</title>
+    <meta name="description" content="The vorbisanalysisheaderout function is a core component of the libvorbis API responsible for creating the initialization data required to decode an Ogg Vorbis audio stream. It extracts configuration settings, metadata, and decoding codebooks from intern">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-analysis-headerout-generates-vorbis-headers">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How vorbis_analysis_headerout Generates Vorbis Headers - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-analysis-headerout-generates-vorbis-headers" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The vorbisanalysisheaderout function is a core component of the libvorbis API responsible for creating the initialization data required to decode an Ogg Vorbis audio stream. It extracts configuration settings, metadata, and decoding codebooks from intern" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis_analysis_headerout-generates-vorbis-headers">How
+vorbis_analysis_headerout Generates Vorbis Headers</h1>
+<p>The <code>vorbis_analysis_headerout</code> function is a core
+component of the <code>libvorbis</code> API responsible for creating the
+initialization data required to decode an Ogg Vorbis audio stream. It
+extracts configuration settings, metadata, and decoding codebooks from
+internal library structures and serializes them into three distinct
+<code>ogg_packet</code> structures: the identification header, the
+comment header, and the setup header. Without these three sequential
+packets, a decoder cannot configure its synthesis engine or reconstruct
+the audio data contained in subsequent packets.</p>
+<h3 id="function-signature-and-inputs">Function Signature and
+Inputs</h3>
+<p>The function signature in <code>&lt;vorbis/codec.h&gt;</code> is
+defined as follows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> vorbis_analysis_headerout<span class="op">(</span>vorbis_dsp_state <span class="op">*</span>v<span class="op">,</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                             vorbis_comment <span class="op">*</span>vc<span class="op">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                             ogg_packet <span class="op">*</span>op<span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                             ogg_packet <span class="op">*</span>op_comm<span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                             ogg_packet <span class="op">*</span>op_code<span class="op">);</span></span></code></pre></div>
+<p>The function expects an initialized digital signal processing state
+(<code>vorbis_dsp_state *v</code>), a populated metadata structure
+(<code>vorbis_comment *vc</code>), and three uninitialized pointers to
+<code>ogg_packet</code> structs. The <code>vorbis_dsp_state</code> must
+have already been configured using <code>vorbis_analysis_init</code>,
+which links it to a fully populated <code>vorbis_info</code> structure
+containing the encoder’s operating parameters.</p>
+<h3 id="generation-of-the-three-header-packets">Generation of the Three
+Header Packets</h3>
+<p><code>vorbis_analysis_headerout</code> sequentially builds the three
+standard Vorbis stream headers. Each header is packed using internal
+bitpacking buffers (<code>oggpack_buffer</code>) and begins with a
+1-byte packet type identifier followed by the 6-character ASCII string
+<code>"vorbis"</code> (represented as
+<code>0x76, 0x6f, 0x72, 0x62, 0x69, 0x73</code>).</p>
+<h4 id="1-the-identification-header-op">1. The Identification Header
+(<code>op</code>)</h4>
+<p>The first packet generated receives the packet type flag
+<code>0x01</code>. It carries fundamental stream geometry and format
+parameters extracted from the <code>vorbis_info</code> structure:</p>
+<ul>
+<li><strong>Vorbis Version:</strong> Typically set to
+<code>0</code>.</li>
+<li><strong>Audio Channels:</strong> An 8-bit integer specifying the
+number of channels (e.g., 1 for mono, 2 for stereo).</li>
+<li><strong>Audio Sample Rate:</strong> A 32-bit integer indicating the
+sampling rate in Hertz.</li>
+<li><strong>Bitrate Limits:</strong> Three 32-bit signed integers
+indicating the maximum, nominal, and minimum bitrates in bits per second
+(unused fields are populated with zeros or tracking limits).</li>
+<li><strong>Block Sizes:</strong> Two 4-bit values defining the short
+and long transform block sizes as powers of two (e.g., <span
+class="math inline">\(2^8 = 256\)</span> and <span
+class="math inline">\(2^{11} = 2048\)</span>).</li>
+<li><strong>Framing Flag:</strong> A single <code>1</code> bit to
+confirm the end of the packet structure.</li>
+</ul>
+<h4 id="2-the-comment-header-op_comm">2. The Comment Header
+(<code>op_comm</code>)</h4>
+<p>The second packet receives the packet type flag <code>0x03</code>. It
+contains user-readable metadata supplied via the
+<code>vorbis_comment</code> structure:</p>
+<ul>
+<li><strong>Vendor String:</strong> A length-prefixed UTF-8 string
+identifying the encoding library version.</li>
+<li><strong>User Comments:</strong> An integer defining the total list
+count, followed by a sequence of length-prefixed strings representing
+tag-value pairs (such as <code>ARTIST=...</code> or
+<code>TITLE=...</code>).</li>
+<li><strong>Framing Flag:</strong> A terminating <code>1</code>
+bit.</li>
+</ul>
+<h4 id="3-the-setup-header-op_code">3. The Setup Header
+(<code>op_code</code>)</h4>
+<p>The third packet receives the packet type flag <code>0x05</code>.
+This is significantly larger than the previous two headers because it
+serializes the entire <code>codec_setup_info</code> structure held
+inside <code>v-&gt;vi</code>. It provides the operational blueprints the
+decoder needs to invert the MDCT (Modified Discrete Cosine Transform)
+process:</p>
+<ul>
+<li><strong>Codebooks:</strong> Vector quantization codebook
+hierarchies, dimensions, value lists, and Huffman lookup tables.</li>
+<li><strong>Time-Domain Transforms:</strong> Placeholder transform
+definitions reserved by the specification.</li>
+<li><strong>Floors:</strong> Floor configuration curves (primarily Floor
+1 settings) that govern frequency amplitude envelopes.</li>
+<li><strong>Residues:</strong> Residue decode formats defining how
+fine-detail spectral vectors are reconstructed.</li>
+<li><strong>Mappings:</strong> Rules detailing which channel associates
+with which floor and residue configurations, as well as channel coupling
+setups.</li>
+<li><strong>Modes:</strong> Mode mappings that tell the decoder whether
+a packet uses a short or long window block and which mapping
+configuration applies.</li>
+<li><strong>Framing Flag:</strong> A terminating <code>1</code> bit
+ensuring the bitstream closes properly.</li>
+</ul>
+<h3 id="memory-allocation-and-integration">Memory Allocation and
+Integration</h3>
+<p>Internally, <code>vorbis_analysis_headerout</code> allocates memory
+for the packet payloads via the Vorbis bitpacking subsystem. When the
+function returns successfully (returning <code>0</code>), the output
+<code>ogg_packet</code> structures (<code>op</code>,
+<code>op_comm</code>, and <code>op_code</code>) are assigned their
+corresponding data buffers, byte lengths, packet numbers, and granule
+positions (set to <code>0</code>).</p>
+<p>Once generated, these three packets must be fed into an Ogg container
+multiplexer (using <code>ogg_stream_packetin</code>) before any audio
+packets are processed. The identification header is written to the
+initial Ogg page marked with the beginning-of-stream
+(<code>b_o_s</code>) flag, while the comment and setup headers follow
+sequentially in subsequent initial pages, establishing the prerequisite
+decoding context for the file or stream.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

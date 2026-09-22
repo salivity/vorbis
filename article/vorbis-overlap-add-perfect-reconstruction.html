@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Overlap-Add Perfect Reconstruction - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec achieves exact reconstruction during its overlap-add synthesis phase through the mathematical properties of the Modified Discrete Cosine Transform (MDCT) and Time-Domain Aliasing Cancellation (TDAC). By enforcing a 50% block overla">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-overlap-add-perfect-reconstruction">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Overlap-Add Perfect Reconstruction - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-overlap-add-perfect-reconstruction" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec achieves exact reconstruction during its overlap-add synthesis phase through the mathematical properties of the Modified Discrete Cosine Transform (MDCT) and Time-Domain Aliasing Cancellation (TDAC). By enforcing a 50% block overla" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-overlap-add-perfect-reconstruction">Vorbis Overlap-Add
+Perfect Reconstruction</h1>
+<p>The Vorbis audio codec achieves exact reconstruction during its
+overlap-add synthesis phase through the mathematical properties of the
+Modified Discrete Cosine Transform (MDCT) and Time-Domain Aliasing
+Cancellation (TDAC). By enforcing a 50% block overlap and utilizing
+specialized window functions that fulfill the Princen-Bradley condition,
+Vorbis mathematically cancels out artificial time-domain reflections
+produced during the transform. Even when switching between variable
+window sizes to manage transient signals, Vorbis preserves this
+cancellation geometry to ensure the synthesized output matches the
+original input without error.</p>
+<h3 id="the-mdct-and-time-domain-aliasing-cancellation">The MDCT and
+Time-Domain Aliasing Cancellation</h3>
+<p>The core of the Vorbis transform pipeline is the MDCT, a lapped
+orthogonal transform that operates on overlapping blocks of audio. To
+achieve critical sampling—ensuring the total number of spectral
+coefficients equals the original number of audio samples—the forward
+MDCT acts as a lossy operation in isolation. It maps <span
+class="math inline">\(2N\)</span> time-domain samples to <span
+class="math inline">\(N\)</span> frequency-domain coefficients.</p>
+<p>When the Inverse MDCT (IMDCT) transforms these <span
+class="math inline">\(N\)</span> coefficients back into the time domain,
+it yields <span class="math inline">\(2N\)</span> output samples.
+However, this output is corrupted by time-domain aliasing:</p>
+<ul>
+<li>The first half of the block contains a time-reversed, inverted
+version of the original input.</li>
+<li>The second half contains a time-reversed, non-inverted version of
+the original input.</li>
+</ul>
+<p>Vorbis resolves this distortion through Time-Domain Aliasing
+Cancellation (TDAC). Because consecutive MDCT blocks overlap by exactly
+50% (an offset of <span class="math inline">\(N\)</span> samples), the
+second half of block <span class="math inline">\(k\)</span> overlaps
+with the first half of block <span class="math inline">\(k+1\)</span>.
+When these overlapping sections are added together during the
+Overlap-Add (OLA) phase, the time-reversed components have opposite
+signs and identical amplitudes, canceling the aliasing completely.</p>
+<h3 id="the-princen-bradley-condition">The Princen-Bradley
+Condition</h3>
+<p>For the aliased terms to cancel cleanly while restoring the original
+signal's amplitude, the window applied to the data must satisfy specific
+algebraic constraints. In Vorbis, a symmetric window function <span
+class="math inline">\(w(n)\)</span> is applied twice: once prior to the
+forward MDCT (analysis window) and once following the IMDCT (synthesis
+window).</p>
+<p>The combined weighting for a sample at index <span
+class="math inline">\(n\)</span> across two overlapping frames depends
+on the product of these windows. Perfect reconstruction requires the
+window function to satisfy the Princen-Bradley condition:</p>
+<p><span class="math display">\[w^2(n) + w^2(n + N) = 1\]</span></p>
+<p>where <span class="math inline">\(N\)</span> is half the window
+length, corresponding to the frame step size. When this equation holds,
+the sum of the squared window values across the overlap interval equals
+one, normalizing the recovered audio signal to its original magnitude
+while eliminating the aliased waveforms.</p>
+<h3 id="the-vorbis-window-formulation">The Vorbis Window
+Formulation</h3>
+<p>While standard sine windows satisfy the Princen-Bradley condition,
+Vorbis defines a custom window designed to provide steeper roll-off and
+superior side-lobe attenuation. The Vorbis window function is defined
+as:</p>
+<p><span class="math display">\[w(n) = \sin\left( \frac{\pi}{2}
+\sin^2\left( \frac{\pi}{2N} \left( n + 0.5 \right) \right)
+\right)\]</span></p>
+<p>for <span class="math inline">\(0 \le n &lt; 2N\)</span>.</p>
+<p>This window satisfies the condition <span
+class="math inline">\(w^2(n) + w^2(n + N) = 1\)</span> due to the
+trigonometric identity <span class="math inline">\(\sin^2(\theta) +
+\cos^2(\theta) = 1\)</span>. By squaring the inner sine term, Vorbis
+increases spectral isolation between adjacent frequency bins while
+strictly maintaining the mathematical balance required for zero-error
+reconstruction.</p>
+<h3 id="reconstruction-across-variable-block-sizes">Reconstruction
+Across Variable Block Sizes</h3>
+<p>To prevent pre-echo artifacts during transient audio events, Vorbis
+dynamically switches between two block lengths: long blocks (typically
+2048 samples for high frequency resolution) and short blocks (typically
+256 samples for high temporal resolution). Modifying block lengths
+disrupts the standard 50% overlap geometry, which would break the
+Princen-Bradley condition if handled naively.</p>
+<p>Vorbis guarantees perfect reconstruction during transitions by
+constructing asymmetric hybrid windows. Instead of symmetrically
+tapering the transition block, Vorbis constructs the window out of two
+independent halves:</p>
+<ol type="1">
+<li><strong>Left Half:</strong> Designed to overlap with the preceding
+block. If the previous block was short, the left half uses a short
+transition slope; if the previous block was long, it uses a long
+transition slope.</li>
+<li><strong>Center Section:</strong> Padded with constant values of
+<span class="math inline">\(1.0\)</span> (or zeros where the window is
+inactive) to align the geometric centers of both transforms.</li>
+<li><strong>Right Half:</strong> Designed to overlap with the subsequent
+block, shaped dynamically to match the upcoming block's length.</li>
+</ol>
+<p>Because the overlap length and window slope of the synthesis frame
+always mirror the analysis parameters of the adjacent frame, the overlap
+region between dissimilar blocks continues to sum to unity. As a result,
+time-domain aliasing cancellation remains mathematically complete across
+block-switching boundaries.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

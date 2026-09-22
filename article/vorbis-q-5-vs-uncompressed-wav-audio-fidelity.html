@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis -q 5 vs Uncompressed WAV Audio Fidelity - vorbis</title>
+    <meta name="description" content="This article compares the audio fidelity of Ogg Vorbis encoded at quality level 5 (-q 5) against uncompressed 16-bit/44.1 kHz WAV files. It evaluates the technical differences in bitrate and compression, the threshold of perceptual transparency in human">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-q-5-vs-uncompressed-wav-audio-fidelity">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis -q 5 vs Uncompressed WAV Audio Fidelity - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-q-5-vs-uncompressed-wav-audio-fidelity" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article compares the audio fidelity of Ogg Vorbis encoded at quality level 5 (-q 5) against uncompressed 16-bit/44.1 kHz WAV files. It evaluates the technical differences in bitrate and compression, the threshold of perceptual transparency in human" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis--q-5-vs-uncompressed-wav-audio-fidelity">Vorbis -q 5 vs
+Uncompressed WAV Audio Fidelity</h1>
+<p>This article compares the audio fidelity of Ogg Vorbis encoded at
+quality level 5 (<code>-q 5</code>) against uncompressed 16-bit/44.1 kHz
+WAV files. It evaluates the technical differences in bitrate and
+compression, the threshold of perceptual transparency in human listening
+tests, scenarios where subtle differences might emerge, and how to
+choose the right format for listening versus archiving.</p>
+<h3 id="bitrate-and-file-size-differences">Bitrate and File Size
+Differences</h3>
+<p>An uncompressed standard CD-quality WAV file operates at a constant
+bitrate of 1,411.2 kbps (16-bit, 44.1 kHz stereo). In contrast, Ogg
+Vorbis is a lossy, variable bitrate (VBR) codec. The <code>-q 5</code>
+quality setting targets a nominal bitrate of roughly 160 kbps, though
+the actual stream fluctuates based on the complexity of the passage
+being encoded.</p>
+<p>This translates to an approximate 88% reduction in file size. A
+four-minute track in uncompressed WAV format consumes around 40 MB of
+storage, while the same track compressed with Vorbis <code>-q 5</code>
+uses only about 4.8 MB.</p>
+<h3 id="perceptual-transparency-and-abx-testing">Perceptual Transparency
+and ABX Testing</h3>
+<p>Despite the massive reduction in data, Vorbis at <code>-q 5</code> is
+generally considered "perceptually transparent." This means that under
+standard double-blind ABX listening conditions, typical listeners cannot
+reliably tell the difference between the compressed Vorbis file and the
+uncompressed WAV original.</p>
+<p>Vorbis achieves this using psychoacoustic modeling:</p>
+<ul>
+<li><strong>Auditory Masking:</strong> It discards frequency details
+that are naturally drowned out by louder adjacent frequencies.</li>
+<li><strong>Dynamic Bit Allocation:</strong> Simple passages (like
+silence or solo acoustic instruments) receive lower bitrates, while
+complex passages (like full orchestral climaxes) are allocated higher
+bitrates to maintain detail.</li>
+<li><strong>Modified Discrete Cosine Transform (MDCT):</strong> This
+enables overlap between audio frames, significantly reducing pre-echo
+artifacts on sharp transients.</li>
+</ul>
+<p>For the vast majority of listeners using standard consumer
+equipment—including high-quality headphones, smartphone DACs, or car
+stereos—<code>-q 5</code> sounds identical to the WAV original.</p>
+<h3 id="where-differences-emerge">Where Differences Emerge</h3>
+<p>While <code>-q 5</code> is transparent for most content, lossy
+compression inherently discards source data. Critical listeners using
+high-end reference equipment (high-resolution DACs, dedicated
+amplifiers, and analytical open-back headphones) may detect faint
+discrepancies in specific scenarios:</p>
+<ul>
+<li><strong>Killer Samples:</strong> Certain complex audio signals, such
+as isolated castanets, harpsichord plucks, or dense electronic noise,
+challenge psychoacoustic encoders and can reveal slight pre-echo or
+smeared transients.</li>
+<li><strong>High-Frequency Air:</strong> Frequencies above 16 kHz to 18
+kHz may be band-limited or heavily compressed, subtly altering the sense
+of spatial "air" or reverberation in well-recorded acoustic spaces.</li>
+<li><strong>Fatigue over Extended Listening:</strong> In rare cases,
+subtle compression artifacts that are not immediately identifiable can
+cause ear fatigue during prolonged critical listening sessions.</li>
+</ul>
+<h3 id="archival-vs-everyday-playback">Archival vs. Everyday
+Playback</h3>
+<p>WAV remains the superior choice for music production, audio editing,
+and long-term archival. Because it is uncompressed and lossless, WAV can
+be repeatedly edited and re-encoded without generational loss.</p>
+<p>Vorbis at <code>-q 5</code> is built for distribution and storage
+efficiency. It delivers an optimal balance between low bandwidth
+consumption and high-fidelity sound, offering audio quality that matches
+or exceeds 192 kbps MP3 while preserving virtually all audible details
+for everyday listening.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bit-Reversal Lookup Tables in Vorbis MDCT - vorbis</title>
+    <meta name="description" content="The bit-reversal lookup table in the Vorbis audio codec accelerates Modified Discrete Cosine Transform (MDCT) routines by precomputing the reordering of array indices required by fast transform algorithms. This article explains the relationship between t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/bit-reversal-lookup-tables-in-vorbis-mdct">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bit-Reversal Lookup Tables in Vorbis MDCT - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/bit-reversal-lookup-tables-in-vorbis-mdct" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The bit-reversal lookup table in the Vorbis audio codec accelerates Modified Discrete Cosine Transform (MDCT) routines by precomputing the reordering of array indices required by fast transform algorithms. This article explains the relationship between t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="bit-reversal-lookup-tables-in-vorbis-mdct">Bit-Reversal Lookup
+Tables in Vorbis MDCT</h1>
+<p>The bit-reversal lookup table in the Vorbis audio codec accelerates
+Modified Discrete Cosine Transform (MDCT) routines by precomputing the
+reordering of array indices required by fast transform algorithms. This
+article explains the relationship between the MDCT and the Fast Fourier
+Transform (FFT), why bit-reversal permutation is necessary, and how
+static lookup tables eliminate computational bottlenecks during audio
+encoding and decoding.</p>
+<h3 id="mdct-and-fast-algorithmic-decomposition">MDCT and Fast
+Algorithmic Decomposition</h3>
+<p>Vorbis relies on the MDCT to convert time-domain audio samples into
+frequency-domain spectral coefficients for compression, and the Inverse
+MDCT (IMDCT) to reconstruct the signal during playback. A direct
+calculation of the MDCT requires <span
+class="math inline">\(O(N^2)\)</span> operations, which is too
+computationally expensive for real-time audio streaming.</p>
+<p>To achieve <span class="math inline">\(O(N \log N)\)</span>
+complexity, Vorbis implements a fast MDCT routine. This approach
+decomposes the MDCT into three distinct phases: a pre-twiddle rotation
+step, a core complex Fast Fourier Transform (or complex split-radix
+algorithm), and a post-twiddle rotation step.</p>
+<h3 id="the-origin-of-bit-reversal-permutation">The Origin of
+Bit-Reversal Permutation</h3>
+<p>The core FFT stage in the fast MDCT typically relies on the
+Cooley-Tukey algorithm. This algorithm recursively divides a discrete
+transform of size <span class="math inline">\(N\)</span> into smaller
+interleaved transforms of size <span class="math inline">\(N/2\)</span>
+(decimation-in-time) or decomposes the outputs
+(decimation-in-frequency).</p>
+<p>Because of this recursive division into even and odd indices, the
+data array ends up scrambled. The binary representation of each index is
+inverted: for example, in an 8-point transform, index 1
+(<code>001</code> in binary) maps to index 4 (<code>100</code> in
+binary). To perform the subsequent butterfly calculations in-place, the
+data must be rearranged so that paired elements align correctly in
+memory.</p>
+<h3 id="function-and-advantages-of-the-lookup-table">Function and
+Advantages of the Lookup Table</h3>
+<p>Calculating the bit-reversed index dynamically requires bitwise
+shifts, masks, and loop operations for every sample in every audio
+frame. In real-time audio playback, performing these arithmetic
+operations repeatedly creates significant CPU overhead.</p>
+<p>The bit-reversal lookup table solves this by precomputing the
+permutations:</p>
+<ul>
+<li><strong>Elimination of Runtime Overhead:</strong> The table stores
+the target indices directly in memory. The algorithm simply reads
+<code>reversed_index = bit_reverse_table[i]</code> and swaps the
+corresponding array values, replacing complex bit-manipulation logic
+with constant-time <span class="math inline">\(O(1)\)</span> memory
+reads.</li>
+<li><strong>Predictable Memory Access:</strong> By sorting the inputs
+before the butterfly stages begin, the subsequent stages can read and
+write contiguous blocks of memory in a predictable pattern,
+significantly improving CPU cache utilization.</li>
+<li><strong>Support for Variable Block Sizes:</strong> Vorbis uses both
+short blocks (e.g., 256 or 512 samples) and long blocks (e.g., 2048 or
+4096 samples) to adapt to transient and stationary audio signals.
+Precalculated tables corresponding to these specific block sizes enable
+seamless switching between modes without runtime initialization
+penalties.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

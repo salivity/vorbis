@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Compression Alters Audio Spectral Features - vorbis</title>
+    <meta name="description" content="Vorbis is an open-source, lossy audio coding format that reduces file sizes by removing acoustic information deemed imperceptible to the human auditory system. During this process, the audio signal undergoes a transformation into the frequency domain via">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-compression-alters-audio-spectral-features">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Compression Alters Audio Spectral Features - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-compression-alters-audio-spectral-features" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis is an open-source, lossy audio coding format that reduces file sizes by removing acoustic information deemed imperceptible to the human auditory system. During this process, the audio signal undergoes a transformation into the frequency domain via" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-compression-alters-audio-spectral-features">How
+Vorbis Compression Alters Audio Spectral Features</h1>
+<p>Vorbis is an open-source, lossy audio coding format that reduces file
+sizes by removing acoustic information deemed imperceptible to the human
+auditory system. During this process, the audio signal undergoes a
+transformation into the frequency domain via the Modified Discrete
+Cosine Transform (MDCT). Consequently, compressing audio with Vorbis
+directly impacts key spectral characteristics, including spectral
+envelope precision, bandwidth limits, harmonic integrity, and the
+distribution of noise energy across critical frequency bands.</p>
+<h3 id="high-frequency-attenuation-and-spectral-roll-off">High-Frequency
+Attenuation and Spectral Roll-Off</h3>
+<p>One of the most noticeable spectral alterations introduced by Vorbis
+is dynamic bandwidth limitation. At low to medium bitrates, Vorbis
+employs a low-pass filter to eliminate high-frequency content above a
+certain threshold (typically between 15 kHz and 20 kHz, depending on the
+chosen quality setting). In frequency analysis, this causes a sharp
+downward shift in the spectral roll-off—the frequency below which a
+specified percentage of total spectral energy is contained—and lowers
+the overall spectral centroid of the audio.</p>
+<h3 id="spectral-envelope-simplification">Spectral Envelope
+Simplification</h3>
+<p>Vorbis separates spectral data into two components: the spectral
+floor (the general shape or envelope of the spectrum) and the spectral
+residue (the fine harmonic details). The spectral floor is modeled using
+a piecewise linear representation (Floor 1) or vector quantization of
+line spectral pairs (Floor 0). This abstraction smooths the overall
+spectral shape, eliminating subtle variations in the original frequency
+contour and mildly flattening natural peaks across broader frequency
+spans.</p>
+<h3 id="harmonic-structure-and-residue-quantization">Harmonic Structure
+and Residue Quantization</h3>
+<p>After modeling the envelope, the remaining fine structure (residue)
+is quantized. Vorbis groups MDCT coefficients into bands modeled after
+psychoacoustic critical bands. Lower-energy harmonics falling near
+prominent tonal components are subjected to aggressive quantization or
+omitted entirely if they fall below the calculated masking threshold. As
+a result, the sharpness of harmonic peaks can be dulled,
+harmonic-to-noise ratios (HNR) are lowered, and low-energy partials may
+disappear completely.</p>
+<h3 id="redistribution-of-quantization-noise">Redistribution of
+Quantization Noise</h3>
+<p>Rather than spreading quantization error uniformly across the
+spectrum, Vorbis shapes the noise floor to mirror the simultaneous
+masking characteristics of the human ear. Noise is intentionally
+injected into frequency bands that contain loud, dominant components
+where human hearing is least sensitive to distortion. This alters the
+spectral flatness measure, artificially raising the local noise floor in
+active frequency regions while keeping silent or exposed regions
+clean.</p>
+<h3 id="time-frequency-resolution-smearing">Time-Frequency Resolution
+Smearing</h3>
+<p>Vorbis mitigates transient distortion using variable-length MDCT
+windows—typically 2048 samples for steady-state signals and 256 samples
+for fast transients. However, the switching process is not
+instantaneous. During complex signals containing dense polyphony or
+sharp percussive attacks, window compromises can cause subtle
+temporal-spectral smearing (often manifesting as pre-echo). This
+smearing redistributes frequency energy across adjacent temporal frames,
+slightly diffusing the frequency definition of rapid, dynamic
+sounds.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

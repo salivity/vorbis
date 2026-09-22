@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handling Sample Rate Changes in Chained Vorbis Streams - vorbis</title>
+    <meta name="description" content="Chained Ogg Vorbis streams allow multiple distinct audio files to be sequentially combined into a single continuous physical bitstream, frequently resulting in abrupt sample rate transitions between segments. To process these variations without stutterin">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/handling-sample-rate-changes-in-chained-vorbis-streams">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Handling Sample Rate Changes in Chained Vorbis Streams - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/handling-sample-rate-changes-in-chained-vorbis-streams" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Chained Ogg Vorbis streams allow multiple distinct audio files to be sequentially combined into a single continuous physical bitstream, frequently resulting in abrupt sample rate transitions between segments. To process these variations without stutterin" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="handling-sample-rate-changes-in-chained-vorbis-streams">Handling
+Sample Rate Changes in Chained Vorbis Streams</h1>
+<p>Chained Ogg Vorbis streams allow multiple distinct audio files to be
+sequentially combined into a single continuous physical bitstream,
+frequently resulting in abrupt sample rate transitions between segments.
+To process these variations without stuttering, crashing, or playing
+audio at incorrect pitches, Vorbis players must detect logical stream
+boundaries, parse updated header packets, and adapt their playback
+pipelines using dynamic resampling or hardware reinitialization.</p>
+<p>An Ogg container treats each chained Vorbis segment as an independent
+logical bitstream complete with its own Beginning of Stream (BOS) page,
+Vorbis identification header, setup headers, and End of Stream (EOS)
+page. Because each segment is self-contained, adjacent segments can
+feature entirely different channel configurations, bitrates, and sample
+rates (for example, transitioning from 44.1 kHz to 48 kHz).</p>
+<p>When a Vorbis decoder encounters an EOS packet followed by a new BOS
+packet, it must completely re-evaluate the stream parameters. Players
+generally handle the resulting sample rate changes through one of three
+mechanisms:</p>
+<h3 id="dynamic-resampling">Dynamic Resampling</h3>
+<p>The most robust approach, favored by modern software players and
+media frameworks, involves internal software resampling. The player
+configures the underlying audio output device to a fixed master sample
+rate (such as 48 kHz) upon starting playback. When a chained stream
+transition introduces a new native sample rate, the player updates the
+input parameters of an internal resampler (like libsoxr or SpeexDSP)
+without touching the hardware audio interface. This approach maintains
+uninterrupted audio output and eliminates clicks, pops, or gaps between
+chained tracks.</p>
+<h3 id="output-device-reinitialization">Output Device
+Reinitialization</h3>
+<p>Simpler players or systems without integrated resamplers resolve
+sample rate shifts by tearing down and rebuilding the hardware audio
+interface. Once the decoder detects a new sample rate via the incoming
+stream's identification header, it flushes the remaining decoded PCM
+audio from the old stream, closes the existing audio output context, and
+re-opens the device configured to the new frequency. While this method
+guarantees native bit-perfect playback, it almost always introduces an
+audible latency gap or driver-level pop as the audio hardware
+reconfigures.</p>
+<h3 id="buffer-synchronization-and-legacy-fallbacks">Buffer
+Synchronization and Legacy Fallbacks</h3>
+<p>Regardless of whether resampling or hardware reconfiguration is used,
+proper buffer management is critical. Decoders must fully drain and
+render all buffered samples belonging to the departing stream at its
+native rate before presenting samples from the incoming stream.</p>
+<p>Legacy, naive, or poorly implemented players often fail to read
+Vorbis headers past the initial stream. If a player assumes that stream
+parameters remain immutable, encountering a changed sample rate causes
+the playback engine to process the new data at the old rate. This
+results in the "chipmunk effect" (playing higher sample rate data too
+slowly) or dragging audio (playing lower sample rate data too quickly),
+and in some cases, catastrophic decoder failure or pipeline crashes.
+Modern conformant players continuously monitor the Ogg demuxing layer to
+ensure pipeline reconfiguration happens instantaneously across logical
+boundaries.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

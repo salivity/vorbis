@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Setup Header Packet Contents - vorbis</title>
+    <meta name="description" content="The Vorbis setup header is the third and most complex header packet required to initialize an Ogg Vorbis decoder. It provides the complete structural and mathematical configuration needed to reconstruct compressed audio, defining the vector quantization">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-setup-header-packet-contents">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Setup Header Packet Contents - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-setup-header-packet-contents" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis setup header is the third and most complex header packet required to initialize an Ogg Vorbis decoder. It provides the complete structural and mathematical configuration needed to reconstruct compressed audio, defining the vector quantization" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-setup-header-packet-contents">Vorbis Setup Header Packet
+Contents</h1>
+<p>The Vorbis setup header is the third and most complex header packet
+required to initialize an Ogg Vorbis decoder. It provides the complete
+structural and mathematical configuration needed to reconstruct
+compressed audio, defining the vector quantization codebooks, spectral
+envelope representations, residue decoders, channel mappings, and
+operational modes. Without this packet, the raw audio packets in the
+stream cannot be interpreted.</p>
+<h3 id="codebooks">Codebooks</h3>
+<p>The setup header contains an array of static codebooks used for
+vector quantization and Huffman-style entropy decoding. Each codebook
+definition includes:</p>
+<ul>
+<li><strong>Codebook Dimensions:</strong> The number of scalar values
+represented by a single codebook entry.</li>
+<li><strong>Codebook Entries:</strong> The total number of unique
+symbols or codewords.</li>
+<li><strong>Codeword Lengths:</strong> The bit lengths for each
+codeword, defining the prefix tree.</li>
+<li><strong>Lookup Tables:</strong> Value tables used for vector
+decoding (either unpopulated, uniformly spaced, or explicitly enumerated
+coordinate lists).</li>
+</ul>
+<h3 id="time-domain-transforms">Time-Domain Transforms</h3>
+<p>Vorbis reserves fields for time-domain transform configurations.
+While specified in the packet format to maintain forward compatibility,
+modern Vorbis (Vorbis I) implementations bypass these structures,
+setting their count to zero or reserving them without active functional
+parameters.</p>
+<h3 id="floors">Floors</h3>
+<p>Floors describe the low-resolution spectral envelope of the audio
+signal. The setup header configures the specific floor types and their
+decoding parameters:</p>
+<ul>
+<li><strong>Floor 0:</strong> A linear predictive coding (LPC) and line
+spectral pair (LSP) based model, specifying order, bark map sizes, and
+codebook associations.</li>
+<li><strong>Floor 1:</strong> A piecewise linear curve representation,
+detailing the number of X-axis partition points, partition classes,
+class dimensions, and associated codebooks for interpolating the
+frequency curve.</li>
+</ul>
+<h3 id="residues">Residues</h3>
+<p>Residues represent the fine-detail spectral data remaining after
+subtracting the spectral floor. The setup header defines the residue
+types (Residue 0, 1, or 2) and their execution parameters:</p>
+<ul>
+<li>Frequency boundary limits (starting and ending spectral
+offsets).</li>
+<li>Partition sizes and classifications.</li>
+<li>Specific codebook assignments mapped to each partition and stage of
+the residue pass.</li>
+</ul>
+<h3 id="mappings">Mappings</h3>
+<p>Mappings configure how multiple audio channels relate to each other,
+defining channel coupling and linking floors to residues:</p>
+<ul>
+<li><strong>Channel Coupling:</strong> Submap rules detailing angle and
+magnitude relationships between channels to enable stereo or surround
+coupling.</li>
+<li><strong>Floor and Residue Binding:</strong> Assignments designating
+which floor and residue configurations apply to each channel or coupled
+channel pair.</li>
+</ul>
+<h3 id="modes">Modes</h3>
+<p>The final section of the setup header lists the mode definitions.
+Every audio packet begins with a short mode index, which references one
+of these modes:</p>
+<ul>
+<li><strong>Block Flag:</strong> Specifies whether the packet utilizes a
+short window (for transients) or a long window (for high spectral
+resolution).</li>
+<li><strong>Mapping Association:</strong> Points directly to the
+specific mapping configuration required to decode the packet.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

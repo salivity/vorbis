@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom File I/O with Vorbisfile Callbacks - vorbis</title>
+    <meta name="description" content="The vorbisfile library provides a flexible callback mechanism that enables developers to decode Ogg Vorbis audio from virtually any data source, such as memory buffers, custom virtual file systems, encrypted archives, or network streams. By substituting">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/custom-file-i-o-with-vorbisfile-callbacks">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Custom File I/O with Vorbisfile Callbacks - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/custom-file-i-o-with-vorbisfile-callbacks" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The vorbisfile library provides a flexible callback mechanism that enables developers to decode Ogg Vorbis audio from virtually any data source, such as memory buffers, custom virtual file systems, encrypted archives, or network streams. By substituting" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="custom-file-io-with-vorbisfile-callbacks">Custom File I/O with
+Vorbisfile Callbacks</h1>
+<p>The <code>vorbisfile</code> library provides a flexible callback
+mechanism that enables developers to decode Ogg Vorbis audio from
+virtually any data source, such as memory buffers, custom virtual file
+systems, encrypted archives, or network streams. By substituting
+standard C file operations (<code>stdio</code>) with custom functions
+wrapped in the <code>ov_callbacks</code> structure and passed to
+<code>ov_open_callbacks()</code>, developers gain complete control over
+how raw audio data is fetched, traversed, and closed.</p>
+<h3 id="the-ov_callbacks-structure">The <code>ov_callbacks</code>
+Structure</h3>
+<p>At the core of the <code>vorbisfile</code> custom I/O mechanism is
+the <code>ov_callbacks</code> struct. This struct defines four function
+pointers that mirror standard C input/output routines:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> <span class="op">(*</span>read_func<span class="op">)</span>  <span class="op">(</span><span class="dt">void</span> <span class="op">*</span>ptr<span class="op">,</span> <span class="dt">size_t</span> size<span class="op">,</span> <span class="dt">size_t</span> nmemb<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>datasource<span class="op">);</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span>    <span class="op">(*</span>seek_func<span class="op">)</span>  <span class="op">(</span><span class="dt">void</span> <span class="op">*</span>datasource<span class="op">,</span> ogg_int64_t offset<span class="op">,</span> <span class="dt">int</span> whence<span class="op">);</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span>    <span class="op">(*</span>close_func<span class="op">)</span> <span class="op">(</span><span class="dt">void</span> <span class="op">*</span>datasource<span class="op">);</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">long</span>   <span class="op">(*</span>tell_func<span class="op">)</span>  <span class="op">(</span><span class="dt">void</span> <span class="op">*</span>datasource<span class="op">);</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> ov_callbacks<span class="op">;</span></span></code></pre></div>
+<p>Each callback fulfills a specific operational role:</p>
+<ul>
+<li><strong><code>read_func</code></strong>: Reads up to
+<code>nmemb</code> elements of <code>size</code> bytes into the buffer
+<code>ptr</code>. It must return the number of elements successfully
+read, matching the behavior of <code>fread()</code>.</li>
+<li><strong><code>seek_func</code></strong>: Repositions the file offset
+in <code>datasource</code> relative to <code>whence</code>
+(<code>SEEK_SET</code>, <code>SEEK_CUR</code>, or <code>SEEK_END</code>)
+using a 64-bit offset. It returns <code>0</code> on success or
+<code>-1</code> on failure, analogous to <code>fseek()</code>.</li>
+<li><strong><code>close_func</code></strong>: Releases any underlying
+resources associated with <code>datasource</code>. It returns
+<code>0</code> on success or non-zero on error, similar to
+<code>fclose()</code>.</li>
+<li><strong><code>tell_func</code></strong>: Returns the current
+position within <code>datasource</code> in bytes, similar to
+<code>ftell()</code>.</li>
+</ul>
+<h3 id="opening-streams-with-ov_open_callbacks">Opening Streams with
+<code>ov_open_callbacks()</code></h3>
+<p>To initialize an <code>OggVorbis_File</code> structure with custom
+routines, you call <code>ov_open_callbacks()</code> instead of standard
+functions like <code>ov_open()</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ov_open_callbacks<span class="op">(</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> <span class="op">*</span>datasource<span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    OggVorbis_File <span class="op">*</span>vf<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>initial<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">long</span> ibytes<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    ov_callbacks callbacks</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span></code></pre></div>
+<ul>
+<li><strong><code>datasource</code></strong>: A generic pointer to the
+user's custom stream context (e.g., a memory buffer descriptor, a custom
+handle, or a network socket). This pointer is passed unmodified as the
+<code>datasource</code> parameter to all defined callbacks.</li>
+<li><strong><code>vf</code></strong>: A pointer to the
+<code>OggVorbis_File</code> instance that will track decoder state.</li>
+<li><strong><code>initial</code> and <code>ibytes</code></strong>:
+Optional initial bytes already read from the stream; passing
+<code>NULL</code> and <code>0</code> indicates no pre-read data.</li>
+<li><strong><code>callbacks</code></strong>: The populated
+<code>ov_callbacks</code> instance containing your custom function
+pointers.</li>
+</ul>
+<h3 id="handling-non-seekable-data-sources">Handling Non-Seekable Data
+Sources</h3>
+<p>The callback mechanism accommodates streams that do not support
+seeking, such as live internet radio or sequential pipes. If a stream is
+non-seekable:</p>
+<ul>
+<li><code>seek_func</code> can be set to <code>NULL</code>.</li>
+<li><code>tell_func</code> can be set to <code>NULL</code>.</li>
+</ul>
+<p>When these pointers are <code>NULL</code>, <code>vorbisfile</code>
+automatically configures itself to operate in non-seekable mode.
+Operations requiring random access (such as time-based seeking) will
+fail gracefully, but sequential decoding will function as expected.</p>
+<h3 id="resource-cleanup">Resource Cleanup</h3>
+<p>When decoding is complete, calling <code>ov_clear()</code> cleans up
+all internal Vorbis decoder allocations and automatically invokes the
+provided <code>close_func</code>. If you prefer to manage the lifecycle
+of your custom data source independently outside the library, you can
+set <code>close_func</code> to <code>NULL</code> to prevent
+<code>ov_clear()</code> from attempting to close it.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

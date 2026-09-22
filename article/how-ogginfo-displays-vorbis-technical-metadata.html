@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How ogginfo Displays Vorbis Technical Metadata - vorbis</title>
+    <meta name="description" content="The command-line utility ogginfo, part of the vorbis-tools suite, inspects Ogg bitstreams and extracts low-level technical parameters and encoding details from multiplexed or standalone media streams. This article explains how ogginfo parses the underlyi">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-ogginfo-displays-vorbis-technical-metadata">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How ogginfo Displays Vorbis Technical Metadata - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-ogginfo-displays-vorbis-technical-metadata" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The command-line utility ogginfo, part of the vorbis-tools suite, inspects Ogg bitstreams and extracts low-level technical parameters and encoding details from multiplexed or standalone media streams. This article explains how ogginfo parses the underlyi" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-ogginfo-displays-vorbis-technical-metadata">How ogginfo
+Displays Vorbis Technical Metadata</h1>
+<p>The command-line utility <code>ogginfo</code>, part of the
+<code>vorbis-tools</code> suite, inspects Ogg bitstreams and extracts
+low-level technical parameters and encoding details from multiplexed or
+standalone media streams. This article explains how <code>ogginfo</code>
+parses the underlying Ogg container structures, extracts audio stream
+characteristics from Vorbis-specific headers, and presents operational
+metrics such as sample rates, bitrate ranges, playback length, and
+stream integrity verification directly in terminal output.</p>
+<h3 id="ogg-stream-demuxing-and-identification">Ogg Stream Demuxing and
+Identification</h3>
+<p><code>ogginfo</code> operates by reading the Ogg container
+sequentially from beginning to end. An Ogg file consists of interleaved
+pages, each designated with a specific serial number to distinguish
+concurrent logical bitstreams. When <code>ogginfo</code> encounters a
+new logical bitstream, it reads the initial packet on the first page to
+identify the codec payload. For a Vorbis audio stream, this packet
+begins with the signature byte <code>\x01</code> followed by the ASCII
+string <code>"vorbis"</code>.</p>
+<p>Once identified, <code>ogginfo</code> tracks the stream's serial
+number and prepares to unpack the three mandatory Vorbis header packets
+required for decoding.</p>
+<h3 id="parsing-vorbis-header-packets">Parsing Vorbis Header
+Packets</h3>
+<p>Vorbis metadata is split across three initial packets:</p>
+<ol type="1">
+<li><p><strong>Identification Header:</strong> <code>ogginfo</code>
+reads this first packet to determine the fundamental audio properties.
+It extracts:</p>
+<ul>
+<li><strong>Vorbis Version:</strong> The version of the Vorbis
+specification used.</li>
+<li><strong>Audio Channels:</strong> The number of audio channels (e.g.,
+1 for mono, 2 for stereo, 6 for 5.1 surround).</li>
+<li><strong>Audio Sample Rate:</strong> The sampling frequency expressed
+in Hertz (Hz).</li>
+<li><strong>Bitrate Configurations:</strong> The encoder's declared
+maximum, nominal, and minimum bitrates (in bits per second), which
+indicate whether Variable Bitrate (VBR) or Constant Bitrate (CBR)
+targeting was requested.</li>
+<li><strong>Block Sizes:</strong> Window block sizes used for audio
+transform framing.</li>
+</ul></li>
+<li><p><strong>Comment Header:</strong> The second packet contains
+user-defined metadata and encoder attribution. <code>ogginfo</code>
+extracts the <strong>Vendor String</strong> (identifying the specific
+encoder implementation, such as
+<code>Xiph.Org libVorbis I 20200704</code>) alongside standard key-value
+Vorbis comments (e.g., <code>TITLE</code>,
+<code>ARTIST</code>).</p></li>
+<li><p><strong>Setup Header:</strong> The third header contains codebook
+and transform configuration data. While mostly internal to the decoder,
+<code>ogginfo</code> verifies the presence and basic validity of these
+tables to ensure the stream is decodable.</p></li>
+</ol>
+<h3 id="stream-traversal-and-runtime-calculations">Stream Traversal and
+Runtime Calculations</h3>
+<p>Unlike simple ID3 tag readers that only examine the file's start or
+end, <code>ogginfo</code> processes all remaining audio pages in the
+bitstream to calculate runtime metrics:</p>
+<ul>
+<li><strong>Playback Duration and Total Samples:</strong> Vorbis pages
+store a 64-bit value known as the <code>granulepos</code> (granule
+position) in their page headers. The granule position represents the
+exact number of PCM audio samples encoded up to that point.
+<code>ogginfo</code> records the final granule position of the stream
+and divides it by the sample rate extracted from the Identification
+Header, deriving the precise playback duration down to the
+millisecond.</li>
+<li><strong>Actual Average Bitrate:</strong> <code>ogginfo</code>
+tallies the total payload bytes belonging to the logical bitstream and
+divides them by the playback duration. This calculation provides the
+actual average bitrate, which often differs from the nominal bitrate
+declared in the header when using Variable Bitrate encoding.</li>
+<li><strong>Integrity and Sequence Verification:</strong> During
+traversal, <code>ogginfo</code> verifies the continuous increment of
+page sequence numbers. It checks for truncated packets, corrupted page
+checksums (CRC32), and premature end-of-stream conditions, warning the
+user if the stream exhibits integrity issues.</li>
+</ul>
+<h3 id="presentation-of-extracted-data">Presentation of Extracted
+Data</h3>
+<p>Upon completing the file scan, <code>ogginfo</code> outputs the
+collected technical data organized per logical bitstream. The resulting
+output summarizes the technical profile:</p>
+<pre class="text"><code>Logical stream 12345678 (1) is vorbis
+Vorbis headers parsed for stream 12345678, information follows:
+Version: 0
+Vendor: Xiph.Org libVorbis I 20200704 (Community)
+Channels: 2
+Rate: 44100
+
+Nominal bitrate: 160.000000 kb/s
+Upper bitrate not set
+Lower bitrate not set
+User comments section follows...
+Vorbis stream 1:
+    Total data length: 3840234 bytes
+    Playback length: 3m:11.453s
+    Average bitrate: 160.466842 kb/s
+Logical stream 12345678 ended</code></pre>
+<p>Through this sequential reading process, <code>ogginfo</code>
+separates container-level framing from Vorbis codec headers, providing a
+comprehensive report of both declared configuration settings and
+observed bitstream behavior.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can Vorbis Audio Be Transmitted Over RTP? - vorbis</title>
+    <meta name="description" content="Vorbis audio streams can be successfully transmitted over the Real-time Transport Protocol (RTP). The Internet Engineering Task Force (IETF) standardized this transmission under RFC 5215, titled "RTP Payload Format for Vorbis Encoded Audio." While Vorbis">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-vorbis-audio-be-transmitted-over-rtp">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can Vorbis Audio Be Transmitted Over RTP? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-vorbis-audio-be-transmitted-over-rtp" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis audio streams can be successfully transmitted over the Real-time Transport Protocol (RTP). The Internet Engineering Task Force (IETF) standardized this transmission under RFC 5215, titled "RTP Payload Format for Vorbis Encoded Audio." While Vorbis" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-vorbis-audio-be-transmitted-over-rtp">Can Vorbis Audio Be
+Transmitted Over RTP?</h1>
+<p>Vorbis audio streams can be successfully transmitted over the
+Real-time Transport Protocol (RTP). The Internet Engineering Task Force
+(IETF) standardized this transmission under RFC 5215, titled "RTP
+Payload Format for Vorbis Encoded Audio." While Vorbis was originally
+designed for file storage within Ogg containers rather than real-time
+packet-switched networks, RFC 5215 defines the mechanisms required to
+carry Vorbis-encoded data reliably across standard RTP sessions.</p>
+<h3 id="the-challenge-with-vorbis-over-rtp">The Challenge with Vorbis
+Over RTP</h3>
+<p>The primary technical challenge of transporting Vorbis over RTP lies
+in its initialization data. Unlike traditional speech codecs or formats
+like MP3, a Vorbis decoder cannot decode an individual audio packet
+without access to specific configuration headers: the identification
+header, the comment header, and the setup header (which contains the
+codebooks). These headers are typically large—often several
+kilobytes—and must be received by the client before playback can
+begin.</p>
+<h3 id="how-rfc-5215-solves-configuration-delivery">How RFC 5215 Solves
+Configuration Delivery</h3>
+<p>To handle the setup requirements in real-time environments, RFC 5215
+outlines mechanisms for managing and transmitting these headers:</p>
+<ul>
+<li><strong>Out-of-Band Delivery:</strong> The codebook configuration
+can be delivered via session setup protocols such as Session Description
+Protocol (SDP) and Real-Time Streaming Protocol (RTSP). This prevents
+packet bloat during live streaming.</li>
+<li><strong>In-Band Delivery:</strong> Headers can also be sent directly
+within the RTP stream. This ensures that late-joining participants in a
+multicast or broadcast session can receive the setup information
+necessary to start decoding.</li>
+<li><strong>Configuration Identifiers:</strong> Every RTP payload
+includes a 24-bit Vorbis Ident field. This field maps audio packets to a
+specific set of setup headers, allowing streams to dynamically change
+codebooks or bitrates mid-session without breaking playback.</li>
+</ul>
+<h3 id="packetization-and-fragmentation">Packetization and
+Fragmentation</h3>
+<p>RFC 5215 also establishes rules for payload packaging:</p>
+<ul>
+<li><strong>Packet Aggregation:</strong> If individual Vorbis audio
+frames are small, multiple frames can be bundled into a single RTP
+packet to reduce network overhead.</li>
+<li><strong>Packet Fragmentation:</strong> If a single Vorbis packet or
+configuration header exceeds the network's Maximum Transmission Unit
+(MTU), it can be fragmented across multiple RTP packets. The payload
+header includes flags indicating whether a packet contains a start,
+continuation, or end fragment.</li>
+</ul>
+<p>While the transport of Vorbis over RTP is fully standardized and
+functional, modern real-time communication systems generally prefer Opus
+(RFC 7587), which incorporates technology from Vorbis's successor, CELT,
+and was engineered specifically for low-latency RTP transport without
+heavy configuration overhead.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Memory Usage Scaling by Audio Channels - vorbis</title>
+    <meta name="description" content="Vorbis memory consumption scales predominantly linearly with the number of active audio channels, driven by the need for independent sample buffering and frequency-domain transforms. While global decoding state and structural metadata remain constant, in">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-memory-usage-scaling-by-audio-channels">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Memory Usage Scaling by Audio Channels - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-memory-usage-scaling-by-audio-channels" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis memory consumption scales predominantly linearly with the number of active audio channels, driven by the need for independent sample buffering and frequency-domain transforms. While global decoding state and structural metadata remain constant, in" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-memory-usage-scaling-by-audio-channels">Vorbis Memory
+Usage Scaling by Audio Channels</h1>
+<p>Vorbis memory consumption scales predominantly linearly with the
+number of active audio channels, driven by the need for independent
+sample buffering and frequency-domain transforms. While global decoding
+state and structural metadata remain constant, intermediate PCM buffers,
+overlap-add history, and spectral analysis structures multiply with each
+added channel. Understanding this scaling behavior is essential for
+budgeting memory in resource-constrained environments like embedded
+audio devices or game engines running multiple multichannel streams.</p>
+<h2 id="baseline-vs-per-channel-memory-structures">Baseline vs.
+Per-Channel Memory Structures</h2>
+<p>Vorbis decoders (such as the reference <code>libvorbis</code> or the
+fixed-point <code>Tremor</code> / <code>libvorbisidec</code> library)
+divide internal state into two primary categories: shared state and
+per-channel state.</p>
+<h3 id="shared-static-state-o1">Shared Static State (<span
+class="math inline">\(O(1)\)</span>)</h3>
+<p>A single Vorbis stream contains shared decoding structures that do
+not scale with the channel count. These include:</p>
+<ul>
+<li><strong>Codebooks:</strong> Vector quantization tables and Huffman
+trees used to decode entropy-coded residuals.</li>
+<li><strong>Mode and Mapping Configurations:</strong> Metadata
+indicating how time-domain windows, floors, and residues are
+paired.</li>
+<li><strong>Global Decoder Context:</strong> General format parsing
+information and container-level state.</li>
+</ul>
+<p>These tables are allocated once per stream or shared globally across
+multiple streams, creating a static baseline memory footprint.</p>
+<h3 id="per-channel-state-on">Per-Channel State (<span
+class="math inline">\(O(N)\)</span>)</h3>
+<p>For every active channel (<span class="math inline">\(N\)</span>),
+Vorbis requires dedicated buffers to perform decoding, inverse
+quantization, and reconstruction. Memory in this category scales
+linearly:</p>
+<ul>
+<li><strong>Overlap-Add PCM Buffers:</strong> The Modified Discrete
+Cosine Transform (MDCT) requires storing the second half of the previous
+window to add to the first half of the current window. Each channel
+maintains its own overlap history.</li>
+<li><strong>Spectral Synthesis Buffers:</strong> Intermediate
+frequency-domain coefficients (residues and floors) must be held in
+working memory before the Inverse MDCT (IMDCT) is computed.</li>
+<li><strong>Output Ring Buffers:</strong> Rendered 32-bit floating-point
+(or 16/32-bit fixed-point) PCM data waiting to be pulled by the client
+audio system.</li>
+</ul>
+<h2 id="the-scaling-formula">The Scaling Formula</h2>
+<p>The approximate memory required by a Vorbis decoder instance can be
+expressed as:</p>
+<p><span class="math display">\[\text{Total Memory} = M_{\text{shared}}
++ (N \times M_{\text{channel}})\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(M_{\text{shared}}\)</span> is the fixed
+overhead for codebooks, mappings, and mode definitions.</li>
+<li><span class="math inline">\(N\)</span> is the number of active audio
+channels (e.g., 1 for mono, 2 for stereo, 6 for 5.1 surround).</li>
+<li><span class="math inline">\(M_{\text{channel}}\)</span> is the
+working buffer size determined by the stream's maximum block size.</li>
+</ul>
+<h2 id="the-role-of-block-sizes">The Role of Block Sizes</h2>
+<p>The per-channel scaling factor (<span
+class="math inline">\(M_{\text{channel}}\)</span>) is governed primarily
+by the stream's configured block sizes. Vorbis files typically use two
+switchable transform window sizes: a short block (often 256 or 512
+samples) for transient events and a long block (often 2048 or 4096
+samples) for sustained stationary signals.</p>
+<p>Because allocation occurs at stream initialization, internal channel
+buffers must be sized to accommodate the <strong>maximum</strong> block
+size configured in the bitstream header:</p>
+<ul>
+<li>An IMDCT working buffer requires workspace sized to the maximum
+window length per channel.</li>
+<li>Channel coupling (used in stereo and surround modes to reduce
+bitrate) operates on intermediate spectral values, requiring
+synchronized coefficient buffers across all linked channels.</li>
+</ul>
+<p>If a stream uses a maximum block size of 4096 samples, each channel
+requires multiple 4096-element arrays (typically 4-byte floats in
+<code>libvorbis</code>). Consequently, moving from a 2-channel stereo
+configuration to an 8-channel 7.1 surround configuration quadruples the
+variable buffer footprint.</p>
+<h2 id="implementation-differences-libvorbis-vs-tremor">Implementation
+Differences: libvorbis vs. Tremor</h2>
+<p>Memory scaling characteristics also depend on the specific Vorbis
+decoder implementation:</p>
+<ul>
+<li><strong>libvorbis (Floating-Point):</strong> Uses standard
+single-precision (32-bit) floating-point calculations. Dynamic
+allocation through the standard heap is typical, resulting in higher
+overall per-channel allocation sizes due to internal working buffers and
+alignment requirements.</li>
+<li><strong>Tremor / libvorbisidec (Fixed-Point):</strong> Designed for
+low-power and embedded targets. It replaces floating-point buffers with
+fixed-point integers (int32/int16) and reduces the operational
+workspace. While the absolute per-channel footprint is significantly
+smaller than <code>libvorbis</code>, the scaling remains strictly linear
+relative to channel count.</li>
+</ul>
+<h2 id="practical-memory-footprint-comparison">Practical Memory
+Footprint Comparison</h2>
+<p>In a typical <code>libvorbis</code> deployment with standard block
+sizes (typically 256 short / 2048 long):</p>
+<ul>
+<li><strong>Mono (1.0):</strong> Requires the baseline shared overhead
+plus a single channel workspace (often around 30–50 KB total state,
+depending on codebook complexity).</li>
+<li><strong>Stereo (2.0):</strong> Adds a second channel workspace,
+increasing the footprint to roughly 50–70 KB.</li>
+<li><strong>Surround (5.1):</strong> Increases the per-channel workspace
+by a factor of six over mono, often pushing decoder state above 150–200
+KB per active stream instance.</li>
+</ul>
+<p>Because the buffer sizes scale directly with <span
+class="math inline">\(N\)</span>, multichannel Vorbis streams require
+explicit memory planning when deploying multiple simultaneous voices in
+low-memory environments.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browsers Supporting HTML5 Audio Ogg Vorbis - vorbis</title>
+    <meta name="description" content="The HTML5 <audio> element allows web browsers to play multimedia without external plugins, but codec support varies across platforms. This guide details which major web browser engines natively decode the open-source Ogg Vorbis audio format, highlights t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/browsers-supporting-html-5-audio-ogg-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Browsers Supporting HTML5 Audio Ogg Vorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/browsers-supporting-html-5-audio-ogg-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The HTML5 <audio> element allows web browsers to play multimedia without external plugins, but codec support varies across platforms. This guide details which major web browser engines natively decode the open-source Ogg Vorbis audio format, highlights t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="browsers-supporting-html5-audio-ogg-vorbis">Browsers Supporting
+HTML5 Audio Ogg Vorbis</h1>
+<p>The HTML5 <code>&lt;audio&gt;</code> element allows web browsers to
+play multimedia without external plugins, but codec support varies
+across platforms. This guide details which major web browser engines
+natively decode the open-source Ogg Vorbis audio format, highlights the
+platforms that lack support, and explains how to implement standard
+fallbacks using HTML5 markup.</p>
+<h3 id="mozilla-firefox">Mozilla Firefox</h3>
+<p>Mozilla Firefox was one of the earliest adopters of open audio
+standards. Full native support for decoding Vorbis streams within the
+Ogg container (<code>audio/ogg</code>) was introduced in Firefox 3.5
+across Windows, macOS, and Linux. Modern versions of Firefox across
+desktop and Android continue to provide native decoding for Ogg Vorbis
+without requiring third-party system codecs.</p>
+<h3 id="google-chrome-and-chromium-based-browsers">Google Chrome and
+Chromium-Based Browsers</h3>
+<p>Google Chrome includes native decoding for Ogg Vorbis out of the box.
+Because the Chromium open-source base includes the necessary decoders,
+native support is standard across Chrome, Brave, Vivaldi, and other
+Chromium variants. Decoding operates consistently on Windows, macOS,
+Linux, and Android.</p>
+<h3 id="microsoft-edge">Microsoft Edge</h3>
+<p>Current versions of Microsoft Edge—built on the Chromium rendering
+engine—feature built-in native support for Ogg Vorbis on all supported
+desktop platforms. Legacy versions of Edge (EdgeHTML) introduced native
+Ogg container and Vorbis decoding in Edge 17, provided the Windows 10
+Web Media Extensions package was installed, but the modern
+Chromium-based versions decode the format natively without additional
+software.</p>
+<h3 id="opera">Opera</h3>
+<p>Opera adopted native Ogg Vorbis decoding early in the HTML5 rollout,
+beginning with Opera 10.50 using the Presto engine. Since transitioning
+to the Chromium base with Opera 15, native playback of Vorbis within an
+Ogg wrapper has remained standard across desktop and mobile
+versions.</p>
+<h3 id="apple-safari-and-ios">Apple Safari and iOS</h3>
+<p>Apple Safari historically avoided native support for the Ogg
+container. On macOS and iOS, Safari does not natively decode Vorbis
+streams inside an Ogg container. While modern Apple operating systems
+have added partial support for alternative open formats such as WebM and
+Opus in specific contexts, native playback of standard <code>.ogg</code>
+Vorbis audio files remains unsupported in standard Safari
+environments.</p>
+<h3 id="implementation-and-fallback-syntax">Implementation and Fallback
+Syntax</h3>
+<p>Because Safari does not decode Ogg Vorbis natively, standard practice
+involves offering multiple <code>&lt;source&gt;</code> elements within
+the <code>&lt;audio&gt;</code> tag. Specifying the MIME type and codec
+string allows supporting browsers to decode the Ogg Vorbis stream while
+directing unsupported browsers to an alternative like MP3 or AAC:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">audio</span><span class="ot"> controls</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">source</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;audio-track.ogg&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&#39;audio/ogg; codecs=&quot;vorbis&quot;&#39;</span><span class="dt">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">source</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;audio-track.mp3&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;audio/mpeg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  Your browser does not support the audio element.</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">audio</span><span class="dt">&gt;</span></span></code></pre></div></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

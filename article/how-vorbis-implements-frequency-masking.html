@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Implements Frequency Masking - vorbis</title>
+    <meta name="description" content="Vorbis achieves perceptual audio compression by identifying and discarding spectral information that the human auditory system cannot perceive. At the core of this process is simultaneous frequency masking, an auditory phenomenon where a prominent sound">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-implements-frequency-masking">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Implements Frequency Masking - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-implements-frequency-masking" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis achieves perceptual audio compression by identifying and discarding spectral information that the human auditory system cannot perceive. At the core of this process is simultaneous frequency masking, an auditory phenomenon where a prominent sound" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-implements-frequency-masking">How Vorbis Implements
+Frequency Masking</h1>
+<p>Vorbis achieves perceptual audio compression by identifying and
+discarding spectral information that the human auditory system cannot
+perceive. At the core of this process is simultaneous frequency masking,
+an auditory phenomenon where a prominent sound renders weaker
+neighboring frequencies inaudible. Vorbis implements this mechanism by
+transforming audio into the frequency domain, calculating masking
+thresholds across psychoacoustic Bark bands, distinguishing between
+tonal and noise-like maskers, and representing the resulting masking
+threshold as a piecewise-linear spectral floor curve.</p>
+<h3
+id="time-to-frequency-transformation-and-critical-bands">Time-to-Frequency
+Transformation and Critical Bands</h3>
+<p>The encoding process begins by transforming audio signals from the
+time domain to the frequency domain using the Modified Discrete Cosine
+Transform (MDCT). This transformation yields high-resolution spectral
+coefficients across the audible spectrum.</p>
+<p>Because human frequency perception is non-linear, Vorbis groups these
+linear MDCT coefficients into critical bands modeled on the Bark scale.
+Human hearing has fine frequency resolution at low frequencies and
+broader resolution at high frequencies. By mapping MDCT bins to the Bark
+scale, the Vorbis psychoacoustic model evaluates masking interactions
+based on how the human cochlea naturally processes sound.</p>
+<h3 id="identifying-maskers-tones-vs-noise">Identifying Maskers: Tones
+vs. Noise</h3>
+<p>Not all audio components mask neighboring sounds in the same way. A
+pure tone produces a different masking profile than a band of noise.
+Vorbis evaluates the spectral peaks to determine their tonality:</p>
+<ul>
+<li><strong>Tonal Maskers:</strong> Narrow, concentrated peaks in the
+MDCT spectrum. Tones provide less masking spread compared to noise and
+require tighter thresholds around the masker frequency.</li>
+<li><strong>Noise Maskers:</strong> Broad, dispersed energy distributed
+across multiple adjacent frequency bins. Noise provides greater masking
+capability across a wider bandwidth.</li>
+</ul>
+<p>The encoder calculates a spectral flatness or tonality index for
+frequency regions. This distinction determines the masking power
+assigned to each spectral component.</p>
+<h3 id="spreading-functions-and-masking-thresholds">Spreading Functions
+and Masking Thresholds</h3>
+<p>Once maskers are identified, Vorbis applies an asymmetric spreading
+function to determine how far the masking effect extends to adjacent
+frequencies:</p>
+<ul>
+<li><strong>Upward Masking:</strong> Masking extends significantly
+toward higher frequencies from the masker.</li>
+<li><strong>Downward Masking:</strong> Masking falls off steeply toward
+lower frequencies below the masker.</li>
+</ul>
+<p>The spreading function calculates the minimum sound pressure level
+that an adjacent signal must achieve to remain audible. Vorbis computes
+individual masking curves for each identified masker across the Bark
+scale. It then sums these individual curves along with the absolute
+threshold of hearing (the quietest sound audible in silence) to produce
+a global masking threshold for the entire frame.</p>
+<h3 id="the-floor-1-representation">The Floor 1 Representation</h3>
+<p>Unlike codecs like MP3 or AAC that enforce masking by allocating bits
+across discrete scale factor bands, Vorbis uses a continuous spectral
+envelope model known as Floor 1.</p>
+<p>The global masking threshold derived from the psychoacoustic analysis
+is fitted into a low-bitrate, piecewise-linear curve:</p>
+<ol type="1">
+<li><strong>Node Selection:</strong> Vorbis samples the masking
+threshold at predefined, logarithmically spaced frequency points
+(Bark-aligned nodes).</li>
+<li><strong>Piecewise Interpolation:</strong> The encoder connects these
+nodes with linear segments in the decibel domain.</li>
+<li><strong>Threshold Curve:</strong> This interpolated curve serves as
+the synthesized masking floor. Any spectral energy falling below this
+curve is deemed masked and inaudible.</li>
+</ol>
+<h3 id="residue-quantization">Residue Quantization</h3>
+<p>After defining the masking floor, Vorbis divides the original MDCT
+spectrum by this Floor 1 curve (or subtracts it in the decibel domain).
+The remaining signal is called the "residue."</p>
+<p>Frequency components that fall below the masking floor are reduced to
+values that round to zero during vector quantization, consuming minimal
+to no bit budget. Only the audible residue components that rise above
+the masking threshold are preserved and entropy-coded, ensuring that
+compression artifacts remain psychoacoustically hidden beneath the
+dominant maskers.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

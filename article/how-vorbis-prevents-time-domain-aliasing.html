@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Prevents Time-Domain Aliasing - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec avoids time-domain aliasing during block transitions by combining the Modified Discrete Cosine Transform (MDCT) with adaptive, asymmetric windowing. Because MDCT introduces time-domain aliasing by design to achieve high compression">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-prevents-time-domain-aliasing">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Prevents Time-Domain Aliasing - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-prevents-time-domain-aliasing" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec avoids time-domain aliasing during block transitions by combining the Modified Discrete Cosine Transform (MDCT) with adaptive, asymmetric windowing. Because MDCT introduces time-domain aliasing by design to achieve high compression" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-prevents-time-domain-aliasing">How Vorbis Prevents
+Time-Domain Aliasing</h1>
+<p>The Vorbis audio codec avoids time-domain aliasing during block
+transitions by combining the Modified Discrete Cosine Transform (MDCT)
+with adaptive, asymmetric windowing. Because MDCT introduces time-domain
+aliasing by design to achieve high compression, it relies on Time-Domain
+Aliasing Cancellation (TDAC) across overlapping frames. When switching
+between short and long blocks to balance time and frequency resolution,
+Vorbis dynamically alters the shapes of its window functions so that the
+overlapping halves of adjacent frames remain symmetric, ensuring that
+the aliasing artifacts perfectly cancel out during reconstruction.</p>
+<h3 id="mdct-and-time-domain-aliasing-cancellation">MDCT and Time-Domain
+Aliasing Cancellation</h3>
+<p>Vorbis processes audio in the frequency domain using the Modified
+Discrete Cosine Transform (MDCT). Unlike standard transforms, MDCT
+operates on overlapping blocks of audio data, typically with a 50%
+overlap.</p>
+<p>During the forward transform, a block of <span
+class="math inline">\(2N\)</span> samples is transformed into <span
+class="math inline">\(N\)</span> spectral coefficients. This 2:1
+decimation inherently causes time-domain aliasing, where time-domain
+signals are folded and reflected within the frame. During decoding, the
+Inverse MDCT (IMDCT) reconstructs <span
+class="math inline">\(2N\)</span> time-domain samples from the <span
+class="math inline">\(N\)</span> spectral coefficients, but these
+samples still contain the aliasing artifacts.</p>
+<p>To recover the original audio, Vorbis employs Time-Domain Aliasing
+Cancellation (TDAC). When two consecutive overlapping IMDCT output
+blocks are multiplied by their synthesis windows and added together
+(overlap-add), the aliased components in the second half of the previous
+block have the exact opposite phase of the aliased components in the
+first half of the current block. As long as the window function
+satisfies the Princen-Bradley condition, these aliased signals cancel
+each other out completely.</p>
+<h3 id="the-challenge-of-variable-block-sizes">The Challenge of Variable
+Block Sizes</h3>
+<p>Audio signals contain both steady-state tones and sharp transients.
+Vorbis handles this by switching dynamically between two block
+sizes:</p>
+<ul>
+<li><strong>Long blocks:</strong> Provide high frequency resolution for
+sustained, tonal sounds.</li>
+<li><strong>Short blocks:</strong> Provide high temporal resolution to
+prevent pre-echo artifacts during transient events (such as drum
+hits).</li>
+</ul>
+<p>Standard TDAC requires adjacent overlapping blocks to have matching
+lengths and symmetric window functions to ensure exact cancellation. If
+a long block were simply overlapped directly with a short block, the
+differing time scales would destroy the symmetry of the aliasing terms,
+leaving audible aliasing and boundary discontinuities in the output
+signal.</p>
+<h3 id="asymmetric-windowing-for-seamless-transitions">Asymmetric
+Windowing for Seamless Transitions</h3>
+<p>Vorbis resolves this conflict without modifying the underlying
+transform size mid-frame by using hybrid, asymmetric windows during
+transitions.</p>
+<p>In Vorbis, every block’s window is conceptually split into two
+halves:</p>
+<ol type="1">
+<li><strong>The left half:</strong> Shapes the overlap with the
+preceding block.</li>
+<li><strong>The right half:</strong> Shapes the overlap with the
+succeeding block.</li>
+</ol>
+<p>The shape and effective length of each half are determined entirely
+by the size of the adjacent block:</p>
+<ul>
+<li><strong>Long-to-Long:</strong> Both halves use standard, full-length
+long-window slopes.</li>
+<li><strong>Short-to-Short:</strong> Both halves use standard
+short-window slopes.</li>
+<li><strong>Long-to-Short Transition:</strong> The transition frame uses
+a long transform size, but its window is asymmetric. The left half uses
+the standard long slope to match the preceding long block. The right
+half features a short transition slope that matches the incoming short
+block, surrounded by zero-padding to fill the remaining duration of the
+long frame.</li>
+<li><strong>Short-to-Long Transition:</strong> The window has a short
+transition slope on its left half to match the departing short block
+(padded with zeros), followed by a standard long slope on its right half
+to match the upcoming long block.</li>
+</ul>
+<h3 id="zero-padding-and-mathematical-symmetry">Zero-Padding and
+Mathematical Symmetry</h3>
+<p>When transitioning between different block lengths, Vorbis inserts
+zero-padding into the inactive portions of the larger block's window.
+This aligns the center of the transition slope with the center of the
+adjacent short block's slope.</p>
+<p>Because the overlapping region between the two blocks now shares the
+exact same window geometry, time span, and reflection point, the
+mathematical conditions for TDAC are fully restored. The aliasing
+artifacts generated by the IMDCT on both sides remain mirror images with
+inverted signs. When the overlap-add step executes, the aliased signals
+cancel out entirely, preserving seamless audio continuity across
+variable block boundaries.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

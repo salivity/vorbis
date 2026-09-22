@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intermediate Calculation Precision in Libvorbis - vorbis</title>
+    <meta name="description" content="Standard libvorbis primarily performs intermediate audio calculations using 32-bit single-precision IEEE 754 floating-point numbers. While initialization routines, filter design, and lookup table generation may rely on 64-bit double-precision calculation">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/intermediate-calculation-precision-in-libvorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Intermediate Calculation Precision in Libvorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/intermediate-calculation-precision-in-libvorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Standard libvorbis primarily performs intermediate audio calculations using 32-bit single-precision IEEE 754 floating-point numbers. While initialization routines, filter design, and lookup table generation may rely on 64-bit double-precision calculation" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="intermediate-calculation-precision-in-libvorbis">Intermediate
+Calculation Precision in Libvorbis</h1>
+<p>Standard <code>libvorbis</code> primarily performs intermediate audio
+calculations using 32-bit single-precision IEEE 754 floating-point
+numbers. While initialization routines, filter design, and lookup table
+generation may rely on 64-bit double-precision calculations, the
+operational decode and encode pipelines—encompassing the
+time-to-frequency transforms, psychoacoustic modeling, and spectral
+synthesis—operate on standard 32-bit <code>float</code> values.
+Additionally, specific sub-algorithms, such as spectral floor synthesis,
+employ integer arithmetic to guarantee bit-exact reconstruction across
+different hardware platforms.</p>
+<h3 id="runtime-audio-processing-32-bit-float">Runtime Audio Processing
+(32-Bit Float)</h3>
+<p>In the standard <code>libvorbis</code> reference library maintained
+by Xiph.Org, the core processing pipeline uses single-precision
+floating-point arithmetic (<code>float</code> in standard C). This
+precision applies directly to:</p>
+<ul>
+<li><strong>Audio Buffer Representation:</strong> Inter-stage PCM
+buffers (<code>vorbis_dsp_state</code> and <code>vorbis_block</code>)
+store uncompressed and intermediate audio data as multi-channel arrays
+of 32-bit floats.</li>
+<li><strong>Modified Discrete Cosine Transform (MDCT):</strong> Forward
+and inverse MDCT transformations process spectral coefficients using
+single-precision math.</li>
+<li><strong>Residue and Coupling:</strong> Sub-band residue vector
+unpacking, channel coupling, and angle/magnitude matrix operations use
+32-bit floating-point registers.</li>
+<li><strong>Windowing and Overlap-Add:</strong> The synthesis stage
+scales windowed frequency vectors into final time-domain PCM samples
+using standard single-precision multiplication.</li>
+</ul>
+<h3 id="initialization-and-setup-tables-64-bit-double">Initialization
+and Setup Tables (64-Bit Double)</h3>
+<p>Although operational buffers execute in 32-bit precision, static data
+setup and filter definitions frequently utilize 64-bit double-precision
+(<code>double</code>).</p>
+<p>During codec initialization and codebook unpacking, transcendental
+functions (such as <code>sin</code>, <code>cos</code>, and logarithmic
+scale conversions for psychoacoustics) compute base values using
+standard C library double-precision routines. These values are quantized
+or downcast to 32-bit floats when populated into lookup tables used by
+the performance-critical inner loops.</p>
+<h3 id="spectral-floor-decoding-fixed-point-and-integer-math">Spectral
+Floor Decoding (Fixed-Point and Integer Math)</h3>
+<p>To prevent cross-platform divergence caused by minor differences in
+floating-point implementations (such as FPU rounding modes or extended
+precision registers), <code>libvorbis</code> uses integer math for
+specific intermediate stages:</p>
+<ul>
+<li><strong>Floor 1 Reconstruction:</strong> The Floor 1 spectral
+envelope calculation uses an integer-based line-drawing algorithm
+derived from the Bresenham algorithm. This linear interpolation step
+uses fixed-point integer operations (typically 32-bit signed integers)
+to determine envelope values at defined bark-scale knot positions.</li>
+<li><strong>Log-to-Linear Conversion:</strong> Once the integer line
+computation is finalized, the resulting curve is mapped back to the
+linear domain and converted into 32-bit floating-point multipliers,
+which scale the residue vector.</li>
+</ul>
+<h3 id="difference-from-fixed-point-variants">Difference from
+Fixed-Point Variants</h3>
+<p>The standard <code>libvorbis</code> reference implementation must not
+be confused with <code>libvorbisidec</code> (commonly known as Tremor).
+While standard <code>libvorbis</code> targets general-purpose processors
+using hardware-accelerated IEEE 754 32-bit single-precision math, Tremor
+is a separate implementation designed for embedded systems that
+completely replaces intermediate floating-point operations with 32-bit
+fixed-point arithmetic and 64-bit accumulators.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

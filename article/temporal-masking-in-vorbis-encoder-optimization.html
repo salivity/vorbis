@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporal Masking in Vorbis Encoder Optimization - vorbis</title>
+    <meta name="description" content="Temporal masking is a fundamental psychoacoustic principle that allows the Vorbis audio encoder to reduce file sizes without degrading perceived audio quality. By exploiting the human auditory system's inability to detect quiet sounds immediately before">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/temporal-masking-in-vorbis-encoder-optimization">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Temporal Masking in Vorbis Encoder Optimization - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/temporal-masking-in-vorbis-encoder-optimization" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Temporal masking is a fundamental psychoacoustic principle that allows the Vorbis audio encoder to reduce file sizes without degrading perceived audio quality. By exploiting the human auditory system's inability to detect quiet sounds immediately before" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="temporal-masking-in-vorbis-encoder-optimization">Temporal
+Masking in Vorbis Encoder Optimization</h1>
+<p>Temporal masking is a fundamental psychoacoustic principle that
+allows the Vorbis audio encoder to reduce file sizes without degrading
+perceived audio quality. By exploiting the human auditory system's
+inability to detect quiet sounds immediately before or after a sudden
+loud sound, the Vorbis encoder determines where audio details can be
+omitted or heavily compressed. Understanding and modeling this behavior
+plays a crucial role in managing pre-echo artifacts, switching window
+sizes dynamically, and allocating bits efficiently during encoding.</p>
+<h3 id="the-mechanics-of-temporal-masking">The Mechanics of Temporal
+Masking</h3>
+<p>The human auditory system does not process sound instantaneously; it
+requires time to recover from sudden amplitude changes. When a
+high-energy transient sound occurs, it obscures adjacent lower-energy
+sounds across two distinct temporal regions:</p>
+<ul>
+<li><strong>Pre-masking (Backward Masking):</strong> The softer sound is
+rendered inaudible for approximately 5 to 20 milliseconds
+<em>before</em> the transient occurs.</li>
+<li><strong>Post-masking (Forward Masking):</strong> The softer sound
+remains inaudible for a longer period, typically 50 to 200 milliseconds,
+<em>after</em> the transient subsides.</li>
+</ul>
+<p>Because post-masking persists significantly longer than pre-masking,
+the auditory system tolerates far more quantization error after a
+transient than before it.</p>
+<h3 id="preventing-pre-echo-via-block-switching">Preventing Pre-Echo via
+Block Switching</h3>
+<p>In lossy transform codecs like Vorbis, audio is transformed from the
+time domain to the frequency domain using the Modified Discrete Cosine
+Transform (MDCT) over discrete blocks. When a transient—such as a snare
+drum hit or a castanet strike—occurs inside a standard long block, the
+quantization noise generated by that transient is smeared evenly across
+the entire duration of the block.</p>
+<p>Because pre-masking is brief (under 20 ms), the smeared quantization
+noise occurring before the transient extends beyond the psychoacoustic
+masking window. This produces an audible artifact known as
+"pre-echo."</p>
+<p>Vorbis utilizes temporal masking models to detect transients and
+trigger dynamic block switching:</p>
+<ol type="1">
+<li><strong>Long Blocks:</strong> When the audio signal is relatively
+stationary, the encoder uses long blocks (typically 2048 samples) to
+maximize spectral resolution and compression efficiency.</li>
+<li><strong>Short Blocks:</strong> When a sudden rise in energy is
+detected that would exceed the pre-masking threshold, the encoder
+rapidly transitions to short blocks (typically 256 samples). This
+confines the quantization noise to a very narrow time window, ensuring
+that all pre-transient noise falls safely within the short pre-masking
+window where human ears cannot detect it.</li>
+</ol>
+<h3 id="bit-allocation-and-noise-shaping">Bit Allocation and Noise
+Shaping</h3>
+<p>Vorbis separates spectral data into two distinct layers: the spectral
+envelope (Floor) and the fine structure (Residue). Temporal masking
+directly influences how the encoder optimizes the Residue layer.</p>
+<p>In sections governed by strong post-masking, the encoder can afford
+to quantize audio data much more aggressively. By raising the noise
+floor in regions where post-masking is active, Vorbis uses fewer bits to
+represent the signal without introducing perceptible distortion.
+Conversely, in regions where temporal masking is absent, quantization
+noise thresholds are strictly lowered to preserve clarity.</p>
+<p>Through precise temporal masking modeling, the Vorbis encoder ensures
+that bits are not wasted encoding inaudible acoustic data while
+simultaneously mitigating the temporal artifacts that compromise
+perceived fidelity.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

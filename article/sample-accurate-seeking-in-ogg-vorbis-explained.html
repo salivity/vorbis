@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample-Accurate Seeking in Ogg Vorbis Explained - vorbis</title>
+    <meta name="description" content="This article provides a technical overview of how sample-accurate seeking operates in Vorbis audio streams. It details the interaction between the Ogg container and the Vorbis audio codec, focusing on the granule position timestamping mechanism, page-bas">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/sample-accurate-seeking-in-ogg-vorbis-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sample-Accurate Seeking in Ogg Vorbis Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/sample-accurate-seeking-in-ogg-vorbis-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a technical overview of how sample-accurate seeking operates in Vorbis audio streams. It details the interaction between the Ogg container and the Vorbis audio codec, focusing on the granule position timestamping mechanism, page-bas" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="sample-accurate-seeking-in-ogg-vorbis-explained">Sample-Accurate
+Seeking in Ogg Vorbis Explained</h1>
+<p>This article provides a technical overview of how sample-accurate
+seeking operates in Vorbis audio streams. It details the interaction
+between the Ogg container and the Vorbis audio codec, focusing on the
+granule position timestamping mechanism, page-based bisection searching,
+and the preroll decoding required to reconstruct continuous audio
+waveforms down to an exact PCM sample.</p>
+<h3 id="the-role-of-the-ogg-granule-position">The Role of the Ogg
+Granule Position</h3>
+<p>Vorbis is an audio coding format, but it is almost universally
+encapsulated within the Ogg container format. The primary mechanism
+enabling sample accuracy is the Ogg container's <code>granulepos</code>
+(granule position) field.</p>
+<p>Every Ogg page header contains a 64-bit <code>granulepos</code>
+integer. In a Vorbis stream, this number does not represent a timestamp
+in milliseconds; instead, it stores the exact, cumulative number of PCM
+audio samples decoded up to the end of the last complete packet in that
+page. Because this count represents absolute sample numbers from the
+beginning of the audio track, it provides an absolute reference frame
+unaffected by variable bitrates.</p>
+<h3 id="bisection-search-algorithm">Bisection Search Algorithm</h3>
+<p>Because Ogg Vorbis files are typically streamed or stored without a
+global index table or seek table at the start of the file, decoders
+locate target samples using a bisection (binary) search:</p>
+<ol type="1">
+<li><strong>Boundary Probing:</strong> The decoder inspects the
+beginning and end of the file to determine the total duration and
+starting sample offset.</li>
+<li><strong>Interpolation and Bisecting:</strong> To find target sample
+<span class="math inline">\(N\)</span>, the decoder estimates byte
+offsets and performs binary searches across the file, reading the
+<code>granulepos</code> stored in the headers of Ogg pages.</li>
+<li><strong>Pinpointing the Target Page:</strong> The search narrows
+down until it locates the specific Ogg page where the previous page ends
+at a granule position less than <span class="math inline">\(N\)</span>,
+and the current page ends at a granule position greater than or equal to
+<span class="math inline">\(N\)</span>.</li>
+</ol>
+<h3 id="overcoming-overlap-add-and-mdct-artifacts">Overcoming
+Overlap-Add and MDCT Artifacts</h3>
+<p>Finding the correct data packet is not enough for sample accuracy due
+to the transform properties of the Vorbis codec. Vorbis relies on the
+Modified Discrete Cosine Transform (MDCT) with overlapping frames
+(typically short and long windows of varying lengths, such as 256 or
+2048 samples).</p>
+<p>Each decoded packet produces half the data required for an audio
+frame, with the remaining half coming from the overlap-add of the
+preceding and subsequent packets:</p>
+<ul>
+<li><strong>Preroll Decoding:</strong> A decoder cannot simply start
+rendering audio directly from the packet containing sample <span
+class="math inline">\(N\)</span>. Doing so would result in audio
+discontinuities (clicks or incorrect amplitude) because the overlap
+buffer is empty.</li>
+<li><strong>Preceding Window Fetch:</strong> The decoder must seek to at
+least one packet (or more, depending on block switching sequences) prior
+to the target packet to populate the overlap-add synthesis window.</li>
+</ul>
+<h3 id="final-sample-trimming">Final Sample Trimming</h3>
+<p>Once the decoder initializes its synthesis buffer by decoding the
+preceding preroll packet, it decodes the packet containing the target
+sample <span class="math inline">\(N\)</span>. The decoder then performs
+the overlap-add calculation to reconstruct the PCM waveform and discards
+all synthesized samples prior to <span class="math inline">\(N\)</span>.
+The resulting output begins precisely at the requested PCM sample index,
+completing the process of sample-accurate seeking.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Decoders Handle Dropped Audio Frames - vorbis</title>
+    <meta name="description" content="When audio frames in an Ogg Vorbis stream are dropped due to network packet loss or data corruption, the decoder faces a disruption in continuous audio synthesis. Because Vorbis relies on overlapping transform windows, dropping even a single frame affect">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-decoders-handle-dropped-audio-frames">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Decoders Handle Dropped Audio Frames - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-decoders-handle-dropped-audio-frames" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When audio frames in an Ogg Vorbis stream are dropped due to network packet loss or data corruption, the decoder faces a disruption in continuous audio synthesis. Because Vorbis relies on overlapping transform windows, dropping even a single frame affect" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-decoders-handle-dropped-audio-frames">How Vorbis
+Decoders Handle Dropped Audio Frames</h1>
+<p>When audio frames in an Ogg Vorbis stream are dropped due to network
+packet loss or data corruption, the decoder faces a disruption in
+continuous audio synthesis. Because Vorbis relies on overlapping
+transform windows, dropping even a single frame affects not only the
+missing time segment but also the reconstruction of adjacent frames.
+This article explores how Vorbis decoders detect dropped frames, process
+the disruption through the Modified Discrete Cosine Transform (MDCT)
+overlap-add pipeline, apply error concealment, and generate specific
+acoustic artifacts.</p>
+<h2 id="packet-loss-detection">Packet Loss Detection</h2>
+<p>In a typical Vorbis implementation, the audio bitstream is
+encapsulated in an Ogg container. Dropped audio frames are primarily
+identified at the container level rather than by the raw Vorbis
+bitstream:</p>
+<ul>
+<li><strong>Ogg Page Sequence Numbers:</strong> The Ogg transport layer
+tags each page with a sequential number. When a sequence number gap
+occurs, the demuxer flags a discontinuous stream.</li>
+<li><strong>Granule Position:</strong> Each Ogg page contains a
+<code>granulepos</code> field representing the absolute PCM sample
+position. If a page is lost, the jump in granule position indicates the
+exact number of lost PCM audio samples to the decoder.</li>
+</ul>
+<h2 id="the-mdct-overlap-add-dilemma">The MDCT Overlap-Add Dilemma</h2>
+<p>Vorbis is a transform-based codec using the Modified Discrete Cosine
+Transform (MDCT) with a 50% window overlap. Each Vorbis packet decodes
+into a windowed block of frequency coefficients, which is then
+transformed into time-domain samples:</p>
+<ol type="1">
+<li><strong>Overlap Dependency:</strong> To reconstruct continuous
+audio, the second half of the current frame’s samples must be summed
+with the first half of the subsequent frame’s samples
+(overlap-add).</li>
+<li><strong>Cascading Impact:</strong> Because of this 50% overlap,
+losing a single packet impacts two distinct reconstruction windows: the
+transition from the previous valid frame, and the transition into the
+next valid frame.</li>
+</ol>
+<h2 id="decoder-behavior-and-synthesis-interruption">Decoder Behavior
+and Synthesis Interruption</h2>
+<p>When a frame is missing, the standard Vorbis reference decoder
+(<code>libvorbis</code>) cannot perform a regular overlap-add sequence.
+The typical internal behavior unfolds as follows:</p>
+<ul>
+<li><strong>Incomplete Previous Block:</strong> The trailing half of the
+last successfully decoded block lacks a corresponding leading half to
+overlap with. Without intervention, this causes an incomplete sample
+block.</li>
+<li><strong>Decoder State Reset:</strong> The decoder marks the internal
+synthesis state as broken. Many decoders discard the pending overlap
+data from the preceding frame to prevent out-of-phase mixing when
+decoding resumes.</li>
+<li><strong>Resynchronization:</strong> When the next valid packet
+arrives, the decoder must re-initialize its overlap-add buffer. It
+decodes the incoming frame's coefficients, but because it has no valid
+preceding data to overlap with, it either applies a synthetic
+half-window fade-in or delays output until a second consecutive valid
+packet arrives.</li>
+</ul>
+<h2 id="error-concealment-strategies">Error Concealment Strategies</h2>
+<p>Standard Vorbis does not mandate a specific Packet Loss Concealment
+(PLC) algorithm, so the behavior varies depending on the specific
+decoder implementation:</p>
+<ul>
+<li><strong>Zero-Filling / Muting:</strong> The default behavior in
+minimal implementations is to insert zeroed PCM samples (silence) for
+the duration of the lost samples determined by the granule position.
+This maintains strict time synchronization at the expense of an audible
+gap.</li>
+<li><strong>Fade-Out / Fade-In:</strong> More sophisticated decoders
+apply an artificial fade-out to zero on the incomplete preceding frame,
+and a fade-in on the subsequent recovered frame. This prevents abrupt
+waveform discontinuities.</li>
+<li><strong>Waveform Extrapolation (Advanced PLC):</strong> Some modern
+media players and VoIP frameworks employ custom PLC layers around the
+Vorbis decoder. These algorithms extrapolate pitch and spectral envelope
+data from past valid frames to synthesize plausible audio across the
+missing frame interval.</li>
+</ul>
+<h2 id="resulting-audio-artifacts">Resulting Audio Artifacts</h2>
+<p>The listener's perception of dropped Vorbis frames depends directly
+on the concealment strategy applied by the player:</p>
+<ul>
+<li><strong>Clicks and Pops:</strong> If the decoder abruptly zeroes the
+output without windowing the remaining overlap samples, a sudden DC
+offset or waveform step occurs, creating high-frequency clicks.</li>
+<li><strong>Micro-Dropouts:</strong> When zero-filling is accompanied by
+fast crossfades, the user hears momentary dropouts or stuttering, while
+the stream remains in sync with video or other audio tracks.</li>
+<li><strong>Phase Smearing:</strong> If a decoder attempts basic frame
+repetition instead of proper overlap-add synthesis, severe phase
+cancellation and metallic-sounding artifacts will occur at the
+boundaries of the lost frame.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

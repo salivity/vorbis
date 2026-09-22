@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Libraries for Decoding Vorbis Audio - vorbis</title>
+    <meta name="description" content="Java does not natively support the Ogg Vorbis audio format in its standard runtime environment, requiring developers to rely on third-party libraries for decoding tasks. This guide outlines the most widely used Java libraries for decoding Vorbis streams,">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/java-libraries-for-decoding-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Java Libraries for Decoding Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/java-libraries-for-decoding-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Java does not natively support the Ogg Vorbis audio format in its standard runtime environment, requiring developers to rely on third-party libraries for decoding tasks. This guide outlines the most widely used Java libraries for decoding Vorbis streams," />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="java-libraries-for-decoding-vorbis-audio">Java Libraries for
+Decoding Vorbis Audio</h1>
+<p>Java does not natively support the Ogg Vorbis audio format in its
+standard runtime environment, requiring developers to rely on
+third-party libraries for decoding tasks. This guide outlines the most
+widely used Java libraries for decoding Vorbis streams, detailing pure
+Java implementations, Java Sound extensions, and high-performance native
+bindings to help you select the right tool for your project.</p>
+<h3 id="1-jorbis">1. JOrbis</h3>
+<p>JOrbis is a pure Java port of the official C-based
+<code>libvorbis</code> reference library, developed by JCraft. Because
+it is written entirely in Java, it runs anywhere without requiring
+platform-specific native binaries. JOrbis operates at a low level,
+granting developers direct control over Ogg bitstreams, packet decoding,
+and PCM buffer output. While stable and dependency-free, its low-level
+API can be verbose and requires manual management of audio streaming
+pipelines.</p>
+<h3 id="2-vorbisspi">2. VorbisSPI</h3>
+<p>VorbisSPI is a Service Provider Interface (SPI) plugin that
+integrates with the standard Java Sound API
+(<code>javax.sound.sampled</code>). Internally, it typically uses JOrbis
+as the decoding engine, but it abstracts away the complex Vorbis stream
+handling. Once added to your classpath, VorbisSPI allows you to read
+<code>.ogg</code> files directly using standard Java calls such as
+<code>AudioSystem.getAudioInputStream()</code>. It is ideal for existing
+Java Sound workflows requiring drop-in Vorbis playback with minimal code
+changes.</p>
+<h3 id="3-lwjgl-stb_vorbis">3. LWJGL (stb_vorbis)</h3>
+<p>The Lightweight Java Game Library (LWJGL) provides Java bindings for
+<code>stb_vorbis</code>, a fast, single-file C library for decoding
+Vorbis files. Unlike pure Java solutions, LWJGL relies on native
+binaries, which are automatically distributed via platform-specific
+JARs. It delivers superior decoding speed and low latency, making it the
+preferred choice for games, interactive media, and memory-constrained
+real-time environments.</p>
+<h3 id="4-javacpp-presets-for-ffmpeg">4. JavaCPP Presets for FFmpeg</h3>
+<p>For applications that require decoding complex or multiplexed audio
+streams, the JavaCPP Presets for FFmpeg offer direct Java access to
+FFmpeg's <code>libavcodec</code> and <code>libavformat</code>. This
+approach handles Ogg Vorbis alongside dozens of other codecs. While it
+introduces large native binaries and a steeper learning curve, it
+provides optimal performance, multithreaded decoding capabilities, and
+support for streaming network audio.</p>
+<h3 id="choosing-the-right-library">Choosing the Right Library</h3>
+<ul>
+<li><strong>Use VorbisSPI</strong> if you already use standard Java
+Sound (<code>AudioSystem</code>) and need a seamless, drop-in
+solution.</li>
+<li><strong>Use JOrbis</strong> if you require a lightweight, pure-Java
+decoder without platform-specific dependencies.</li>
+<li><strong>Use LWJGL (<code>stb_vorbis</code>)</strong> if maximum
+decoding speed and low latency are critical, such as in game
+engines.</li>
+<li><strong>Use JavaCPP FFmpeg</strong> if your application handles
+multiple media formats or requires advanced media manipulation
+pipelines.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

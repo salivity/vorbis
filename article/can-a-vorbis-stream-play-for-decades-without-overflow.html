@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can a Vorbis Stream Play for Decades Without Overflow? - vorbis</title>
+    <meta name="description" content="A continuous Vorbis stream can theoretically play for decades—and even millions of years—without suffering from a specification-level timing overflow. The underlying Ogg container format tracks timing using a 64-bit integer called the granule positio">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-a-vorbis-stream-play-for-decades-without-overflow">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can a Vorbis Stream Play for Decades Without Overflow? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-a-vorbis-stream-play-for-decades-without-overflow" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="A continuous Vorbis stream can theoretically play for decades—and even millions of years—without suffering from a specification-level timing overflow. The underlying Ogg container format tracks timing using a 64-bit integer called the granule positio" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-a-vorbis-stream-play-for-decades-without-overflow">Can a
+Vorbis Stream Play for Decades Without Overflow?</h1>
+<p>A continuous Vorbis stream can theoretically play for decades—and
+even millions of years—without suffering from a specification-level
+timing overflow. The underlying Ogg container format tracks timing using
+a 64-bit integer called the granule position, which accommodates vast
+spans of time before running out of addressable samples. While the audio
+format specification effortlessly supports playback across decades,
+practical real-world limitations such as software memory management,
+transport protocols, and player implementation bugs are the actual
+barriers to continuous multi-decade streaming.</p>
+<h3 id="the-mathematics-of-ogg-granule-positions">The Mathematics of Ogg
+Granule Positions</h3>
+<p>Vorbis audio does not maintain absolute timestamps on its own; it
+relies on its native container, Ogg, to track timing. Ogg accomplishes
+this via the <code>granulepos</code> (granule position) field embedded
+within each page header.</p>
+<p>The <code>granulepos</code> is stored as an explicit, signed 64-bit
+integer (<code>int64_t</code>). Because negative values are reserved
+(such as <code>-1</code> indicating a page that contains no completed
+packets), the container has <span class="math inline">\(2^{63} -
+1\)</span> positive values available to record the exact number of
+decoded samples.</p>
+<p>Evaluating this capacity against standard audio sample rates
+demonstrates the scale:</p>
+<ul>
+<li><p><strong>At 44.1 kHz (44,100 samples per second):</strong> <span
+class="math display">\[\frac{2^{63} - 1}{44,100 \text{ samples/sec}}
+\approx 2.09 \times 10^{14} \text{ seconds} \approx 6.6 \text{ million
+years}\]</span></p></li>
+<li><p><strong>At 48 kHz (48,000 samples per second):</strong> <span
+class="math display">\[\frac{2^{63} - 1}{48,000 \text{ samples/sec}}
+\approx 1.92 \times 10^{14} \text{ seconds} \approx 6.08 \text{ million
+years}\]</span></p></li>
+<li><p><strong>At 192 kHz (high-resolution audio):</strong> <span
+class="math display">\[\frac{2^{63} - 1}{192,000 \text{ samples/sec}}
+\approx 4.80 \times 10^{13} \text{ seconds} \approx 1.52 \text{ million
+years}\]</span></p></li>
+</ul>
+<p>Even under heavy continuous use at studio-grade sample rates, the
+mathematical limit of the Vorbis timing structure will not overflow
+within any human timeframe.</p>
+<h3 id="independent-stream-chaining">Independent Stream Chaining</h3>
+<p>If an application ever needed to circumvent the 64-bit limit, Ogg
+natively supports stream chaining. A continuous stream can end a logical
+bitstream and immediately start a new one with a fresh serial number and
+reset granule position, all inside the same continuous physical stream.
+Decoders conforming to the specification seamlessly transition across
+these chained streams without interrupting the continuous audio
+output.</p>
+<h3 id="real-world-failure-points">Real-World Failure Points</h3>
+<p>Although the specification handles decades of continuous audio with
+ease, practical playback over that duration usually fails due to
+external constraints:</p>
+<ol type="1">
+<li><strong>Client-Side Integer Truncation:</strong> Many audio players
+convert the 64-bit Ogg timestamp into a 32-bit millisecond counter or a
+32-bit floating-point value internally. A signed 32-bit millisecond
+counter overflows after approximately 24.8 days, often causing the media
+player to freeze, loop, or crash.</li>
+<li><strong>Transport Layer Limits:</strong> Continuous streams
+delivered via HTTP or TCP are subject to socket timeouts, IP address
+reassignments, and edge server restarts.</li>
+<li><strong>Memory Leaks:</strong> Both encoding servers (such as
+Icecast) and client-side playback decoders frequently suffer from minor
+memory leaks that eventually exhaust system resources long before a
+format-level overflow occurs.</li>
+</ol>
+<p>At the format level, a continuous Vorbis stream will not encounter a
+timing overflow for millions of years.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

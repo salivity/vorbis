@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Floor 0 vs Floor 1: Key Differences Explained - vorbis</title>
+    <meta name="description" content="In the Vorbis audio codec, the "floor" represents the coarse spectral envelope of an audio frame, which is decoded first and then multiplied by the spectral residue to reconstruct the final audio signal. Vorbis defines two primary floor mechanisms: Floor">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-floor-0-vs-floor-1-key-differences-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Floor 0 vs Floor 1: Key Differences Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-floor-0-vs-floor-1-key-differences-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the Vorbis audio codec, the "floor" represents the coarse spectral envelope of an audio frame, which is decoded first and then multiplied by the spectral residue to reconstruct the final audio signal. Vorbis defines two primary floor mechanisms: Floor" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-floor-0-vs-floor-1-key-differences-explained">Vorbis
+Floor 0 vs Floor 1: Key Differences Explained</h1>
+<p>In the Vorbis audio codec, the "floor" represents the coarse spectral
+envelope of an audio frame, which is decoded first and then multiplied
+by the spectral residue to reconstruct the final audio signal. Vorbis
+defines two primary floor mechanisms: Floor 0, which uses Linear
+Predictive Coding (LPC) synthesized through Line Spectral Frequencies
+(LSF), and Floor 1, which employs a piecewise linear interpolation
+model. While Floor 0 was the original method envisioned for low
+bitrates, Floor 1 proved computationally superior and more adaptable,
+ultimately becoming the ubiquitous standard in modern Vorbis
+implementations.</p>
+<h3 id="understanding-spectral-floors-in-vorbis">Understanding Spectral
+Floors in Vorbis</h3>
+<p>Vorbis decomposes audio spectra into two components: the spectral
+floor (the general shape or curve of the frequency spectrum) and the
+residue (the fine harmonic details). Accurately and efficiently encoding
+the floor is critical to maintaining audio fidelity while minimizing
+bitrate. The difference between Floor 0 and Floor 1 lies entirely in the
+mathematical model chosen to represent and synthesize this curve.</p>
+<h3 id="floor-0-linear-predictive-coding-lpc">Floor 0: Linear Predictive
+Coding (LPC)</h3>
+<p>Floor 0 models the spectral envelope using classic speech-coding
+techniques based on Linear Predictive Coding:</p>
+<ul>
+<li><strong>Underlying Model:</strong> It calculates LPC coefficients to
+approximate the envelope, which are subsequently converted to Line
+Spectral Frequencies (LSFs, also known as Line Spectral Pairs) for
+quantization and transmission.</li>
+<li><strong>Reconstruction Process:</strong> To decode the curve, the
+decoder must evaluate the continuous all-pole LPC filter spectrum across
+all frequency bins in the discrete Fourier transform (Bark scale).</li>
+<li><strong>Computational Cost:</strong> Evaluating the LPC filter
+across every frequency bin requires significant trigonometric and
+mathematical computation, placing a heavy burden on the CPU.</li>
+<li><strong>Psychoacoustic Limitations:</strong> LPC provides a global
+approximation of the spectrum. This makes localized adjustments
+difficult; tweaking one parameter to address an artifact at a high
+frequency can unintentionally alter the lower frequencies.</li>
+</ul>
+<h3 id="floor-1-piecewise-linear-approximation">Floor 1: Piecewise
+Linear Approximation</h3>
+<p>Floor 1 discards the LPC model in favor of a piecewise linear curve
+constructed from discrete frequency nodes:</p>
+<ul>
+<li><strong>Underlying Model:</strong> The encoder selects a series of
+frequency points (nodes) along a logarithmic frequency axis and assigns
+an amplitude value to each.</li>
+<li><strong>Reconstruction Process:</strong> The decoder sorts the nodes
+and performs simple linear interpolation (in the dB/log-frequency
+domain) between them to generate the complete floor curve across all
+frequency bins.</li>
+<li><strong>Computational Cost:</strong> Linear interpolation involves
+simple additions and multiplications, requiring far less CPU processing
+power than synthesizing LPC filters.</li>
+<li><strong>Psychoacoustic Advantages:</strong> Floor 1 provides
+localized control. An encoder can insert extra nodes precisely where a
+sharp spectral peak or notch exists without affecting surrounding
+frequency bands.</li>
+</ul>
+<h3 id="key-differences-at-a-glance">Key Differences at a Glance</h3>
+<ul>
+<li><strong>Mathematical Approach:</strong> Floor 0 uses an all-pole LPC
+filter transformed into LSFs; Floor 1 uses piecewise linear
+interpolation between explicit frequency-amplitude points.</li>
+<li><strong>Decoder Efficiency:</strong> Floor 1 is significantly faster
+to decode than Floor 0 due to minimal mathematical overhead during curve
+synthesis.</li>
+<li><strong>Tuning and Flexibility:</strong> Floor 1 allows
+fine-grained, localized control over the envelope curve, making it much
+easier for psychoacoustic models to eliminate noise and artifacts.</li>
+<li><strong>Modern Adoption:</strong> Floor 0 is considered legacy and
+effectively obsolete. Almost all standard Vorbis encoders (such as
+<code>libvorbis</code>) use Floor 1 exclusively for all modern
+bitstreams.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

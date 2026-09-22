@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Transitional Window Shape for Block Switching - vorbis</title>
+    <meta name="description" content="This article explains how the Vorbis audio codec handles switching between different transform block sizes to prevent audio artifacts. When transitioning between short and long blocks, Vorbis avoids the need for a separate transition block type by applyi">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-transitional-window-shape-for-block-switching">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Transitional Window Shape for Block Switching - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-transitional-window-shape-for-block-switching" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the Vorbis audio codec handles switching between different transform block sizes to prevent audio artifacts. When transitioning between short and long blocks, Vorbis avoids the need for a separate transition block type by applyi" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-transitional-window-shape-for-block-switching">Vorbis
+Transitional Window Shape for Block Switching</h1>
+<p>This article explains how the Vorbis audio codec handles switching
+between different transform block sizes to prevent audio artifacts. When
+transitioning between short and long blocks, Vorbis avoids the need for
+a separate transition block type by applying an asymmetric window shape
+directly to the long block. The following sections describe how this
+transitional window is structured, how it satisfies time-domain aliasing
+cancellation requirements, and how the window function is
+calculated.</p>
+<h2 id="block-switching-in-vorbis">Block Switching in Vorbis</h2>
+<p>The Vorbis audio format utilizes the Modified Discrete Cosine
+Transform (MDCT) to convert time-domain audio signals into
+frequency-domain coefficients. To balance time and frequency resolution,
+Vorbis supports two primary transform sizes:</p>
+<ul>
+<li><strong>Long blocks:</strong> Used during stationary or tonal audio
+segments to maximize frequency resolution.</li>
+<li><strong>Short blocks:</strong> Used during transients (such as drum
+strikes or sharp attacks) to limit temporal smearing, known as pre-echo
+artifacts.</li>
+</ul>
+<p>Because MDCT relies on 50% overlap-add between consecutive frames to
+cancel time-domain aliasing, overlapping two frames of differing lengths
+requires adjusting the window envelope where they meet.</p>
+<h2 id="the-asymmetric-transitional-window">The Asymmetric Transitional
+Window</h2>
+<p>Vorbis does not define a distinct "transition block size." Instead,
+it reshapes the <strong>long block</strong> adjacent to a short block
+into an asymmetric window.</p>
+<p>An asymmetric transitional block consists of two distinct halves:</p>
+<ol type="1">
+<li><strong>The side adjacent to another long block:</strong> Uses a
+standard half-window corresponding to the long block size.</li>
+<li><strong>The side adjacent to a short block:</strong> Uses a
+shortened transition slope that matches the short block’s window slope,
+with the remaining area padded with zeros.</li>
+</ol>
+<h3 id="long-to-short-transition">Long-to-Short Transition</h3>
+<p>When moving from a long block to a short block:</p>
+<ul>
+<li>The left half of the long block retains the standard long window
+slope to overlap with the preceding long block.</li>
+<li>The center of the block sustains full amplitude (<span
+class="math inline">\(1.0\)</span>).</li>
+<li>The right half drops off rapidly, using the short block's window
+slope. The remainder of the right half is padded with zeros (<span
+class="math inline">\(0.0\)</span>) to align the overlap region with the
+upcoming short block.</li>
+</ul>
+<h3 id="short-to-long-transition">Short-to-Long Transition</h3>
+<p>When moving from a short block to a long block:</p>
+<ul>
+<li>The left half begins with zeros (<span
+class="math inline">\(0.0\)</span>) and rises using the short block's
+window slope to match the preceding short block.</li>
+<li>The center of the block sustains full amplitude (<span
+class="math inline">\(1.0\)</span>).</li>
+<li>The right half uses the standard long window slope to overlap
+smoothly with the following long block.</li>
+</ul>
+<h2 id="the-window-math">The Window Math</h2>
+<p>Regardless of whether a slope covers a long or short region, the
+window curve itself is derived from the standard Vorbis window
+function:</p>
+<p><span class="math display">\[w(n) = \sin\left(\frac{\pi}{2}
+\sin^2\left(\frac{\pi}{2N}\left(n +
+0.5\right)\right)\right)\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(N\)</span> represents the length of the
+window segment (either the long or short half-window length).</li>
+<li><span class="math inline">\(n\)</span> spans the index of the
+transition interval.</li>
+</ul>
+<p>By scaling <span class="math inline">\(N\)</span> independently on
+the left and right halves of a long frame and zero-padding the unmatched
+region, the overlap region between the long block and the short block
+has an identical width and complementary slope to the short block. This
+allows the MDCT overlap-add process to satisfy the Princen-Bradley
+condition, ensuring complete time-domain aliasing cancellation without
+audible distortion.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

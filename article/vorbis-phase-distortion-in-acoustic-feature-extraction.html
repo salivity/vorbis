@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Phase Distortion in Acoustic Feature Extraction - vorbis</title>
+    <meta name="description" content="Ogg Vorbis is a popular lossy audio compression format, but its encoding mechanisms inherently modify the temporal waveform, raising concerns for speech and audio signal processing. This article examines whether Vorbis introduces phase distortion, the ma">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-phase-distortion-in-acoustic-feature-extraction">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Phase Distortion in Acoustic Feature Extraction - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-phase-distortion-in-acoustic-feature-extraction" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Ogg Vorbis is a popular lossy audio compression format, but its encoding mechanisms inherently modify the temporal waveform, raising concerns for speech and audio signal processing. This article examines whether Vorbis introduces phase distortion, the ma" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-phase-distortion-in-acoustic-feature-extraction">Vorbis
+Phase Distortion in Acoustic Feature Extraction</h1>
+<p>Ogg Vorbis is a popular lossy audio compression format, but its
+encoding mechanisms inherently modify the temporal waveform, raising
+concerns for speech and audio signal processing. This article examines
+whether Vorbis introduces phase distortion, the mathematical and
+algorithmic causes behind these phase alterations, and how they impact
+different types of acoustic feature extraction pipelines. While standard
+magnitude-based representations remain relatively robust,
+phase-sensitive features and end-to-end waveform models can suffer
+significant degradation when trained or evaluated on Vorbis-compressed
+audio.</p>
+<h2 id="how-vorbis-introduces-phase-distortion">How Vorbis Introduces
+Phase Distortion</h2>
+<p>Vorbis relies on the Modified Discrete Cosine Transform (MDCT) with
+overlapping window functions to convert time-domain audio frames into
+frequency-domain representations. In a lossless setting, MDCT achieves
+perfect reconstruction through Time-Domain Aliasing Cancellation (TDAC).
+However, Vorbis introduces non-linearities and information loss at
+several stages:</p>
+<ul>
+<li><strong>Quantization of MDCT Coefficients:</strong> Vorbis applies
+psychoacoustic masking to divide the spectrum into a spectral envelope
+(the "floor") and fine spectral details (the "residue"). Quantizing the
+residue coefficients introduces non-uniform errors across frequency
+bins. When inverse-transformed, these quantization errors prevent the
+exact cancellation of time-domain aliasing, causing subtle phase shifts
+and temporal smearing across frame boundaries.</li>
+<li><strong>Window Switching:</strong> To manage transients, Vorbis
+switches between long windows (for high spectral resolution) and short
+windows (for high temporal resolution). While this mitigates pre-echo
+artifacts, the transition frames introduce localized phase
+discontinuities.</li>
+<li><strong>Channel Coupling:</strong> In stereo encoding, Vorbis
+frequently employs lossless or lossy channel coupling (such as point
+stereo). Point stereo strips phase differences between channels at
+higher frequencies to save bandwidth, retaining only relative energy.
+This completely destroys inter-channel phase alignment.</li>
+</ul>
+<h2 id="impact-on-magnitude-based-features">Impact on Magnitude-Based
+Features</h2>
+<p>Most conventional audio analysis and speech recognition pipelines
+rely on magnitude or power spectra, discarding phase entirely.</p>
+<ul>
+<li><strong>MFCCs and Mel Spectrograms:</strong> Mel-Frequency Cepstral
+Coefficients (MFCCs) and log-mel filterbank energies take the Short-Time
+Fourier Transform (STFT) magnitude and compute power within broad
+frequency bands. Because the phase spectrum is discarded, phase
+distortion introduced by Vorbis has virtually no direct negative impact
+on these features at moderate to high bitrates (e.g., above 128
+kbps).</li>
+<li><strong>Spectral Centroid and Flux:</strong> Standard spectral shape
+descriptors rely on energy distribution and remain stable despite phase
+alterations, provided the quantization noise does not severely alter the
+spectral envelope.</li>
+</ul>
+<h2 id="impact-on-phase-sensitive-features">Impact on Phase-Sensitive
+Features</h2>
+<p>When an acoustic processing task relies on temporal structure,
+waveform shape, or phase coherence, Vorbis compression can introduce
+substantial feature degradation.</p>
+<ul>
+<li><strong>Group Delay and Instantaneous Frequency:</strong> Features
+derived from the derivative of the phase spectrum, such as the Modified
+Group Delay Feature (MGDF), are highly sensitive to phase perturbations.
+The phase errors resulting from uncancelled MDCT aliasing generate
+artificial spikes and noise in group delay representations.</li>
+<li><strong>Binaural and Spatial Cues:</strong> Algorithms that estimate
+sound source location rely on Interaural Time Differences (ITD) and
+Interaural Phase Differences (IPD), such as Generalized
+Cross-Correlation with Phase Transform (GCC-PHAT). Channel coupling in
+Vorbis disrupts microsecond-level timing differences between channels,
+severely degrading spatial feature reliability.</li>
+<li><strong>Raw Waveform Models:</strong> Modern deep learning
+architectures that ingest raw time-domain signals (e.g., 1D
+convolutional networks like SincNet) learn filters sensitive to phase
+and precise zero-crossing alignments. Phase shifts and dispersion
+introduced by lossy compression change the local shape of acoustic
+pulses, reducing the performance of models trained on uncompressed PCM
+data.</li>
+<li><strong>Fundamental Frequency (F0) Estimation:</strong> Time-domain
+pitch tracking methods (such as Autocorrelation, YIN, or pYIN) depend on
+exact waveform periodicity. While fundamental frequency is usually
+preserved well enough for speech, transient phase distortion can degrade
+voicing detection and pitch tracking stability in noisy or harmonically
+rich conditions.</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>Vorbis does introduce phase distortion through coefficient
+quantization, window switching, and channel coupling. While this
+distortion is perceptually masked for human listeners and largely
+irrelevant for conventional magnitude-based features like MFCCs, it
+poses measurable problems for phase-dependent analysis, spatial audio
+feature extraction, and time-domain deep learning models. For
+phase-critical applications, uncompressed formats or lossless
+compression should be used.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Maps Vectors to Scalar Codebook Entries - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec utilizes vector quantization (VQ) to compress multidimensional spectral data into compact, scalar codebook indices. This article details how continuous audio vectors are partitioned, matched to the nearest vector template within a">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-maps-vectors-to-scalar-codebook-entries">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Maps Vectors to Scalar Codebook Entries - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-maps-vectors-to-scalar-codebook-entries" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec utilizes vector quantization (VQ) to compress multidimensional spectral data into compact, scalar codebook indices. This article details how continuous audio vectors are partitioned, matched to the nearest vector template within a" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-maps-vectors-to-scalar-codebook-entries">How Vorbis
+Maps Vectors to Scalar Codebook Entries</h1>
+<p>The Vorbis audio codec utilizes vector quantization (VQ) to compress
+multidimensional spectral data into compact, scalar codebook indices.
+This article details how continuous audio vectors are partitioned,
+matched to the nearest vector template within a predefined codebook,
+assigned an integer scalar index for entropy coding, and reconstructed
+using Vorbis lookup types.</p>
+<h2 id="vector-grouping-and-representation">Vector Grouping and
+Representation</h2>
+<p>During the encoding process, Vorbis groups consecutive residual
+spectral samples into multidimensional vectors of length <span
+class="math inline">\(N\)</span> (the codebook dimension). Rather than
+quantizing each frequency coefficient independently, the encoder treats
+an array of <span class="math inline">\(N\)</span> values as a single
+point in an <span class="math inline">\(N\)</span>-dimensional
+space.</p>
+<p>Each unique vector position in this space corresponds to a scalar
+index (ranging from <span class="math inline">\(0\)</span> to <span
+class="math inline">\(M-1\)</span>, where <span
+class="math inline">\(M\)</span> is the codebook size). The codebook
+serves as a shared lookup table between the encoder and decoder, mapping
+multi-sample shapes to discrete scalar identifiers.</p>
+<h2 id="the-search-and-quantization-process">The Search and Quantization
+Process</h2>
+<p>To map a multidimensional input vector <span
+class="math inline">\(\mathbf{x} = [x_0, x_1, \dots, x_{N-1}]\)</span>
+to a single scalar entry:</p>
+<ol type="1">
+<li><strong>Distance Metric Evaluation:</strong> The encoder compares
+the input vector <span class="math inline">\(\mathbf{x}\)</span> against
+all available vectors <span class="math inline">\(\mathbf{y}_i\)</span>
+in the active codebook. This search typically minimizes the mean squared
+error (Euclidean distance) or a psychoacoustically weighted distortion
+metric.</li>
+<li><strong>Index Selection:</strong> The index <span
+class="math inline">\(i\)</span> corresponding to the vector <span
+class="math inline">\(\mathbf{y}_i\)</span> with the lowest distortion
+is selected as the winning scalar symbol.</li>
+<li><strong>Entropy Coding:</strong> The resulting scalar integer <span
+class="math inline">\(i\)</span> is converted into a variable-length bit
+sequence using a Huffman prefix tree assigned to that specific
+codebook.</li>
+</ol>
+<h2 id="decoding-and-codebook-lookup-types">Decoding and Codebook Lookup
+Types</h2>
+<p>Once the decoder reads the variable-length bitstream, it recovers the
+scalar integer index <span class="math inline">\(i\)</span>. Vorbis
+defines two primary lookup mechanisms to map this scalar index back into
+an <span class="math inline">\(N\)</span>-dimensional vector without
+storing massive uncompressed tables in memory:</p>
+<h3 id="lookup-type-1-algorithmic-lattice-construction">Lookup Type 1:
+Algorithmic Lattice Construction</h3>
+<p>Lookup Type 1 avoids storing complete vectors by defining an implicit
+grid or lattice. The codebook specifies a base list of scalar
+quantization values.</p>
+<p>To unpack the scalar index <span class="math inline">\(i\)</span>
+into <span class="math inline">\(N\)</span> vector components:</p>
+<ul>
+<li>The scalar index is iteratively decomposed using base arithmetic
+(modulo and division operations) corresponding to the number of quant
+values per dimension.</li>
+<li>The extracted sub-indices select values from the scalar value
+list.</li>
+<li>If configured, a sequence-dependent delta is added to the values to
+establish monotonically increasing or decreasing trajectories (useful
+for spectral floor curves).</li>
+</ul>
+<p>This approach allows high-dimensional codebooks to consume very
+little memory in the bitstream headers.</p>
+<h3 id="lookup-type-2-explicit-codebook-tables">Lookup Type 2: Explicit
+Codebook Tables</h3>
+<p>Lookup Type 2 defines vectors explicitly. The codebook stores an
+explicit array of coordinates:</p>
+<ul>
+<li>The scalar index <span class="math inline">\(i\)</span> is directly
+multiplied by the dimension <span class="math inline">\(N\)</span>.</li>
+<li>The decoder reads <span class="math inline">\(N\)</span> consecutive
+values beginning at the offset <span class="math inline">\((i \times
+N)\)</span> from the codebook value list.</li>
+</ul>
+<p>Type 2 provides total freedom in vector point placement at the
+expense of requiring more data in the codebook setup header, making it
+well-suited for low-dimensional, highly irregular residual audio
+patterns.</p>
+<h2 id="final-dequantization">Final Dequantization</h2>
+<p>After retrieving the raw quantized vector coordinates via Type 1 or
+Type 2 mappings, the decoder scales and offsets the values. Using the
+codebook's global minimum value, delta step size, and sequence flag
+parameters, the normalized integers are reconstructed into the
+floating-point spectral domain for final audio synthesis.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

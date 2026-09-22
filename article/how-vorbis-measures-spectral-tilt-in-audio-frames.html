@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Measures Spectral Tilt in Audio Frames - vorbis</title>
+    <meta name="description" content="This article explains how the Vorbis audio codec calculates and represents spectral tilt across individual audio frames. Rather than computing an isolated metric, Vorbis captures spectral tilt dynamically by decomposing each frame's Modified Discrete Cos">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-measures-spectral-tilt-in-audio-frames">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Measures Spectral Tilt in Audio Frames - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-measures-spectral-tilt-in-audio-frames" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the Vorbis audio codec calculates and represents spectral tilt across individual audio frames. Rather than computing an isolated metric, Vorbis captures spectral tilt dynamically by decomposing each frame's Modified Discrete Cos" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-measures-spectral-tilt-in-audio-frames">How Vorbis
+Measures Spectral Tilt in Audio Frames</h1>
+<p>This article explains how the Vorbis audio codec calculates and
+represents spectral tilt across individual audio frames. Rather than
+computing an isolated metric, Vorbis captures spectral tilt dynamically
+by decomposing each frame's Modified Discrete Cosine Transform (MDCT)
+spectrum into a coarse spectral floor and a fine spectral residue.
+Through its dual-floor synthesis architectures—Floor 0 and Floor 1—the
+codec characterizes the global slope, energy distribution, and
+perceptual envelope of each frame to guide efficient bit allocation and
+masking.</p>
+<h3 id="the-floor-and-residue-model">The Floor and Residue Model</h3>
+<p>Vorbis does not treat spectral tilt as a single standalone
+coefficient. Instead, it handles tilt as part of the overall spectral
+envelope. When an audio frame is transformed into the frequency domain
+using the MDCT, the resulting spectrum contains both broad,
+low-frequency trends (the macro-envelope or tilt) and fine-grained
+harmonic spikes.</p>
+<p>Vorbis separates the MDCT output into two components:</p>
+<ol type="1">
+<li><strong>The Floor Function:</strong> A low-resolution representation
+of the broad spectral envelope, which models global spectral energy,
+formant structures, and overall high-to-low frequency tilt.</li>
+<li><strong>The Residue:</strong> The remaining fine structure and
+harmonics obtained by dividing the raw MDCT spectrum by the synthesized
+floor curve.</li>
+</ol>
+<p>By modeling the spectral floor accurately, Vorbis normalizes the
+spectrum, effectively flattening the spectral tilt so that the remaining
+residue can be quantized uniformly without introducing disproportionate
+noise into attenuated bands.</p>
+<h3 id="floor-0-lpc-and-line-spectral-pairs">Floor 0: LPC and Line
+Spectral Pairs</h3>
+<p>The Floor 0 mechanism measures spectral tilt using classic Linear
+Predictive Coding (LPC) techniques:</p>
+<ul>
+<li><strong>Autocorrelation:</strong> The encoder calculates the
+autocorrelation of the windowed time-domain frame or an approximation
+from MDCT bins.</li>
+<li><strong>Levinson-Durbin Recursion:</strong> This algorithm generates
+linear prediction coefficients from the autocorrelation values. The
+low-order polynomial fit naturally captures the macroscopic trend of the
+spectrum, including steep roll-offs or high-frequency emphasis
+(tilt).</li>
+<li><strong>Line Spectral Pairs (LSP):</strong> The LPC coefficients are
+converted into Line Spectral Frequencies (LSFs) or Line Spectral Pairs
+(LSPs) for quantization. In this domain, the distribution and clustering
+of LSP roots directly describe the spectral slope and formant peaks
+across the frame.</li>
+</ul>
+<p>Because LPC minimizes mean squared error in the spectral domain,
+Floor 0 automatically aligns its linear filter response with the
+predominant tilt of the frame.</p>
+<h3 id="floor-1-piecewise-linear-bark-scale-modeling">Floor 1: Piecewise
+Linear Bark-Scale Modeling</h3>
+<p>Floor 1 is the primary and most commonly implemented floor synthesis
+method in modern Vorbis encoders. It measures and encodes spectral tilt
+using a piecewise linear approximation:</p>
+<ul>
+<li><strong>Perceptual Frequency Warping:</strong> Floor 1 partitions
+the frame's spectrum using the Bark scale, a psychoacoustic scale that
+groups frequency bins into critical bands matching human hearing
+resolution.</li>
+<li><strong>Node Selection:</strong> Specific anchor points (nodes) are
+positioned across the frequency spectrum. Low frequencies contain
+tightly packed nodes, while higher frequencies have spaced nodes.</li>
+<li><strong>Log-Magnitude Computation:</strong> The encoder determines
+an energy value for each node, expressed in a logarithmic (decibel)
+scale.</li>
+<li><strong>Linear Interpolation:</strong> Connecting these
+log-amplitude nodes with straight lines yields a curve composed of
+discrete line segments. The slopes of these segments over wide frequency
+intervals explicitly define the spectral tilt across the frame.</li>
+</ul>
+<p>By varying the decibel values at consecutive nodes, Floor 1 allows
+the encoder to tilt the synthesis curve smoothly up or down across
+critical acoustic boundaries.</p>
+<h3 id="psychoacoustic-tilt-evaluation">Psychoacoustic Tilt
+Evaluation</h3>
+<p>During analysis, the Vorbis psychoacoustic model evaluates spectral
+tilt to determine masked thresholds. The encoder computes the energy
+distribution across short or long transform blocks:</p>
+<ul>
+<li><strong>Short Frames:</strong> Provide high temporal resolution for
+transients, measuring sudden shifts in spectral tilt caused by sharp
+percussive attacks.</li>
+<li><strong>Long Frames:</strong> Provide high frequency resolution,
+capturing subtle, steady-state spectral decay over stationary
+signals.</li>
+</ul>
+<p>Once the tilt is represented by the floor curve, the encoder divides
+the linear MDCT spectrum by this curve. The resulting normalized residue
+has a roughly flat spectral tilt, allowing the vector quantizer to
+encode the remaining audio data efficiently while preventing
+psychoacoustic noise leaks.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

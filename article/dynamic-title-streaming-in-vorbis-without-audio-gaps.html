@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Title Streaming in Vorbis Without Audio Gaps - vorbis</title>
+    <meta name="description" content="Dynamic title streaming in Vorbis can occur without interrupting audio decoding, but it requires specific implementation strategies. Because the Vorbis codec natively embeds metadata only in setup headers, real-time updates rely either on continuous Ogg">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/dynamic-title-streaming-in-vorbis-without-audio-gaps">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Dynamic Title Streaming in Vorbis Without Audio Gaps - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/dynamic-title-streaming-in-vorbis-without-audio-gaps" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Dynamic title streaming in Vorbis can occur without interrupting audio decoding, but it requires specific implementation strategies. Because the Vorbis codec natively embeds metadata only in setup headers, real-time updates rely either on continuous Ogg" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="dynamic-title-streaming-in-vorbis-without-audio-gaps">Dynamic
+Title Streaming in Vorbis Without Audio Gaps</h1>
+<p>Dynamic title streaming in Vorbis can occur without interrupting
+audio decoding, but it requires specific implementation strategies.
+Because the Vorbis codec natively embeds metadata only in setup headers,
+real-time updates rely either on continuous Ogg stream chaining or
+out-of-band metadata delivery. Understanding the mechanics of the Vorbis
+bitstream and container architecture reveals how to push track updates
+without introducing audio dropouts, clicks, or decoder resets.</p>
+<h3 id="the-vorbis-metadata-architecture">The Vorbis Metadata
+Architecture</h3>
+<p>The Vorbis audio codec stores text metadata using the
+<code>vorbis_comment</code> specification. Unlike formats that permit
+arbitrary metadata packets scattered throughout audio frames, Vorbis
+confines comment structures to the stream's initial header sequence.</p>
+<p>Once an audio decoder processes these configuration headers and
+begins decoding audio packets, the metadata block cannot simply be
+re-sent within that same logical bitstream. Audio packets contain
+strictly coded spectral data; they have no native fields for song titles
+or artist information.</p>
+<h3 id="method-1-chained-ogg-logical-bitstreams">Method 1: Chained Ogg
+Logical Bitstreams</h3>
+<p>The native, in-band approach to updating metadata within an Ogg
+Vorbis stream is <strong>stream chaining</strong>.</p>
+<p>In an Ogg container, multiple logical bitstreams can be concatenated
+end-to-end to create a single physical bitstream. When a song
+changes:</p>
+<ol type="1">
+<li>The streaming server cleanly closes the current logical
+bitstream.</li>
+<li>A new logical bitstream begins immediately with new initial headers,
+including an updated <code>vorbis_comment</code> header containing the
+new track information.</li>
+<li>Audio packets for the next track follow immediately.</li>
+</ol>
+<p><strong>Does this interrupt decoding?</strong><br />
+According to the Ogg Vorbis specification, well-behaved decoders must
+support chained bitstreams gaplessly. The decoder reads the
+end-of-stream (EOS) marker on the old bitstream, parses the new headers,
+and continues decoding the audio frames without purging the audio buffer
+or re-initializing the digital-to-analog output.</p>
+<p>However, playback interruption depends on client-side software
+quality. Modern media frameworks (such as FFmpeg, GStreamer, and
+well-designed HTML5 media engines) handle chained Ogg streams smoothly.
+Older or poorly implemented decoders may close and recreate the audio
+output pipe upon encountering new headers, causing an audible click,
+gap, or buffer flush.</p>
+<h3 id="method-2-out-of-band-sideband-metadata">Method 2: Out-of-Band
+(Sideband) Metadata</h3>
+<p>To guarantee 100% gapless playback across all client decoders,
+broadcasters frequently decouple the metadata from the raw audio stream
+entirely.</p>
+<p>By transmitting audio via a single, uninterrupted Vorbis stream, the
+player never encounters stream-ending markers or secondary headers. The
+client fetches track information out-of-band via:</p>
+<ul>
+<li><strong>WebSockets or Server-Sent Events (SSE):</strong> The player
+listens to a lightweight event channel that pushes JSON-formatted "Now
+Playing" data synced to the stream timestamp.</li>
+<li><strong>Segmented Delivery Protocols:</strong> In HLS or DASH
+setups, timed metadata (such as ID3 or custom metadata tags) is
+delivered alongside audio segments, keeping the underlying Vorbis
+payload contiguous while notifying the player interface of title
+updates.</li>
+<li><strong>Polling APIs:</strong> The player periodically queries an
+external REST endpoint for current track information.</li>
+</ul>
+<h3 id="summary">Summary</h3>
+<p>Dynamic title streaming can occur without interrupting Vorbis audio
+decoding:</p>
+<ul>
+<li><strong>In-Band:</strong> Chained Ogg streams natively supply new
+<code>vorbis_comment</code> blocks without audio gaps, provided the
+client decoder adheres to the continuous playback specifications of the
+Ogg container.</li>
+<li><strong>Out-of-Band:</strong> Transporting metadata outside the
+audio stream bypasses decoder limitations entirely, ensuring
+uninterrupted playback across any player capable of decoding Vorbis
+audio.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

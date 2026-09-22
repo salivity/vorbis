@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can Vorbis Encode Quadraphonic Audio? - vorbis</title>
+    <meta name="description" content="Vorbis fully supports encoding quadraphonic four-channel audio natively without downmixing or losing spatial separation. As an open-source, lossy audio compression format, Vorbis is architected to handle arbitrary multi-channel configurations ranging fro">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-vorbis-encode-quadraphonic-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can Vorbis Encode Quadraphonic Audio? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-vorbis-encode-quadraphonic-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis fully supports encoding quadraphonic four-channel audio natively without downmixing or losing spatial separation. As an open-source, lossy audio compression format, Vorbis is architected to handle arbitrary multi-channel configurations ranging fro" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-vorbis-encode-quadraphonic-audio">Can Vorbis Encode
+Quadraphonic Audio?</h1>
+<p>Vorbis fully supports encoding quadraphonic four-channel audio
+natively without downmixing or losing spatial separation. As an
+open-source, lossy audio compression format, Vorbis is architected to
+handle arbitrary multi-channel configurations ranging from monophonic
+sound up to 255 discrete channels. This article explores how Vorbis
+handles four-channel quadraphonic sound, the standardized channel
+mapping it uses, and how to encode and play back four-channel Vorbis
+streams.</p>
+<h3 id="vorbis-multi-channel-architecture">Vorbis Multi-Channel
+Architecture</h3>
+<p>Unlike legacy lossy formats such as standard MP3, which are
+fundamentally restricted to two-channel stereo without proprietary
+extensions, Vorbis was designed from its inception to support
+multi-channel audio. Vorbis stores each channel as an independent or
+coupled sub-stream within the Ogg container. When compressing four
+channels, the encoder evaluates spatial redundancies between channels to
+optimize file size while retaining discrete positional fidelity for each
+speaker.</p>
+<h3 id="standard-channel-mapping-for-four-channels">Standard Channel
+Mapping for Four Channels</h3>
+<p>When encoding multi-channel audio to Vorbis, channel order is
+critical to ensure proper playback routing. The Vorbis specification
+defines standardized channel ordering schemes so decoders can route
+audio to the correct physical speakers.</p>
+<p>For a four-channel stream, the Vorbis I specification defines the
+standard channel assignment as follows:</p>
+<ol type="1">
+<li><strong>Channel 0:</strong> Front Left</li>
+<li><strong>Channel 1:</strong> Front Center</li>
+<li><strong>Channel 2:</strong> Front Right</li>
+<li><strong>Channel 3:</strong> Rear Surround (Center Rear)</li>
+</ol>
+<p>However, traditional quadraphonic sound is typically arranged in a
+4.0 configuration consisting of Front Left, Front Right, Rear/Back Left,
+and Rear/Back Right. Because Vorbis treats channel assignment logically
+according to its standard mapping table, source files featuring standard
+4.0 quad layouts (FL, FR, BL, BR) should be mapped appropriately during
+encoding so that software and hardware decoders route the four distinct
+audio streams to the intended speaker positions.</p>
+<h3 id="how-to-encode-quadraphonic-vorbis-files">How to Encode
+Quadraphonic Vorbis Files</h3>
+<p>Quadraphonic files can be encoded into Vorbis using standard
+command-line tools like <code>oggenc</code> (from the
+<code>vorbis-tools</code> suite) or <code>FFmpeg</code>.</p>
+<p>When using <code>oggenc</code>, the input file (such as a 4-channel
+WAV) must have its channels interleaved in the Vorbis-compliant order.
+Modern versions of FFmpeg automatically handle channel layout
+conversions and metadata tagging when converting a 4.0 quadraphonic file
+to Vorbis:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input_quad.wav <span class="at">-c:a</span> libvorbis <span class="at">-q:a</span> 6 output_quad.ogg</span></code></pre></div>
+<p>This command compresses the four discrete channels using the
+<code>libvorbis</code> encoder at high quality while maintaining
+discrete channel separation.</p>
+<h3 id="compatibility-and-playback">Compatibility and Playback</h3>
+<p>Quadraphonic Vorbis files encapsulated in <code>.ogg</code>
+containers are supported by most modern software media players,
+including VLC, MPC-HC, and Foobar2000, as well as digital audio
+workstations (DAWs). For proper acoustic playback, the listening
+environment must utilize a multi-channel sound card configured to output
+to four physical monitor speakers or utilize a dedicated quadraphonic
+speaker array.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

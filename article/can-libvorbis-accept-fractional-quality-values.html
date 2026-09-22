@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can libvorbis Accept Fractional Quality Values? - vorbis</title>
+    <meta name="description" content="The libvorbis audio encoder natively supports fractional quality values, allowing users to specify settings such as -q 4.5. Unlike encoders that restrict quality metrics to fixed integers, libvorbis implements its quality-based Variable Bitrate (VBR) mod">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/can-libvorbis-accept-fractional-quality-values">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can libvorbis Accept Fractional Quality Values? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/can-libvorbis-accept-fractional-quality-values" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The libvorbis audio encoder natively supports fractional quality values, allowing users to specify settings such as -q 4.5. Unlike encoders that restrict quality metrics to fixed integers, libvorbis implements its quality-based Variable Bitrate (VBR) mod" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-libvorbis-accept-fractional-quality-values">Can libvorbis
+Accept Fractional Quality Values?</h1>
+<p>The libvorbis audio encoder natively supports fractional quality
+values, allowing users to specify settings such as <code>-q 4.5</code>.
+Unlike encoders that restrict quality metrics to fixed integers,
+libvorbis implements its quality-based Variable Bitrate (VBR) mode using
+floating-point numbers. This article explains how libvorbis handles
+fractional quality settings, how to apply them across common
+command-line utilities, and why they are useful for audio encoding.</p>
+<h3 id="how-libvorbis-processes-quality-settings">How libvorbis
+Processes Quality Settings</h3>
+<p>The internal API of libvorbis defines quality as a floating-point
+value generally ranging from <code>-0.1</code> (or <code>0.0</code>) up
+to <code>10.0</code>. Because the underlying functions—specifically
+<code>vorbis_encode_init_vbr()</code>—take a standard <code>float</code>
+argument, the encoder does not round inputs to the nearest whole
+integer.</p>
+<p>When you pass a fractional value like <code>4.5</code>, the library
+interpolates the target bitrate and psychoacoustic thresholds between
+the adjacent nominal profiles. For example:</p>
+<ul>
+<li><strong>Quality 4 (<code>-q 4</code>)</strong>: Targets
+approximately 128 kbps.</li>
+<li><strong>Quality 5 (<code>-q 5</code>)</strong>: Targets
+approximately 160 kbps.</li>
+<li><strong>Quality 4.5 (<code>-q 4.5</code>)</strong>: Targets roughly
+144 kbps.</li>
+</ul>
+<p>Because Vorbis uses pure VBR encoding, the resulting bitrate will
+vary depending on the complexity of the input audio, but the average
+bitrate will sit consistently between the two whole-number steps.</p>
+<h3 id="using-fractional-values-in-encoding-tools">Using Fractional
+Values in Encoding Tools</h3>
+<p>Most popular frontends and wrappers for libvorbis expose this
+floating-point capability directly.</p>
+<h4 id="using-oggenc">Using <code>oggenc</code></h4>
+<p>The official Vorbis command-line encoder, <code>oggenc</code>,
+directly accepts fractional numbers with the <code>-q</code> flag:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">oggenc</span> <span class="at">-q</span> 4.5 input.wav <span class="at">-o</span> output.ogg</span></code></pre></div>
+<h4 id="using-ffmpeg">Using FFmpeg</h4>
+<p>When encoding audio using FFmpeg's <code>libvorbis</code> wrapper,
+the <code>-q:a</code> or <code>-qscale:a</code> option accepts
+non-integer values:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input.wav <span class="at">-c:a</span> libvorbis <span class="at">-q:a</span> 4.5 output.ogg</span></code></pre></div>
+<p><em>Note: If you use the native, experimental FFmpeg Vorbis encoder
+(<code>-c:a vorbis</code>) instead of <code>libvorbis</code>, behavior
+may differ. Always ensure <code>-c:a libvorbis</code> is specified to
+utilize the official reference library's features.</em></p>
+<h3 id="practical-benefits-of-fractional-quality">Practical Benefits of
+Fractional Quality</h3>
+<p>Using fractional quality values gives audio engineers and archivists
+finer control over the balance between compression and fidelity:</p>
+<ol type="1">
+<li><strong>Storage Optimization</strong>: When whole steps produce
+files that are either slightly too large or audibly degraded, fractional
+increments help hit precise file size budgets.</li>
+<li><strong>Bandwidth Tuning</strong>: For streaming or game asset
+deployment where memory budgets are tight, values such as
+<code>3.7</code> or <code>5.2</code> allow targeted optimization without
+forcing a fallback to lower-efficiency Constant Bitrate (CBR)
+modes.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

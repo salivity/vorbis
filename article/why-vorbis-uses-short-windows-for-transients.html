@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Vorbis Uses Short Windows for Transients - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec dynamically switches between long and short Modified Discrete Cosine Transform (MDCT) block sizes to maintain high audio fidelity during abrupt sound changes. This article explains how Vorbis balances time and frequency resolution,">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/why-vorbis-uses-short-windows-for-transients">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why Vorbis Uses Short Windows for Transients - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/why-vorbis-uses-short-windows-for-transients" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec dynamically switches between long and short Modified Discrete Cosine Transform (MDCT) block sizes to maintain high audio fidelity during abrupt sound changes. This article explains how Vorbis balances time and frequency resolution," />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-vorbis-uses-short-windows-for-transients">Why Vorbis Uses
+Short Windows for Transients</h1>
+<p>The Vorbis audio codec dynamically switches between long and short
+Modified Discrete Cosine Transform (MDCT) block sizes to maintain high
+audio fidelity during abrupt sound changes. This article explains how
+Vorbis balances time and frequency resolution, mitigates the
+psychoacoustic distortion known as pre-echo, and uses adaptive window
+switching to keep transient attacks crisp and noise-free.</p>
+<h3 id="the-time-frequency-trade-off-in-mdct">The Time-Frequency
+Trade-Off in MDCT</h3>
+<p>Audio compression algorithms rely on time-to-frequency transforms
+like the MDCT to represent sound in a format suitable for perceptual
+quantization. Transform coding faces a fundamental constraint governed
+by the uncertainty principle: an encoder cannot achieve both high
+frequency resolution and high time resolution using the same window
+length.</p>
+<ul>
+<li><strong>Long transform windows</strong> offer narrow frequency bins,
+providing exceptional frequency resolution. This allows Vorbis to
+tightly pack harmonic data and compress steady, tonal sounds (such as
+sustained strings, woodwinds, or steady vocal notes) with minimal bit
+consumption. However, long windows smear temporal details across the
+entire frame.</li>
+<li><strong>Short transform windows</strong> widen the frequency bins,
+reducing spectral detail while providing high temporal precision. Sound
+is analyzed over much shorter intervals, capturing exact moments when
+energy spikes occur.</li>
+</ul>
+<h3 id="the-problem-fast-transients-and-pre-echo">The Problem: Fast
+Transients and Pre-Echo</h3>
+<p>A transient is an abrupt, high-energy acoustic event with a steep
+attack phase, such as the strike of a snare drum, the snap of a
+castanet, or a sharp consonant in speech.</p>
+<p>When a transient occurs inside a long transform window, the encoder
+quantizes the entire block's spectral coefficients based on the overall
+energy profile. The resulting quantization noise is distributed evenly
+across the entire duration of that window.</p>
+<p>Under normal listening conditions, the human ear relies on temporal
+masking:</p>
+<ul>
+<li><strong>Forward masking:</strong> A loud sound masks quieter sounds
+that occur roughly 100 to 200 milliseconds <em>after</em> it.</li>
+<li><strong>Backward masking:</strong> A loud sound masks quieter sounds
+that occur only 5 to 20 milliseconds <em>before</em> it.</li>
+</ul>
+<p>Because backward masking decays so rapidly, quantization noise that
+spreads into the silence preceding the transient becomes distinctly
+audible. Listeners perceive this temporal smear as a "hiss," "chirp," or
+dull thud immediately prior to the percussive hit. This artifact is
+known as <strong>pre-echo</strong>.</p>
+<h3 id="how-vorbis-solves-pre-echo">How Vorbis Solves Pre-Echo</h3>
+<p>Vorbis continuously analyzes the input audio stream using a transient
+detection algorithm. When the encoder identifies an incoming energy
+surge that exceeds the threshold of temporal masking limits, it forces a
+block-size switch from a long window to a sequence of short windows.</p>
+<p>By using short transform windows across the transient:</p>
+<ol type="1">
+<li><strong>Noise Confinement:</strong> The temporal window is reduced
+from typically 2048 or 4096 samples down to 256 or 512 samples
+(depending on the sample rate and profile). Quantization noise is
+trapped within the brief frame where the transient occurs.</li>
+<li><strong>Effective Psychoacoustic Masking:</strong> Because the noise
+is restricted to a few milliseconds around the peak amplitude, it falls
+entirely within the ear's brief backward masking and extensive forward
+masking windows. The human auditory system cannot separate the noise
+from the transient itself.</li>
+<li><strong>Sharp Attack Preservation:</strong> The sudden change in
+amplitude is preserved with minimal phase and timing distortion, keeping
+the leading edge of percussive sounds sharp and natural.</li>
+</ol>
+<h3 id="window-transitioning-and-aliasing-cancellation">Window
+Transitioning and Aliasing Cancellation</h3>
+<p>Because MDCT relies on 50% window overlap to cancel time-domain
+aliasing (TDAC), an encoder cannot abruptly place a short window
+directly adjacent to a long window without causing boundary errors.</p>
+<p>Vorbis resolves this by using asymmetric transition windows. When
+switching from long to short modes, Vorbis applies a "long-to-short"
+hybrid window whose left half matches a standard long window and whose
+right half matches a short window. Once the transient passes and the
+audio returns to a stationary state, a "short-to-long" transition window
+safely returns the encoder to high-frequency-resolution processing. This
+mechanism ensures that time-domain aliasing is completely cancelled
+while preventing pre-echo artifacts.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Residue Partition Sizes in Quantization - vorbis</title>
+    <meta name="description" content="This article explains how the Vorbis audio codec handles residue partition sizes during its quantization and entropy-encoding stages. It examines how spectral residue vectors are divided into fixed-width sub-vectors, how these partitions are mapped to st">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-residue-partition-sizes-in-quantization">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Residue Partition Sizes in Quantization - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-residue-partition-sizes-in-quantization" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the Vorbis audio codec handles residue partition sizes during its quantization and entropy-encoding stages. It examines how spectral residue vectors are divided into fixed-width sub-vectors, how these partitions are mapped to st" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-residue-partition-sizes-in-quantization">Vorbis Residue
+Partition Sizes in Quantization</h1>
+<p>This article explains how the Vorbis audio codec handles residue
+partition sizes during its quantization and entropy-encoding stages. It
+examines how spectral residue vectors are divided into fixed-width
+sub-vectors, how these partitions are mapped to statistical classes, and
+how the multi-pass vector quantization pipeline applies codebooks to
+balance bit allocation and psychoacoustic fidelity.</p>
+<h3 id="the-role-of-residue-in-vorbis-encoding">The Role of Residue in
+Vorbis Encoding</h3>
+<p>In the Vorbis pipeline, time-domain audio samples are converted into
+the frequency domain via the Modified Discrete Cosine Transform (MDCT).
+The resulting spectrum is decomposed into two distinct components: the
+"floor," which represents the broad spectral envelope, and the
+"residue," which consists of the fine spectral detail remaining after
+the floor curve is subtracted. Quantizing this residue represents the
+bulk of the final bitstream's data footprint.</p>
+<h3 id="defining-residue-partitions">Defining Residue Partitions</h3>
+<p>To quantize the residue spectrum efficiently, Vorbis divides the
+range of spectral coefficients into discrete, equal-length segments
+known as partitions.</p>
+<ol type="1">
+<li><strong>Boundary Specification</strong>: A Vorbis residue
+configuration defines an active spectral band delimited by
+<code>residue_begin</code> and <code>residue_end</code>. Any
+coefficients outside this range are treated as zero and ignored.</li>
+<li><strong>Fixed Partition Sizes</strong>: The active range is
+subdivided into blocks defined by the parameter
+<code>residue_partition_size</code>. This value is predetermined and
+encoded within the bitstream setup header. Every partition within a
+given residue configuration contains the exact same number of spectral
+values.</li>
+<li><strong>Alignment</strong>: The total number of encoded coefficients
+must be an exact multiple of the partition size. If the distance between
+<code>residue_begin</code> and <code>residue_end</code> does not align
+perfectly with the partition size, the operational range is padded or
+truncated to ensure all partitions remain uniform.</li>
+</ol>
+<h3 id="classification-and-codebook-association">Classification and
+Codebook Association</h3>
+<p>Residue quantization does not process each partition with an
+independent, arbitrary codebook. Instead, Vorbis employs a
+classification scheme to group partitions of similar energy levels
+together:</p>
+<ul>
+<li><strong>The Classification Pass</strong>: Vorbis groups a
+predetermined number of adjacent partitions together. An entry from a
+classification codebook is selected to assign a specific "class" integer
+to each partition in the group. This single classification word dictates
+the coding strategy for multiple partitions at once, reducing bit
+overhead.</li>
+<li><strong>Classbooks</strong>: The assigned class determines which
+vector quantization (VQ) codebooks will be applied to that partition
+across subsequent encoding passes. Partitions with negligible energy can
+be assigned to a zero class, requiring no further bits, while
+high-energy partitions are mapped to classes that allow for finer
+quantization.</li>
+</ul>
+<h3 id="vector-quantization-and-multi-pass-cascades">Vector Quantization
+and Multi-Pass Cascades</h3>
+<p>Once partition boundaries and classes are established, the
+coefficients within each partition are quantized in stages using
+cascaded Vector Quantization:</p>
+<ul>
+<li><strong>Dimension Divisibility</strong>: A partition consists of
+scalar frequency values, but Vorbis quantizes data in small vectors
+(typically of dimension 2, 4, or 8). The
+<code>residue_partition_size</code> must be an integer multiple of the
+vector dimensions defined in the active codebooks. A partition is thus
+treated as an array of smaller vectors encoded sequentially.</li>
+<li><strong>Cascade Passes</strong>: Quantization occurs over multiple
+passes (stages). In the first pass, a coarse codebook quantizes the
+broad amplitude of the vectors in a partition. In subsequent passes,
+additional codebooks quantize the residual error left by the preceding
+pass. Partitions designated with higher classes participate in more
+cascade passes, receiving higher bit allocation.</li>
+</ul>
+<h3 id="residue-types-and-channel-handling">Residue Types and Channel
+Handling</h3>
+<p>Vorbis supports three residue formats (Residue 0, Residue 1, and
+Residue 2), which handle partition layout across audio channels
+differently:</p>
+<ul>
+<li><strong>Residue 0</strong>: Encodes spectral values sequentially,
+interleaving dimensions across channels within the partition.</li>
+<li><strong>Residue 1</strong>: Encodes each audio channel
+independently. Each channel has its own set of partitions spanning from
+<code>residue_begin</code> to <code>residue_end</code>.</li>
+<li><strong>Residue 2</strong>: Interleaves channel data across the
+frequency domain before partitioning. Partition boundaries are
+calculated over a unified, interleaved residue vector. In a stereo
+configuration with a partition size of 32, for example, each partition
+contains 16 coefficients from the left channel interleaved with 16
+coefficients from the right channel.</li>
+</ul>
+<p>By utilizing uniform partition sizes linked to multi-pass
+classification tables, Vorbis adapts its vector quantization locally to
+localized spectral energy variations while keeping the framing overhead
+minimal.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

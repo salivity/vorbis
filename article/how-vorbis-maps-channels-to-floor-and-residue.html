@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Maps Channels to Floor and Residue - vorbis</title>
+    <meta name="description" content="In the Vorbis audio codec, the synthesis of spectral data relies on dividing the spectral envelope into a coarse "floor" and a fine detailed "residue." The association between input audio channels and their corresponding floor and residue sub-blocks is o">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-maps-channels-to-floor-and-residue">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Maps Channels to Floor and Residue - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-maps-channels-to-floor-and-residue" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the Vorbis audio codec, the synthesis of spectral data relies on dividing the spectral envelope into a coarse "floor" and a fine detailed "residue." The association between input audio channels and their corresponding floor and residue sub-blocks is o" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-maps-channels-to-floor-and-residue">How Vorbis Maps
+Channels to Floor and Residue</h1>
+<p>In the Vorbis audio codec, the synthesis of spectral data relies on
+dividing the spectral envelope into a coarse "floor" and a fine detailed
+"residue." The association between input audio channels and their
+corresponding floor and residue sub-blocks is orchestrated entirely by
+Vorbis <strong>Mapping Type 0</strong>. This mapping mechanism organizes
+channels into discrete submaps, configures channel-coupling steps (such
+as mid/side or polar stereo), and assigns explicit index references that
+route each physical or coupled audio channel to the appropriate floor
+and residue decoding engines.</p>
+<h3 id="the-role-of-mapping-type-0">The Role of Mapping Type 0</h3>
+<p>Vorbis bitstreams define decoding parameters through configuration
+headers. Within these headers, the "Mapping" component acts as the
+central router between raw channel data and the DSP decoding
+sub-blocks.</p>
+<p>A single Vorbis stream can contain multiple mapping configurations,
+dynamically selected per audio frame (packet) depending on block size
+(short or long windows). When an audio frame is decoded, the header
+indicates which mapping applies. Mapping Type 0 then dictates:</p>
+<ol type="1">
+<li>The assignment of audio channels to submaps.</li>
+<li>The channel coupling relationships (angle/magnitude
+transformation).</li>
+<li>The specific floor sub-block instance assigned to each channel.</li>
+<li>The specific residue sub-block instance assigned to each
+submap.</li>
+</ol>
+<h3 id="mapping-channels-to-floor-sub-blocks">Mapping Channels to Floor
+Sub-blocks</h3>
+<p>The floor represents the overall spectral curve (formant structure)
+of an audio channel. In Vorbis, floor decoding occurs independently on a
+per-channel basis:</p>
+<ul>
+<li><strong>Direct Channel-to-Floor Association:</strong> Inside Mapping
+Type 0, the bitstream provides a list of floor configuration indices
+corresponding to each channel. If an audio stream contains <span
+class="math inline">\(N\)</span> channels, the mapping contains an array
+of <span class="math inline">\(N\)</span> floor configuration
+pointers.</li>
+<li><strong>Submap Routing:</strong> Mapping Type 0 can divide channels
+into multiple submaps. Each submap references a specific floor
+configuration. The mapping structure dictates which submap an individual
+channel belongs to, effectively binding that channel to the floor type
+assigned to that submap.</li>
+<li><strong>Execution:</strong> During packet decode, the decoder reads
+and decodes floor parameters for each channel independently using that
+channel's designated floor engine (typically Floor 1, which uses a
+piecewise linear representation based on Bark scale frequencies).</li>
+</ul>
+<h3 id="channel-coupling-polar-mapping">Channel Coupling (Polar
+Mapping)</h3>
+<p>Before residue vectors are mapped and decoded, Vorbis allows channels
+to be coupled to exploit inter-channel correlation. Mapping Type 0
+specifies an arbitrary number of coupling steps:</p>
+<ul>
+<li>Each coupling step defines a <strong>magnitude channel</strong> and
+an <strong>angle channel</strong>.</li>
+<li>This enables transformations like standard Left/Right to Mid/Side
+stereo, as well as complex phase/point-stereo coupling.</li>
+<li>The coupling definition specifies which physical channel indices are
+paired together before residue decoding takes place.</li>
+</ul>
+<h3 id="mapping-channels-to-residue-sub-blocks">Mapping Channels to
+Residue Sub-blocks</h3>
+<p>The residue represents the fine spectral detail remaining after the
+floor envelope is subtracted from the original spectral signal. While
+floors are evaluated per-channel, residues can be decoded across
+multiple channels simultaneously:</p>
+<ul>
+<li><strong>Submap Assignment:</strong> Mapping Type 0 groups channels
+into submaps. Each submap is assigned exactly one residue sub-block
+index.</li>
+<li><strong>Residue Block Association:</strong> All channels (or coupled
+channel pairs) grouped under a given submap share that submap's
+designated residue decoder (Residue 0, 1, or 2).</li>
+<li><strong>Interleaved vs. Independent Decoding:</strong>
+<ul>
+<li>In <strong>Residue Type 1</strong>, spectral vectors for the
+assigned channels are decoded independently.</li>
+<li>In <strong>Residue Type 2</strong>, all channels assigned to the
+submap are interleaved into a single continuous vector and decoded
+jointly via the residue's vector quantization codebooks. This is common
+in stereo configurations where coupling has grouped left and right
+channels into angle and magnitude channels.</li>
+</ul></li>
+</ul>
+<h3 id="the-complete-channel-routing-flow">The Complete Channel Routing
+Flow</h3>
+<p>When an audio packet is processed, Vorbis resolves
+channel-to-sub-block mapping through the following sequential
+pipeline:</p>
+<ol type="1">
+<li><strong>Header Lookup:</strong> The frame identifies which Mapping
+Type 0 instance governs the current block.</li>
+<li><strong>Floor Decoding:</strong> For each channel, the decoder looks
+up the channel's floor assignment via the mapping's submap
+configuration, reading the floor data to establish the spectral
+envelope.</li>
+<li><strong>Residue Decoding:</strong> For each submap, the decoder
+executes the assigned residue engine to reconstruct the residue
+coefficients for all channels associated with that submap.</li>
+<li><strong>Decoupling:</strong> If coupling steps are defined in the
+mapping, the decoder performs angle/magnitude inverse transformation to
+convert the coupled residue data back into standard multi-channel
+representation.</li>
+<li><strong>Synthesis:</strong> For each channel, the individual residue
+vector is multiplied by (or added to, depending on the floor
+representation) the channel's corresponding floor curve, reconstructing
+the full MDCT spectrum for that audio channel.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Floor 1 Became the Vorbis Spectral Standard - vorbis</title>
+    <meta name="description" content="In the Ogg Vorbis audio codec, the spectral envelope—representing the broad dynamic shape of the frequency spectrum—is abstracted as a "floor" to separate global energy distribution from fine harmonic detail. While the specification defines two disti">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/why-floor-1-became-the-vorbis-spectral-standard">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why Floor 1 Became the Vorbis Spectral Standard - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/why-floor-1-became-the-vorbis-spectral-standard" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the Ogg Vorbis audio codec, the spectral envelope—representing the broad dynamic shape of the frequency spectrum—is abstracted as a "floor" to separate global energy distribution from fine harmonic detail. While the specification defines two disti" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-floor-1-became-the-vorbis-spectral-standard">Why Floor 1
+Became the Vorbis Spectral Standard</h1>
+<p>In the Ogg Vorbis audio codec, the spectral envelope—representing the
+broad dynamic shape of the frequency spectrum—is abstracted as a "floor"
+to separate global energy distribution from fine harmonic detail. While
+the specification defines two distinct models, Floor 0 (based on Linear
+Predictive Coding) and Floor 1 (a piecewise-linear representation),
+Floor 1 quickly became the universal standard for virtually all
+practical implementations. This transition occurred because Floor 1
+offered superior localized frequency control, natural psychoacoustic
+scaling, reduced computational complexity, and significantly more
+predictable quantization behavior than its predecessor.</p>
+<h3 id="the-problem-with-floor-0-lpclsp">The Problem with Floor 0
+(LPC/LSP)</h3>
+<p>Floor 0 utilizes Line Spectral Pairs (LSP) derived from Linear
+Predictive Coding (LPC), a mathematical technique historically
+successful in speech synthesis and low-bitrate telephony. LPC models the
+spectral envelope globally as an all-pole filter.</p>
+<p>While theoretically compact, this approach exhibits severe drawbacks
+when applied to wideband, high-fidelity music:</p>
+<ul>
+<li><strong>Global Interaction:</strong> In an all-pole model, moving or
+quantizing a single pole affects the entire frequency spectrum. This
+makes it extremely difficult for psychoacoustic models to correct a
+specific artifact at one frequency without introducing unintended
+spectral distortion elsewhere.</li>
+<li><strong>Algorithmic Complexity:</strong> Decoding LSP parameters
+requires complex trigonometric calculations and root-finding operations,
+which imposed heavy computational demands on early consumer
+hardware.</li>
+<li><strong>Poor Fit for General Audio:</strong> LPC excels at modeling
+the human vocal tract, but it struggles to model complex polyphonic
+instruments, sharp spectral transitions, and distinct synthetic sounds
+efficiently.</li>
+</ul>
+<h3 id="localized-control-through-piecewise-linear-modeling">Localized
+Control Through Piecewise Linear Modeling</h3>
+<p>Floor 1 solves the limitations of Floor 0 by modeling the envelope as
+a series of connected line segments across a logarithmic frequency
+scale. Instead of global mathematical poles, Floor 1 defines explicit
+control points consisting of frequency positions (X-coordinates) and
+amplitude levels (Y-coordinates).</p>
+<p>Because each line segment is bounded by its adjacent control points,
+any modification to a point only alters the spectrum between its
+immediate neighbors. This localized control allows the encoder's
+psychoacoustic model to:</p>
+<ul>
+<li>Accurately track sharp spectral cutoffs.</li>
+<li>Suppress energy precisely around masked thresholds without causing
+energy drift across other frequency bands.</li>
+<li>Allocate precision selectively, using more control points where the
+human ear is most sensitive and fewer where it is not.</li>
+</ul>
+<h3 id="natural-alignment-with-psychoacoustics">Natural Alignment with
+Psychoacoustics</h3>
+<p>Human hearing perceives frequency logarithmically, dividing audio
+into critical bands (often modeled on the Bark or ERB scales). Floor 1
+natively maps control point distribution to mimic these perceptual
+curves. Lower frequencies, where frequency resolution is critical,
+receive densely packed nodes, while higher frequencies are represented
+by wider, sparser segments. This architecture matches human masking
+curves far better than LPC-based curves, minimizing perceptual
+distortion at lower bitrates.</p>
+<h3 id="computational-efficiency-and-quantization">Computational
+Efficiency and Quantization</h3>
+<p>From an implementation perspective, Floor 1 is significantly faster
+and more robust:</p>
+<ul>
+<li><strong>Efficient Interpolation:</strong> The decoder reconstructs
+the envelope curve using basic integer-based linear interpolation
+between adjacent nodes, avoiding the floating-point overhead and
+transcendental functions required by Floor 0.</li>
+<li><strong>Predictable Quantization:</strong> Floor 1 quantizes
+amplitude values (Y-coordinates) directly in decibel space. Because the
+quantization grid maps directly to perceptual loudness, encoders can
+reliably predict how quantization noise will behave, completely
+eliminating the instability and edge-case "chirping" artifacts
+historically associated with quantized LSP coefficients.</li>
+</ul>
+<p>Due to these advantages, development efforts within the Xiph.Org
+Foundation quickly focused on Floor 1, ultimately rendering Floor 0
+obsolete in production Vorbis encoders.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is Point Stereo Coupling in Vorbis? - vorbis</title>
+    <meta name="description" content="Point stereo coupling is an audio compression technique that exploits human psychoacoustics by merging high-frequency stereo channels into a single shared audio signal accompanied by directional energy cues. By replacing distinct waveform data with relat">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/what-is-point-stereo-coupling-in-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is Point Stereo Coupling in Vorbis? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/what-is-point-stereo-coupling-in-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Point stereo coupling is an audio compression technique that exploits human psychoacoustics by merging high-frequency stereo channels into a single shared audio signal accompanied by directional energy cues. By replacing distinct waveform data with relat" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-point-stereo-coupling-in-vorbis">What Is Point Stereo
+Coupling in Vorbis?</h1>
+<p>Point stereo coupling is an audio compression technique that exploits
+human psychoacoustics by merging high-frequency stereo channels into a
+single shared audio signal accompanied by directional energy cues. By
+replacing distinct waveform data with relative volume levels at higher
+frequencies, encoders can significantly reduce bitrate while preserving
+the perceived stereo field. In the Vorbis audio codec, point
+stereo—often categorized alongside intensity stereo—is implemented
+through its flexible channel mapping and residue architecture to
+optimize bitrate efficiency without noticeably collapsing the stereo
+image.</p>
+<h3 id="understanding-point-stereo-coupling">Understanding Point Stereo
+Coupling</h3>
+<p>Human spatial hearing relies on two primary mechanisms: Interaural
+Time Differences (ITD) and Interaural Level Differences (ILD). At low
+frequencies (typically below 1.5 kHz), the auditory system uses phase
+and arrival time differences between the ears to pinpoint sound
+location. At high frequencies, head shadowing makes phase detection
+ambiguous, causing the brain to rely almost entirely on intensity
+differences (volume contrast) between the left and right ears.</p>
+<p>Point stereo coupling takes advantage of this limitation. Instead of
+encoding discrete waveform, phase, and time information for both
+channels at high frequencies, the encoder sums the channels into a
+single combined "carrier" signal. It then calculates scalar steering
+vectors—simple amplitude or energy ratios—that describe how much of that
+carrier should be routed to the left and right channels upon playback.
+This preserves directional perception while discarding redundant phase
+data.</p>
+<h3 id="how-vorbis-utilizes-point-stereo">How Vorbis Utilizes Point
+Stereo</h3>
+<p>The Vorbis codec achieves compression by transforming time-domain
+audio samples into frequency-domain spectral coefficients via the
+Modified Discrete Cosine Transform (MDCT). It splits these coefficients
+into two distinct components: the "floor" (the spectral envelope or
+overall frequency shape) and the "residue" (the fine spectral
+detail).</p>
+<p>Vorbis uses its channel mapping subsystem (specifically Mapping Type
+0) to execute stereo coupling on these residue vectors. Point stereo in
+Vorbis operates through the following process:</p>
+<ol type="1">
+<li><strong>Psychoacoustic Analysis and Band Selection:</strong> The
+Vorbis encoder analyzes the incoming audio to identify the frequency
+threshold above which phase preservation is psychoacoustically
+irrelevant. Point coupling is selectively applied only to these
+high-frequency critical bands.</li>
+<li><strong>Residue Folding:</strong> For coupled bands, the encoder
+collapses the individual spectral residues of the channels into a shared
+base residue. Vorbis uses a polar coordinate representation (magnitude
+and angle) during its coupling pass. In point stereo mode, the
+phase-related angular component is discarded or heavily quantized,
+retaining only the dominant magnitude and the relative balance
+scalar.</li>
+<li><strong>Floor Application for Spatial Recovery:</strong> Vorbis
+maintains separate spectral floors for each channel, even in high
+frequencies. When decoding point-coupled audio, the single shared
+residue is multiplied by each channel’s independent floor curve and
+coupling scalar. This restores the appropriate energy levels in the left
+and right channels, recreating the spatial balance without requiring
+independent residue data.</li>
+</ol>
+<h3 id="advantages-in-vorbis-encoding">Advantages in Vorbis
+Encoding</h3>
+<p>By utilizing point stereo coupling, Vorbis eliminates significant
+redundancy in the highest octaves, which typically require a large
+portion of the bit budget to encode accurately. The bits saved from
+coupling are dynamically reallocated to low- and mid-frequency bands
+where phase coherence is essential for clear imaging and transient
+fidelity. This selective application allows Vorbis to maintain
+transparency and broad soundstages even at low bitrates (such as 64 to
+96 kbps per stereo pair).</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

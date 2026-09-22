@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ogg Vorbis Bitrate During Complete Silence - vorbis</title>
+    <meta name="description" content="During complete digital silence, an Ogg Vorbis audio stream typically drops to a baseline bitrate between 1.2 kbps and 2.5 kbps. Because Vorbis utilizes a native variable bitrate (VBR) architecture, it aggressively reduces data consumption when processin">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/ogg-vorbis-bitrate-during-complete-silence">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ogg Vorbis Bitrate During Complete Silence - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/ogg-vorbis-bitrate-during-complete-silence" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="During complete digital silence, an Ogg Vorbis audio stream typically drops to a baseline bitrate between 1.2 kbps and 2.5 kbps. Because Vorbis utilizes a native variable bitrate (VBR) architecture, it aggressively reduces data consumption when processin" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="ogg-vorbis-bitrate-during-complete-silence">Ogg Vorbis Bitrate
+During Complete Silence</h1>
+<p>During complete digital silence, an Ogg Vorbis audio stream typically
+drops to a baseline bitrate between <strong>1.2 kbps and 2.5
+kbps</strong>. Because Vorbis utilizes a native variable bitrate (VBR)
+architecture, it aggressively reduces data consumption when processing
+silent audio, but it does not drop to absolute zero. This remaining
+bandwidth is consumed almost entirely by required frame headers, floor
+definitions, and Ogg container encapsulation rather than actual acoustic
+data.</p>
+<h3 id="why-vorbis-cannot-drop-to-0-kbps">Why Vorbis Cannot Drop to 0
+kbps</h3>
+<p>Unlike speech-oriented codecs such as Opus or Speex, Vorbis lacks a
+native Discontinuous Transmission (DTX) mode. In an audio codec using
+DTX, the encoder can pause transmission entirely during silence and
+instruct the decoder to generate comfort noise or nothing at all.</p>
+<p>Vorbis, designed as a general-purpose audio codec, requires
+continuous packet delivery. It analyzes audio in overlapping time-domain
+blocks (typically switching between 256 and 2048 samples at standard
+sample rates like 44.1 kHz or 48 kHz). Because the decoder must
+continually reconstruct overlapping windowed segments to prevent
+discontinuities, the encoder must transmit a packet for every single
+audio frame, even when no sound energy exists.</p>
+<h3 id="packet-size-during-silence">Packet Size During Silence</h3>
+<p>When encoding absolute digital silence (all PCM samples at zero):</p>
+<ul>
+<li><strong>Residue:</strong> The residual audio spectrum contains no
+energy, meaning zero bits are required to encode acoustic details.</li>
+<li><strong>Floor:</strong> The spectral floor is encoded at the minimum
+possible state using minimal codebook indices, requiring only a handful
+of bits.</li>
+<li><strong>Headers:</strong> Vorbis packet headers specify the window
+type and framing information.</li>
+</ul>
+<p>Under these conditions, an individual raw Vorbis packet encoding 2048
+samples of pure silence can be as small as 2 to 4 bytes.</p>
+<h3 id="container-and-protocol-overhead">Container and Protocol
+Overhead</h3>
+<p>At 44.1 kHz using long 2048-sample windows, the encoder outputs
+approximately 21.5 packets per second. Multiplying this packet rate by
+minimal packet sizes results in raw Vorbis stream rates often below 1
+kbps.</p>
+<p>However, Vorbis audio is typically wrapped inside the Ogg transport
+container. The Ogg layer groups packets into pages, adding an obligatory
+27-byte header per page along with segment tables. Depending on encoder
+tuning—specifically how often Ogg pages are flushed—the container
+overhead pushes the observed stream bitrate up to the standard range of
+<strong>1.4 kbps to 2.5 kbps</strong>.</p>
+<p>Consequently, listeners streaming or downloading an Ogg Vorbis file
+across prolonged periods of absolute silence will observe bandwidth
+usage stabilizing at roughly 1 to 2 kilobits per second.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

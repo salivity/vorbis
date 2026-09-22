@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Single-Channel Encoding Configuration - vorbis</title>
+    <meta name="description" content="This article examines the resulting channel configuration when encoding a single-channel audio source using the Vorbis audio codec. It covers the Vorbis I channel mapping specifications, header configuration, decoder behavior during playback, and how sin">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-single-channel-encoding-configuration">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Single-Channel Encoding Configuration - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-single-channel-encoding-configuration" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the resulting channel configuration when encoding a single-channel audio source using the Vorbis audio codec. It covers the Vorbis I channel mapping specifications, header configuration, decoder behavior during playback, and how sin" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-single-channel-encoding-configuration">Vorbis
+Single-Channel Encoding Configuration</h1>
+<p>This article examines the resulting channel configuration when
+encoding a single-channel audio source using the Vorbis audio codec. It
+covers the Vorbis I channel mapping specifications, header
+configuration, decoder behavior during playback, and how single-channel
+encoding affects audio compression efficiency.</p>
+<h3 id="vorbis-identification-header-and-channel-count">Vorbis
+Identification Header and Channel Count</h3>
+<p>When an encoder processes a single-channel audio input, it sets the
+<code>audio_channels</code> field in the Vorbis identification header to
+<code>1</code>. In the Ogg Vorbis bitstream specification, this
+explicitly defines the stream as monaural (mono). Unlike formats that
+may pad single-channel audio into a dual-mono or joint-stereo container,
+Vorbis strictly stores only the single stream of audio data.</p>
+<h3 id="channel-mapping-specification">Channel Mapping
+Specification</h3>
+<p>According to the Vorbis I specification, channel positions are
+explicitly defined based on the total number of channels:</p>
+<ul>
+<li><strong>Channel Count:</strong> 1</li>
+<li><strong>Assigned Channel:</strong> Channel 0</li>
+<li><strong>Designated Position:</strong> Monophonic (Center)</li>
+</ul>
+<p>Because there is only one channel, the encoder assigns a single
+Vorbis mapping structure. No channel coupling, channel interleaving, or
+matrixing occurs. In multi-channel Vorbis setups (such as stereo or 5.1
+surround), phase and amplitude coupling techniques like point stereo or
+lossless channel coupling are applied across pairs; for a single-channel
+file, these subroutines are entirely bypassed.</p>
+<h3 id="playback-and-downmixing-behavior">Playback and Downmixing
+Behavior</h3>
+<p>When a Vorbis decoder encounters a single-channel file, it relies on
+the playback system's digital-to-analog converter (DAC) or audio mixer
+to route the stream appropriately:</p>
+<ul>
+<li><strong>Mono Systems:</strong> The signal is fed directly to the
+single speaker.</li>
+<li><strong>Stereo Systems:</strong> Most standard decoders and media
+frameworks duplicate the single channel equally across both the left and
+right output channels at unity gain or with standard center-pan
+attenuation (often -3 dB to maintain perceived loudness).</li>
+<li><strong>Surround Systems:</strong> The channel is commonly routed
+directly to the dedicated physical center speaker channel.</li>
+</ul>
+<h3 id="encoding-efficiency">Encoding Efficiency</h3>
+<p>Encoding a single-channel Vorbis file yields maximum data efficiency
+for non-spatial content such as spoken-word audio, podcasts, and solo
+vocal tracks. Because the encoder allocates all available bits to a
+single time-frequency analysis path without the overhead of stereo
+coordinate data, it provides higher acoustic fidelity at lower overall
+bitrates compared to multi-channel configurations.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

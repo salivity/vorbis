@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplayGain Peak Normalization in Vorbis Comments - vorbis</title>
+    <meta name="description" content="This article provides a concise guide to understanding ReplayGain peak normalization within the framework of Vorbis comments, which are used in audio formats such as FLAC and Ogg Vorbis. It explains what the peak value represents, how audio players use i">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/replay-gain-peak-normalization-in-vorbis-comments">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ReplayGain Peak Normalization in Vorbis Comments - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/replay-gain-peak-normalization-in-vorbis-comments" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a concise guide to understanding ReplayGain peak normalization within the framework of Vorbis comments, which are used in audio formats such as FLAC and Ogg Vorbis. It explains what the peak value represents, how audio players use i" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="replaygain-peak-normalization-in-vorbis-comments">ReplayGain
+Peak Normalization in Vorbis Comments</h1>
+<p>This article provides a concise guide to understanding ReplayGain
+peak normalization within the framework of Vorbis comments, which are
+used in audio formats such as FLAC and Ogg Vorbis. It explains what the
+peak value represents, how audio players use it in conjunction with gain
+values to prevent distortion, and the specific tag formats used to store
+this metadata.</p>
+<h2 id="what-is-replaygain">What Is ReplayGain?</h2>
+<p>ReplayGain is a standard designed to achieve perceived loudness
+normalization across different audio tracks and albums. Rather than
+permanently altering the underlying audio samples, ReplayGain scans
+audio files beforehand and writes adjustment instructions into the
+file's metadata.</p>
+<p>In containers like Ogg Vorbis and FLAC, these metadata fields are
+stored as Vorbis comments (key-value text pairs).</p>
+<h2 id="the-role-of-peak-normalization">The Role of Peak
+Normalization</h2>
+<p>While ReplayGain primarily calculates a gain adjustment (e.g.,
+<code>-6.5 dB</code> or <code>+3.2 dB</code>) to match a standard target
+loudness (usually 89 dB SPL), boosting quiet audio can push signal peaks
+beyond the maximum possible digital amplitude (0 dBFS). This leads to
+digital clipping and harsh audio distortion.</p>
+<p>The peak value exists specifically to prevent this clipping. It
+records the highest absolute sample value found during the track or
+album analysis, represented as a floating-point number relative to full
+digital scale:</p>
+<ul>
+<li><code>1.0</code> represents full scale (0 dBFS).</li>
+<li>Values below <code>1.0</code> mean the audio never reaches digital
+ceiling.</li>
+<li>Values above <code>1.0</code> (possible in floating-point audio)
+indicate that the signal already exceeds full scale.</li>
+</ul>
+<h2 id="vorbis-comment-peak-tags">Vorbis Comment Peak Tags</h2>
+<p>In Vorbis comments, peak values are stored alongside gain values
+using specific field names:</p>
+<ul>
+<li><strong><code>REPLAYGAIN_TRACK_PEAK</code></strong>: The maximum
+sample amplitude of the individual track, formatted as a decimal (e.g.,
+<code>0.98425293</code>).</li>
+<li><strong><code>REPLAYGAIN_ALBUM_PEAK</code></strong>: The maximum
+sample amplitude across the entire album, ensuring that tracks with high
+dynamic range do not clip when album-wide gain is applied.</li>
+</ul>
+<p>Corresponding gain tags accompany these peaks:</p>
+<ul>
+<li><code>REPLAYGAIN_TRACK_GAIN</code> (e.g.,
+<code>+2.40 dB</code>)</li>
+<li><code>REPLAYGAIN_ALBUM_GAIN</code> (e.g.,
+<code>+1.10 dB</code>)</li>
+</ul>
+<h2 id="how-players-use-peak-normalization-metadata">How Players Use
+Peak Normalization Metadata</h2>
+<p>When an audio player reads Vorbis comments, it uses the peak tag as a
+safety threshold during playback:</p>
+<ol type="1">
+<li><strong>Calculating Target Output</strong>: The player reads the
+requested gain adjustment (such as
+<code>REPLAYGAIN_TRACK_GAIN</code>).</li>
+<li><strong>Clipping Prediction</strong>: The player multiplies the
+proposed linear gain factor by the <code>REPLAYGAIN_TRACK_PEAK</code>
+value.</li>
+<li><strong>Automatic Attenuation</strong>: If the calculation indicates
+that the adjusted signal will exceed <code>1.0</code> (0 dBFS),
+compatible players will automatically reduce the applied gain or engage
+a limiter. This ensures the track is played as loud as possible without
+introducing digital clipping.</li>
+</ol>
+<p>Through this mechanism, Vorbis comment peak normalization safeguards
+dynamic range and audio fidelity entirely through metadata, leaving the
+original audio stream unmodified.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

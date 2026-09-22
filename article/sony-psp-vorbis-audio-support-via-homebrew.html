@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sony PSP Vorbis Audio Support via Homebrew - vorbis</title>
+    <meta name="description" content="The Sony PlayStation Portable (PSP) lacked native, out-of-the-box support for the Ogg Vorbis audio format, but it fully supported Vorbis playback through custom homebrew applications and third-party libraries. While Sony's official firmware restricted au">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/sony-psp-vorbis-audio-support-via-homebrew">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sony PSP Vorbis Audio Support via Homebrew - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/sony-psp-vorbis-audio-support-via-homebrew" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Sony PlayStation Portable (PSP) lacked native, out-of-the-box support for the Ogg Vorbis audio format, but it fully supported Vorbis playback through custom homebrew applications and third-party libraries. While Sony's official firmware restricted au" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="sony-psp-vorbis-audio-support-via-homebrew">Sony PSP Vorbis
+Audio Support via Homebrew</h1>
+<p>The Sony PlayStation Portable (PSP) lacked native, out-of-the-box
+support for the Ogg Vorbis audio format, but it fully supported Vorbis
+playback through custom homebrew applications and third-party libraries.
+While Sony's official firmware restricted audio decoding primarily to
+proprietary and common commercial formats like ATRAC3, MP3, AAC, and
+WMA, the vibrant PSP homebrew development community quickly bypassed
+these restrictions. By porting open-source decoding libraries to the
+PSP's MIPS architecture, developers enabled Vorbis decoding for media
+players, background audio plugins, and custom game ports.</p>
+<p>To achieve smooth playback on the handheld's hardware, developers
+relied heavily on <strong>Tremor</strong> (also known as
+<code>libvorbisidec</code>). Tremor is an integer-only implementation of
+the Vorbis audio decoding specification specifically optimized for
+embedded devices that lack dedicated floating-point units or require
+minimal CPU overhead. Because the PSP's MIPS R4000-based Allegrex
+processor operated at lower clock speeds (typically 222 MHz by default,
+though capable of 333 MHz) to conserve battery life, floating-point
+calculations could lead to stuttering and heavy battery drain. Tremor
+allowed high-quality Vorbis streams to be decoded in real-time with
+negligible performance impact.</p>
+<p>The integration of Vorbis through Tremor and the open-source PSPSDK
+resulted in a wide variety of practical applications:</p>
+<ul>
+<li><strong>Dedicated Music Players:</strong> Standalone homebrew
+players, such as <em>LightMP3</em>, were specifically designed around
+formats like Ogg Vorbis and FLAC. LightMP3 was celebrated for its power
+efficiency, allowing users to underclock the PSP's CPU to as low as 60
+MHz or 75 MHz while decoding Vorbis files, vastly outperforming official
+Sony playback in battery longevity.</li>
+<li><strong>In-Game Music Plugins:</strong> Custom firmware plugins like
+<em>Music PRX</em> enabled background audio playback while users played
+retail games. These background daemons often incorporated Vorbis
+support, allowing players to listen to custom Ogg tracks in place of
+official game soundtracks.</li>
+<li><strong>Emulators and Game Engines:</strong> Open-source game
+engines and emulators, including the PSP port of <em>ScummVM</em>,
+utilized Vorbis for compressed game audio and speech files. Developers
+porting PC titles (such as <em>Doom</em>, <em>Quake</em>, or various RPG
+Maker interpreters) relied on Vorbis to save memory stick storage while
+avoiding the licensing complications associated with MP3 at the
+time.</li>
+</ul>
+<p>Ultimately, Vorbis became one of the most widely adopted audio
+formats in the PSP homebrew ecosystem, overcoming the system's official
+software limitations through lightweight, community-ported decoders.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

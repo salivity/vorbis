@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Encodes High-Frequency Binaural Audio - vorbis</title>
+    <meta name="description" content="This article examines how the Vorbis audio compression format processes high-frequency binaural audio recordings. It explores the psychoacoustic principles of binaural hearing, Vorbis's channel coupling architecture—specifically Mid/Side stereo and pol">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-encodes-high-frequency-binaural-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Encodes High-Frequency Binaural Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-encodes-high-frequency-binaural-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the Vorbis audio compression format processes high-frequency binaural audio recordings. It explores the psychoacoustic principles of binaural hearing, Vorbis's channel coupling architecture—specifically Mid/Side stereo and pol" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-encodes-high-frequency-binaural-audio">How Vorbis
+Encodes High-Frequency Binaural Audio</h1>
+<p>This article examines how the Vorbis audio compression format
+processes high-frequency binaural audio recordings. It explores the
+psychoacoustic principles of binaural hearing, Vorbis's channel coupling
+architecture—specifically Mid/Side stereo and polar mapping—and how
+compression thresholds determine whether crucial spatial localization
+cues are preserved or discarded during the encoding process.</p>
+<h3 id="the-nature-of-high-frequency-binaural-cues">The Nature of
+High-Frequency Binaural Cues</h3>
+<p>Binaural recordings capture sound using two microphones placed inside
+an artificial or human head to mimic human hearing. Human sound
+localization relies on two primary mechanisms: Interaural Time
+Differences (ITD) for frequencies below roughly 1.5 kHz, and Interaural
+Level Differences (ILD) combined with Head-Related Transfer Functions
+(HRTFs) for frequencies above 1.5 kHz. High-frequency binaural audio
+relies heavily on micro-spectral notches and subtle gain differences
+caused by the pinnae (outer ears) to communicate vertical elevation and
+front-to-back positioning. Preserving these spectral subtleties is
+essential to maintaining an authentic three-dimensional soundstage.</p>
+<h3 id="vorbis-spectral-decomposition">Vorbis Spectral
+Decomposition</h3>
+<p>The Vorbis codec processes audio using the Modified Discrete Cosine
+Transform (MDCT) with dynamically switched window sizes (typically 2048
+samples for steady-state signals and 256 samples for transients). Once
+converted into the frequency domain, the spectrum is split into two
+components: a "floor" representation that models the broad spectral
+envelope, and a "residue" vector that captures the fine harmonic
+details. For binaural audio, the high-frequency HRTF notches fall within
+this residue layer.</p>
+<h3 id="channel-coupling-midside-vs-polar-mapping">Channel Coupling:
+Mid/Side vs. Polar Mapping</h3>
+<p>To maximize compression efficiency, Vorbis employs stereo channel
+coupling rather than encoding left and right channels entirely
+independently:</p>
+<ol type="1">
+<li><strong>Mid/Side (M/S) Stereo:</strong> Used primarily for lower and
+mid-frequencies where phase relationships are critical. M/S stereo
+encodes the sum (Mid = Left + Right) and difference (Side = Left -
+Right) of the channels. Because this operation is mathematically
+reversible, it introduces no spatial phase smearing, fully preserving
+low-to-mid ITD cues.</li>
+<li><strong>Polar (Phase/Point) Coupling:</strong> At higher frequencies
+and lower bitrates, Vorbis utilizes polar channel mapping. Instead of
+preserving discrete Left and Right spectra, the encoder transforms the
+two channels into magnitude and angle vectors. The magnitude represents
+the overall energy, while the angle represents the stereo position.</li>
+</ol>
+<h3 id="the-impact-of-polar-coupling-on-binaural-imaging">The Impact of
+Polar Coupling on Binaural Imaging</h3>
+<p>While polar coupling is effective for conventional stereo speaker
+setups, it presents challenges for high-frequency binaural audio.</p>
+<p>By grouping high-frequency MDCT bins into psychoacoustic bands (Bark
+scale subbands) and quantizing the angle parameter, polar mapping
+averages spatial information over narrow frequency ranges. In binaural
+listening, this quantization can smooth out the sharp HRTF peaks and
+nulls that the brain uses to determine sound elevation and depth.
+Consequently, sounds that should appear above, behind, or close to the
+listener may collapse inside the head or sound unnaturally diffuse.</p>
+<h3 id="quality-levels-and-discrete-channel-retention">Quality Levels
+and Discrete Channel Retention</h3>
+<p>The degree to which Vorbis degrades high-frequency binaural sound
+depends heavily on the chosen quality setting (<code>-q</code>
+parameter):</p>
+<ul>
+<li><strong>Low to Medium Bitrates (below ~160 kbps / -q 5):</strong>
+The encoder aggressively couples high frequencies using polar stereo to
+save bits. The residue vectors are heavily quantized, causing
+perceptible loss of high-frequency pinna cues and flattening the
+binaural image.</li>
+<li><strong>High Bitrates (~192 kbps to 500 kbps / -q 6 to -q
+10):</strong> Vorbis restricts or completely disables lossy polar
+coupling. Instead, it relies on lossless M/S stereo or encodes channels
+discretely. In this operating range, the fine spectral variations of
+HRTFs and high-frequency level differences remain intact, delivering
+transparent binaural reproduction comparable to lossless audio.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

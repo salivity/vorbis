@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role of the ATH Curve in Vorbis Audio Compression - vorbis</title>
+    <meta name="description" content="The Absolute Threshold of Hearing (ATH) curve plays a fundamental role in the Vorbis audio codec by defining the minimum sound pressure level detectable by the human ear across different audio frequencies in a silent environment. In Vorbis, this psychoac">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/role-of-the-ath-curve-in-vorbis-audio-compression">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Role of the ATH Curve in Vorbis Audio Compression - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/role-of-the-ath-curve-in-vorbis-audio-compression" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Absolute Threshold of Hearing (ATH) curve plays a fundamental role in the Vorbis audio codec by defining the minimum sound pressure level detectable by the human ear across different audio frequencies in a silent environment. In Vorbis, this psychoac" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="role-of-the-ath-curve-in-vorbis-audio-compression">Role of the
+ATH Curve in Vorbis Audio Compression</h1>
+<p>The Absolute Threshold of Hearing (ATH) curve plays a fundamental
+role in the Vorbis audio codec by defining the minimum sound pressure
+level detectable by the human ear across different audio frequencies in
+a silent environment. In Vorbis, this psychoacoustic threshold acts as a
+baseline cutoff for perceptual audio coding, enabling the encoder to
+identify and discard inaudible spectral data, optimize bit allocation,
+and shape quantization noise below the threshold of human perception
+without degrading perceived audio quality.</p>
+<h2
+id="understanding-the-absolute-threshold-of-hearing-ath">Understanding
+the Absolute Threshold of Hearing (ATH)</h2>
+<p>The human auditory system does not perceive all frequencies with
+equal sensitivity. Humans are most sensitive to frequencies between 2
+kHz and 5 kHz—critical for speech comprehension—and significantly less
+sensitive to extremely low (sub-bass) and high (treble) frequencies. The
+ATH curve is a non-linear mathematical model representing this
+frequency-dependent sensitivity. Any audio signal falling below this
+baseline is physically inaudible to human listeners under normal
+conditions.</p>
+<h2 id="setting-the-lower-bound-for-masking-thresholds">Setting the
+Lower Bound for Masking Thresholds</h2>
+<p>Vorbis relies on the Modified Discrete Cosine Transform (MDCT) to
+convert time-domain audio signals into frequency-domain representations.
+To compress this data lossily, the Vorbis psychoacoustic model
+calculates a global masking threshold.</p>
+<p>While active audio content generates dynamic masking (where loud
+tones obscure nearby quiet sounds), the ATH curve provides the static,
+absolute lower bound for this model. Even when no other sounds exist to
+mask a given frequency, any signal component with an amplitude below the
+ATH curve can be safely omitted or represented with minimal
+precision.</p>
+<h2 id="optimizing-bit-allocation-and-quantization-noise">Optimizing Bit
+Allocation and Quantization Noise</h2>
+<p>Lossy compression inevitably introduces quantization noise—distortion
+caused by rounding audio values into smaller bit-depths. The primary
+objective of the Vorbis psychoacoustic engine is to ensure that this
+quantization noise remains below the threshold of audibility.</p>
+<p>The ATH curve directly guides this process in two key ways:</p>
+<ul>
+<li><strong>Bandwidth Pruning:</strong> Frequencies near the extremes of
+human hearing (below 20 Hz or above 16 kHz to 20 kHz) require
+progressively higher sound pressure levels to be perceived. Vorbis uses
+the ATH to discard high-frequency energy that requires excessive bit
+budgets to encode but contributes nothing to human perception.</li>
+<li><strong>Noise Shaping:</strong> Vorbis allocates bits across
+spectral sub-bands so that the resulting noise floor mimics the shape of
+the ATH curve combined with dynamic masking curves. This ensures that
+quantization artifacts stay buried beneath the listener's threshold of
+detection.</li>
+</ul>
+<h2 id="efficiency-in-variable-bitrate-vbr-encoding">Efficiency in
+Variable Bitrate (VBR) Encoding</h2>
+<p>The Vorbis codec is designed around variable bitrate (VBR) encoding,
+aiming for consistent perceived quality rather than a fixed data rate
+per second. The ATH curve plays a major role during quiet or silent
+sections of an audio track. Because the codec knows the precise energy
+required for a sound to be heard, it can reduce bit allocation to
+near-zero levels during quiet passages where faint room noise or
+low-level harmonics fall below the ATH baseline.</p>
+<p>By establishing an empirical limit on what the human ear can perceive
+in quiet listening conditions, the ATH curve ensures that Vorbis expends
+encoding data only on the spectral information that directly impacts the
+listener's experience.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

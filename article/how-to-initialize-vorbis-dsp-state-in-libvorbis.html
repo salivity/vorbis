@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Initialize Vorbis DSP State in libvorbis - vorbis</title>
+    <meta name="description" content="In the libvorbis C API, the function used to initialize a vorbisdspstate depends on whether you are encoding or decoding audio. For decoding operations, the DSP state is initialized using vorbissynthesisinit(), whereas for encoding operations, it is init">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-to-initialize-vorbis-dsp-state-in-libvorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Initialize Vorbis DSP State in libvorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-to-initialize-vorbis-dsp-state-in-libvorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the libvorbis C API, the function used to initialize a vorbisdspstate depends on whether you are encoding or decoding audio. For decoding operations, the DSP state is initialized using vorbissynthesisinit(), whereas for encoding operations, it is init" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-to-initialize-vorbis-dsp-state-in-libvorbis">How to
+Initialize Vorbis DSP State in libvorbis</h1>
+<p>In the libvorbis C API, the function used to initialize a
+<code>vorbis_dsp_state</code> depends on whether you are encoding or
+decoding audio. For decoding operations, the DSP state is initialized
+using <code>vorbis_synthesis_init()</code>, whereas for encoding
+operations, it is initialized using <code>vorbis_analysis_init()</code>.
+Both functions prepare the central DSP processing engine using
+configuration parameters stored in a previously initialized
+<code>vorbis_info</code> struct.</p>
+<h2 id="decoding-vorbis_synthesis_init">Decoding:
+<code>vorbis_synthesis_init()</code></h2>
+<p>When decompressing Ogg Vorbis bitstreams, use
+<code>vorbis_synthesis_init()</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> vorbis_synthesis_init<span class="op">(</span>vorbis_dsp_state <span class="op">*</span>v<span class="op">,</span> vorbis_info <span class="op">*</span>vi<span class="op">);</span></span></code></pre></div>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><strong><code>v</code></strong>: A pointer to the
+<code>vorbis_dsp_state</code> structure that will be initialized.</li>
+<li><strong><code>vi</code></strong>: A pointer to an initialized
+<code>vorbis_info</code> structure containing the decoded stream
+headers.</li>
+</ul>
+<h3 id="return-values">Return Values</h3>
+<ul>
+<li><strong><code>0</code></strong>: Success.</li>
+<li><strong>Non-zero / negative value</strong>: Failure, typically
+indicating internal memory allocation errors or invalid parameters
+within the <code>vorbis_info</code> struct.</li>
+</ul>
+<h3 id="usage-workflow">Usage Workflow</h3>
+<ol type="1">
+<li>Initialize the <code>vorbis_info</code> structure using
+<code>vorbis_info_init(&amp;vi)</code>.</li>
+<li>Parse the three required Vorbis header packets into <code>vi</code>
+using <code>vorbis_synthesis_headerin()</code>.</li>
+<li>Call <code>vorbis_synthesis_init(&amp;v, &amp;vi)</code> to prepare
+the DSP synthesis engine.</li>
+<li>Pair with a <code>vorbis_block</code> structure via
+<code>vorbis_block_init(&amp;v, &amp;vb)</code> for decoding PCM
+samples.</li>
+</ol>
+<hr />
+<h2 id="encoding-vorbis_analysis_init">Encoding:
+<code>vorbis_analysis_init()</code></h2>
+<p>When compressing raw PCM audio into Vorbis packets, use
+<code>vorbis_analysis_init()</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> vorbis_analysis_init<span class="op">(</span>vorbis_dsp_state <span class="op">*</span>v<span class="op">,</span> vorbis_info <span class="op">*</span>vi<span class="op">);</span></span></code></pre></div>
+<h3 id="parameters-1">Parameters</h3>
+<ul>
+<li><strong><code>v</code></strong>: A pointer to the
+<code>vorbis_dsp_state</code> structure to initialize.</li>
+<li><strong><code>vi</code></strong>: A pointer to a
+<code>vorbis_info</code> structure configured with target audio
+parameters (sample rate, channel count, bitrate, or quality mode) using
+helpers like <code>vorbis_encode_init_vbr()</code> or
+<code>vorbis_encode_setup_managed()</code>.</li>
+</ul>
+<h3 id="return-values-1">Return Values</h3>
+<ul>
+<li><strong><code>0</code></strong>: Success.</li>
+<li><strong><code>OV_EFAULT</code> / Negative value</strong>: Parameter
+error or failure during internal setup.</li>
+</ul>
+<hr />
+<h2 id="cleanup-vorbis_dsp_clear">Cleanup:
+<code>vorbis_dsp_clear()</code></h2>
+<p>Once DSP processing is complete, the allocated resources inside the
+<code>vorbis_dsp_state</code> structure must be released to prevent
+memory leaks:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> vorbis_dsp_clear<span class="op">(</span>vorbis_dsp_state <span class="op">*</span>v<span class="op">);</span></span></code></pre></div>
+<p>Calling <code>vorbis_dsp_clear()</code> frees all internal buffers
+associated with the DSP state. It should be called before clearing the
+parent <code>vorbis_info</code> structure with
+<code>vorbis_info_clear()</code>.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

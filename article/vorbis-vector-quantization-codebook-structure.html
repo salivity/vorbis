@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Vector Quantization: Codebook Structure - vorbis</title>
+    <meta name="description" content="This article provides a technical breakdown of the mathematical structure underlying the Vector Quantization (VQ) codebooks used in the Vorbis audio compression format. It covers the multidimensional vector spaces, the prefix-free Huffman trees used to i">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-vector-quantization-codebook-structure">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Vector Quantization: Codebook Structure - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-vector-quantization-codebook-structure" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a technical breakdown of the mathematical structure underlying the Vector Quantization (VQ) codebooks used in the Vorbis audio compression format. It covers the multidimensional vector spaces, the prefix-free Huffman trees used to i" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-vector-quantization-codebook-structure">Vorbis Vector
+Quantization: Codebook Structure</h1>
+<p>This article provides a technical breakdown of the mathematical
+structure underlying the Vector Quantization (VQ) codebooks used in the
+Vorbis audio compression format. It covers the multidimensional vector
+spaces, the prefix-free Huffman trees used to index these spaces, the
+algorithmic codebook generation methods (lookup types 0, 1, and 2), and
+the exact dequantization formulas used to reconstruct spectral residual
+vectors.</p>
+<h3 id="dimensionality-and-vector-space-definition">Dimensionality and
+Vector Space Definition</h3>
+<p>A Vorbis vector quantization codebook defines a discrete mapping
+between variable-length bit sequences and points in an arbitrary
+multidimensional Euclidean space. Mathematically, a codebook is defined
+over a vector space <span class="math inline">\(\mathbb{R}^D\)</span>
+and contains <span class="math inline">\(N\)</span> discrete codebook
+entries:</p>
+<ul>
+<li><strong>Dimension (<span class="math inline">\(D\)</span>):</strong>
+The number of scalar elements in each vector tuple, where <span
+class="math inline">\(D \ge 1\)</span>. Vorbis uses this to quantize
+blocks of <span class="math inline">\(D\)</span> spectral residual
+coefficients simultaneously.</li>
+<li><strong>Entries (<span class="math inline">\(N\)</span>):</strong>
+The total cardinal size of the codebook alphabet, representing discrete
+coordinate vectors: <span class="math display">\[\mathcal{C} = \{
+\mathbf{v}_0, \mathbf{v}_1, \dots, \mathbf{v}_{N-1} \} \subset
+\mathbb{R}^D\]</span></li>
+</ul>
+<p>Each vector <span class="math inline">\(\mathbf{v}_i\)</span>
+consists of components <span class="math inline">\((v_{i,0}, v_{i,1},
+\dots, v_{i,D-1})\)</span>.</p>
+<h3 id="huffman-prefix-free-indexing">Huffman Prefix-Free Indexing</h3>
+<p>To minimize the bitrate of transmission, indices <span
+class="math inline">\(i \in \{0, \dots, N-1\}\)</span> are mapped to
+variable-length prefix-free codes. Each entry <span
+class="math inline">\(i\)</span> is assigned an integer code length
+<span class="math inline">\(L_i\)</span>. The set of lengths must
+satisfy the Kraft-McMillan inequality:</p>
+<p><span class="math display">\[\sum_{i=0}^{N-1} 2^{-L_i} \le
+1\]</span></p>
+<p>Vorbis stores these lengths using an ordered run-length or sparse
+coding scheme, dynamically reconstructing the corresponding canonical
+binary Huffman tree at the decoder. Unused entries are assigned <span
+class="math inline">\(L_i = 0\)</span> and are excluded from the active
+tree.</p>
+<h3 id="vector-generation-and-storage-types">Vector Generation and
+Storage Types</h3>
+<p>Storing <span class="math inline">\(N \times D\)</span>
+floating-point coordinates explicitly requires significant memory and
+bitstream overhead. Vorbis solves this by defining three mathematical
+representation types for the vectors:</p>
+<h4 id="lookup-type-0">Lookup Type 0</h4>
+<p>Type 0 denotes a codebook without scalar quantization lookup tables.
+In this mode, no coordinate vectors are generated directly from the
+codebook; the codebook indices are used purely as entropy symbols for
+other structural elements (such as floor curves or residual partitioning
+indices).</p>
+<h4 id="lookup-type-1-algorithmic-lattice-quantization">Lookup Type 1:
+Algorithmic Lattice Quantization</h4>
+<p>Lookup Type 1 models a regular <span
+class="math inline">\(D\)</span>-dimensional grid using a combinatorial
+product from an ordered single-dimensional base list.</p>
+<ol type="1">
+<li><strong>Base Value Quantization List:</strong> A 1D array of
+quantized scalar values <span class="math inline">\(Q = [q_0, q_1,
+\dots, q_{K-1}]\)</span>, where <span class="math inline">\(K\)</span>
+is defined such that <span class="math inline">\(K^D \approx N\)</span>
+(specifically, <span class="math inline">\(K = \lfloor N^{1/D}
+\rfloor\)</span>).</li>
+<li><strong>Indexing:</strong> For an entry index <span
+class="math inline">\(i\)</span>, the coordinate sub-indices <span
+class="math inline">\((k_0, k_1, \dots, k_{D-1})\)</span> are extracted
+via mixed-radix division: <span class="math display">\[k_j =
+\left\lfloor \frac{i}{K^j} \right\rfloor \pmod K \quad \text{for } j \in
+\{0, \dots, D-1\}\]</span></li>
+<li><strong>Lattice Generation:</strong> The position of entry <span
+class="math inline">\(i\)</span> along dimension <span
+class="math inline">\(j\)</span> is calculated by indexing into <span
+class="math inline">\(Q\)</span> using <span
+class="math inline">\(k_j\)</span>.</li>
+</ol>
+<h4 id="lookup-type-2-explicit-quantization-list">Lookup Type 2:
+Explicit Quantization List</h4>
+<p>Lookup Type 2 explicitly defines values for every component of every
+entry. The coordinate array contains <span class="math inline">\(N
+\times D\)</span> scalar quantization values laid out sequentially.
+Entry <span class="math inline">\(i\)</span> maps to indices:</p>
+<p><span class="math display">\[\text{index}(i, j) = i \cdot D + j \quad
+\text{for } j \in \{0, \dots, D-1\}\]</span></p>
+<h3 id="mathematical-dequantization-formula">Mathematical Dequantization
+Formula</h3>
+<p>The discrete quantized indices retrieved via Type 1 or Type 2 lookup
+are converted into real-valued floating-point vectors via an affine
+reconstruction transform:</p>
+<p><span class="math display">\[v_{i,j} = \text{minimum\_value} + \left(
+Q[k_j] \times \text{delta\_value} \right) +
+\text{sequence\_p}\]</span></p>
+<p>Where:</p>
+<ul>
+<li><strong><span
+class="math inline">\(\text{minimum\_value}\)</span>:</strong> A
+single-precision floating-point offset specifying the origin of the
+quantization space.</li>
+<li><strong><span
+class="math inline">\(\text{delta\_value}\)</span>:</strong> A positive
+scaling step size between quantization levels.</li>
+<li><strong><span class="math inline">\(Q[k_j]\)</span>:</strong> The
+scalar non-negative integer extracted from the quantization list for
+dimension <span class="math inline">\(j\)</span>.</li>
+<li><strong><span
+class="math inline">\(\text{sequence\_p}\)</span>:</strong> An optional
+sequence accumulation term. When the <code>sequence_flag</code> is set
+to 1, values accumulate monotonically across the vector: <span
+class="math display">\[\text{sequence\_p}_j = \begin{cases} 0 &amp;
+\text{if } j = 0 \\ v_{i,j-1} &amp; \text{if } j &gt; 0
+\end{cases}\]</span> When <code>sequence_flag</code> is 0, <span
+class="math inline">\(\text{sequence\_p} = 0\)</span> for all <span
+class="math inline">\(j\)</span>.</li>
+</ul>
+<p>Vorbis uses custom 32-bit floating-point representations for <span
+class="math inline">\(\text{minimum\_value}\)</span> and <span
+class="math inline">\(\text{delta\_value}\)</span> within the bitstream,
+ensuring identical bit-level reconstruction of the coordinate space
+across different hardware architectures.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

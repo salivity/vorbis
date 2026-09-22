@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis MDCT Overlapping Window Types Explained - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec utilizes the Modified Discrete Cosine Transform (MDCT) to convert time-domain audio signals into frequency-domain representations. To prevent spectral leakage and eliminate boundary artifacts between frames, Vorbis relies on overla">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-mdct-overlapping-window-types-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis MDCT Overlapping Window Types Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-mdct-overlapping-window-types-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec utilizes the Modified Discrete Cosine Transform (MDCT) to convert time-domain audio signals into frequency-domain representations. To prevent spectral leakage and eliminate boundary artifacts between frames, Vorbis relies on overla" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-mdct-overlapping-window-types-explained">Vorbis MDCT
+Overlapping Window Types Explained</h1>
+<p>The Vorbis audio codec utilizes the Modified Discrete Cosine
+Transform (MDCT) to convert time-domain audio signals into
+frequency-domain representations. To prevent spectral leakage and
+eliminate boundary artifacts between frames, Vorbis relies on
+overlapping window functions that satisfy the Princen-Bradley condition
+for Time-Domain Aliasing Cancellation (TDAC). This article outlines the
+specific window shapes, block lengths, and asymmetric transition windows
+implemented in Vorbis MDCT transforms.</p>
+<h2 id="the-vorbis-window-shape">The Vorbis Window Shape</h2>
+<p>Unlike codecs like MP3 or AAC that traditionally use standard sine or
+Kaiser-Bessel Derived (KBD) windows, Vorbis defines its own specialized
+window function, formally designated as "Window Type 0" in the Vorbis I
+specification.</p>
+<p>The Vorbis window function is defined mathematically as:</p>
+<p><span class="math display">\[w(n) = \sin\left(\frac{\pi}{2}
+\sin^2\left(\frac{\pi}{2N} (n + 0.5)\right)\right)\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(n\)</span> is the sample index from
+<span class="math inline">\(0\)</span> to <span class="math inline">\(N
+- 1\)</span>.</li>
+<li><span class="math inline">\(N\)</span> is the total window
+length.</li>
+</ul>
+<p>This "sine of a sine" design provides a steeper roll-off at the edges
+and a flatter response near the center than an ordinary sine window.
+This reduces spectral leakage from neighboring frequency bins while
+maintaining sufficient temporal resolution and smooth overlap-add
+reconstruction.</p>
+<h2 id="window-sizes-long-and-short-blocks">Window Sizes: Long and Short
+Blocks</h2>
+<p>Vorbis dynamically switches between two window sizes during encoding
+to balance frequency resolution and temporal precision:</p>
+<ul>
+<li><strong>Long Windows:</strong> Typically 2048 or 4096 samples. Long
+blocks provide high frequency resolution, making them optimal for
+stationary, tonal passages where fine spectral detail is required.</li>
+<li><strong>Short Windows:</strong> Typically 256 or 512 samples. Short
+blocks provide high temporal resolution, deployed during transient
+events (such as percussive hits or sharp attacks) to limit pre-echo
+artifacts.</li>
+</ul>
+<p>Each frame overlaps its predecessor and successor by 50%, ensuring
+continuous coverage and facilitating alias cancellation.</p>
+<h2 id="asymmetric-transition-windows">Asymmetric Transition
+Windows</h2>
+<p>Because block sizes can change dynamically, a long window cannot
+overlap directly with a short window without violating the symmetry
+required for TDAC. Vorbis solves this by creating asymmetric, hybrid
+windows for transition frames:</p>
+<ul>
+<li><strong>Long-to-Short Transition Window:</strong> The left half uses
+a long window shape to match the preceding long block. The center
+section consists of a flat plateau of unity (<span
+class="math inline">\(1.0\)</span>). The right half drops off rapidly
+using the first half of a short window shape, padded with zeros to align
+with the upcoming short block.</li>
+<li><strong>Short-to-Long Transition Window:</strong> The mirror
+opposite of the long-to-short window. The left half begins with zeros
+and rises using the second half of a short window shape, holds flat, and
+the right half falls off using a long window shape to match the
+following long block.</li>
+<li><strong>Long-to-Long and Short-to-Short Windows:</strong> Standard
+symmetric Vorbis windows spanning the full length of the respective
+block size.</li>
+</ul>
+<h2 id="time-domain-aliasing-cancellation-tdac">Time-Domain Aliasing
+Cancellation (TDAC)</h2>
+<p>The MDCT is a critically sampled transform, meaning each <span
+class="math inline">\(N\)</span>-sample overlapping transform produces
+<span class="math inline">\(N/2\)</span> frequency coefficients. This
+induces time-domain aliasing. Vorbis ensures that the overlapping
+portions of consecutive windows—regardless of whether they are symmetric
+long, symmetric short, or asymmetric transition windows—adhere to the
+Princen-Bradley condition:</p>
+<p><span class="math display">\[w_{\text{left}}^2(n) +
+w_{\text{right}}^2(n) = 1\]</span></p>
+<p>During decoding, the Inverse MDCT (IMDCT) generates aliased
+time-domain segments that, when multiplied by the matching synthesis
+window and added together (overlap-add), cancel the aliasing completely
+to yield the original audio waveform.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

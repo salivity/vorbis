@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Audio Artifacts at Extremely Low Bitrates - vorbis</title>
+    <meta name="description" content="When the Vorbis audio codec is forced to operate at bitrates far below its optimal operating envelope, it exhibits a distinct sonic failure mode defined by extreme acoustic artifacts. While modern codecs like Opus or modern AAC implementations degrade gr">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-audio-artifacts-at-extremely-low-bitrates">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Audio Artifacts at Extremely Low Bitrates - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-audio-artifacts-at-extremely-low-bitrates" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When the Vorbis audio codec is forced to operate at bitrates far below its optimal operating envelope, it exhibits a distinct sonic failure mode defined by extreme acoustic artifacts. While modern codecs like Opus or modern AAC implementations degrade gr" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-audio-artifacts-at-extremely-low-bitrates">Vorbis Audio
+Artifacts at Extremely Low Bitrates</h1>
+<p>When the Vorbis audio codec is forced to operate at bitrates far
+below its optimal operating envelope, it exhibits a distinct sonic
+failure mode defined by extreme acoustic artifacts. While modern codecs
+like Opus or modern AAC implementations degrade gracefully using
+bandwidth extension or parametric stereo, older psychoacoustic codecs
+like Vorbis struggle significantly under extreme bit deprivation. This
+article examines the primary mechanisms behind the failure mode of
+Vorbis at low bitrates, detailing the resulting loss of fidelity,
+temporal smearing, and characteristic synthetic distortion.</p>
+<h3 id="aggressive-low-pass-filtering">Aggressive Low-Pass
+Filtering</h3>
+<p>The most immediate defensive mechanism Vorbis employs when starved
+for bits is drastic low-pass filtering. To avoid gross quantization
+distortion across the entire spectrum, the encoder eliminates higher
+frequencies entirely. At extreme low bitrates (such as 32 kbps or lower
+for stereo music), Vorbis typically cuts the audible spectrum down to 8
+kHz–10 kHz or lower. This gives the resulting audio a muffled,
+"blanketed" characteristic, stripping cymbals, vocal sibilance, and room
+ambience of their natural air and clarity.</p>
+<h3 id="spectral-hole-punching-and-chirping">Spectral Hole-Punching and
+Chirping</h3>
+<p>Vorbis encodes audio using a Modified Discrete Cosine Transform
+(MDCT) split into a spectral envelope (the "floor") and the fine
+spectral detail (the "residue"). Under extreme bit constraints:</p>
+<ul>
+<li>The residue representation loses the bits required to encode
+high-order harmonic details.</li>
+<li>The encoder completely discards lower-energy frequency bins to
+preserve the dominant tonal peaks.</li>
+</ul>
+<p>This leaves gaps in the frequency spectrum, a phenomenon known as
+spectral hole-punching. In listening tests, this manifests not as the
+watery or metallic "phasey swish" typical of low-bitrate MP3, but as an
+unnatural, raspy, or "chirping" buzz. Tonal sounds become hollow and
+synthetic, while continuous sounds like applause or ocean waves devolve
+into granular, broken noise.</p>
+<h3 id="temporal-smearing-and-transient-degradation">Temporal Smearing
+and Transient Degradation</h3>
+<p>Vorbis uses variable block sizes—short blocks for transients and long
+blocks for stationary sounds—to balance frequency resolution against
+time resolution. At extremely low bitrates, the bit budget is
+insufficient to adequately encode short blocks with high resolution.</p>
+<p>As a result, transient attacks such as drum hits, acoustic guitar
+plucks, or castanets lose their punch. Instead of a sharp attack, energy
+leaks across the analysis window, producing noticeable pre-echo and
+post-echo. Percussive impacts sound soft, dull, and smeared in time,
+stripping rhythm sections of their dynamic impact.</p>
+<h3 id="robotic-grain-in-reverb-and-fades">Robotic Grain in Reverb and
+Fades</h3>
+<p>When dealing with decaying energy—such as natural acoustic
+reverberation, vocal tails, or fade-outs—Vorbis struggles to distinguish
+low-level signals from quantization noise floor limits. Reverb tails do
+not fade smoothly into silence; instead, they degenerate into a grainy,
+robotic, or whistling texture. The codec continually attempts to
+allocate bits to sparse residues, causing the perceived noise to
+modulate unnaturally with the input signal.</p>
+<h3 id="stereo-collapsing-and-phase-distortion">Stereo Collapsing and
+Phase Distortion</h3>
+<p>At extremely low bitrates, Vorbis relies heavily on lossy channel
+coupling (such as residue channel sharing or point stereo) to conserve
+data. This mechanism preserves only the overall energy distribution
+between the left and right channels rather than their individual phase
+relationships. Consequently, the stereo image collapses toward the
+center, creating a narrow soundstage characterized by odd wandering
+spatial effects, phase cancellation, or a disjointed mono
+experience.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

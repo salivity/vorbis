@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libvorbis Memory Allocation During Encoding - vorbis</title>
+    <meta name="description" content="This article provides an overview of how the libvorbis audio encoding library manages dynamic memory allocation. It covers the library's initialization strategy, the use of custom internal memory pools to minimize heap churn during the encoding loop, how">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/libvorbis-memory-allocation-during-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Libvorbis Memory Allocation During Encoding - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/libvorbis-memory-allocation-during-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the libvorbis audio encoding library manages dynamic memory allocation. It covers the library's initialization strategy, the use of custom internal memory pools to minimize heap churn during the encoding loop, how" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="libvorbis-memory-allocation-during-encoding">Libvorbis Memory
+Allocation During Encoding</h1>
+<p>This article provides an overview of how the libvorbis audio encoding
+library manages dynamic memory allocation. It covers the library's
+initialization strategy, the use of custom internal memory pools to
+minimize heap churn during the encoding loop, how transform buffers are
+reused, and the explicit cleanup mechanisms required to prevent memory
+leaks.</p>
+<h3 id="front-loaded-initialization">Front-Loaded Initialization</h3>
+<p>Libvorbis avoids calling standard system allocators during real-time
+encoding. Instead, it front-loads dynamic heap allocations during the
+initialization phase. When setting up the encoder, functions such as
+<code>vorbis_analysis_init()</code> and <code>vorbis_block_init()</code>
+allocate the long-term context:</p>
+<ul>
+<li><strong><code>vorbis_info</code></strong>: Stores high-level stream
+configuration, mode definitions, mapping structures, and codebook
+metadata.</li>
+<li><strong><code>vorbis_dsp_state</code></strong>: Holds the central
+working state for the encoder, including lookup tables for the Modified
+Discrete Cosine Transform (MDCT), psychoacoustic analysis models, window
+functions, and PCM sample buffers.</li>
+<li><strong><code>vorbis_block</code></strong>: Represents the local
+context for encoding a single audio frame (either a short or long
+window).</li>
+</ul>
+<p>By allocating MDCT lookup tables, bark scale maps, and codebook data
+upfront, the encoder ensures that complex mathematical structures remain
+persistent throughout the encoding session.</p>
+<h3 id="the-vorbis_block-memory-pool-arena-allocation">The
+<code>vorbis_block</code> Memory Pool (Arena Allocation)</h3>
+<p>The core mechanism for managing temporary memory during encoding is
+an internal arena allocator built into the <code>vorbis_block</code>
+structure. Audio encoding requires frequent, temporary memory
+allocations for windowing, psychoacoustic masking, floor calculation,
+residue vectors, and bit management.</p>
+<p>Instead of issuing standard <code>malloc()</code> calls for each
+transient calculation, libvorbis implements a local memory pool managed
+by internal functions like <code>_vorbis_block_alloc()</code>:</p>
+<ol type="1">
+<li><strong>Monolithic Chunk Allocation</strong>: When a block needs
+workspace memory that exceeds its current capacity, it allocates a
+larger chunk from the system heap.</li>
+<li><strong>Sequential Offsetting</strong>: Sub-allocations within that
+block simply advance a pointer within the pre-allocated chunk.</li>
+<li><strong>Reset Without Deallocation</strong>: When processing for a
+given block finishes (after <code>vorbis_analysis()</code> produces an
+Ogg packet), the memory inside the pool is not freed back to the
+operating system. Instead, the pool's allocation offset is reset to
+zero. The allocated memory blocks are retained for the next frame,
+effectively eliminating memory fragmentation and reducing heap
+allocation overhead to near zero during steady-state encoding.</li>
+</ol>
+<h3 id="pcm-sliding-window-buffers">PCM Sliding Window Buffers</h3>
+<p>Managing incoming audio samples requires dynamic buffer expansion
+without excessive reallocation. Libvorbis maintains an internal
+multi-channel sliding buffer inside <code>vorbis_dsp_state</code>.</p>
+<p>When the application submits uncompressed audio via
+<code>vorbis_analysis_buffer()</code>, the library checks if the current
+buffer has enough contiguous space for the requested number of
+samples:</p>
+<ul>
+<li>If space permits, it returns pointers to the existing buffer
+segments.</li>
+<li>If space is insufficient, the library invokes <code>realloc()</code>
+to expand the buffer, typically scaling it by an exponential growth
+factor to minimize future reallocations.</li>
+</ul>
+<p>Once samples are analyzed, <code>vorbis_analysis_wrote()</code>
+advances internal indices to mark the data as consumed, allowing old PCM
+data to be overwritten by future input frames.</p>
+<h3 id="underlying-allocation-wrappers">Underlying Allocation
+Wrappers</h3>
+<p>At the low level, libvorbis relies on the memory primitives defined
+by its underlying container library, <code>libogg</code>. Calls
+typically route through wrappers such as <code>_ogg_malloc()</code>,
+<code>_ogg_calloc()</code>, and <code>_ogg_realloc()</code>. By default,
+these map directly to the standard C library runtime
+(<code>malloc</code>, <code>calloc</code>, <code>realloc</code>, and
+<code>free</code>). However, because these operations are centralized
+through internal wrappers, developers can recompile or configure the
+underlying dependencies to use custom embedded memory allocators or
+fixed-size memory pools if required by restricted environments.</p>
+<h3 id="deallocation-lifecycle">Deallocation Lifecycle</h3>
+<p>Because libvorbis defers deallocations to maintain high throughput
+during the encode loop, memory must be explicitly released in reverse
+order of initialization at the end of the stream:</p>
+<ul>
+<li><code>vorbis_block_clear()</code>: Traverses and frees all linked
+memory pool chunks associated with the block context.</li>
+<li><code>vorbis_dsp_state_clear()</code>: Deallocates the PCM ring
+buffers, MDCT lookup arrays, psychoacoustic state structures, and
+transform tables.</li>
+<li><code>vorbis_info_clear()</code>: Frees mode assignments, codebook
+configurations, and mapping metadata.</li>
+</ul>
+<p>This phased teardown ensures all internally pooled arenas and
+persistent lookup tables are returned to the system heap cleanly.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

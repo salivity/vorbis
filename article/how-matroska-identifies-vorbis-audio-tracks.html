@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Matroska Identifies Vorbis Audio Tracks - vorbis</title>
+    <meta name="description" content="This article provides a technical overview of how the Matroska container format (MKV/MKA) recognizes and initializes Vorbis audio streams. Within its Extensible Binary Meta Language (EBML) structure, Matroska relies on specific track header elements—pr">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-matroska-identifies-vorbis-audio-tracks">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Matroska Identifies Vorbis Audio Tracks - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-matroska-identifies-vorbis-audio-tracks" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a technical overview of how the Matroska container format (MKV/MKA) recognizes and initializes Vorbis audio streams. Within its Extensible Binary Meta Language (EBML) structure, Matroska relies on specific track header elements—pr" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-matroska-identifies-vorbis-audio-tracks">How Matroska
+Identifies Vorbis Audio Tracks</h1>
+<p>This article provides a technical overview of how the Matroska
+container format (MKV/MKA) recognizes and initializes Vorbis audio
+streams. Within its Extensible Binary Meta Language (EBML) structure,
+Matroska relies on specific track header elements—primarily the
+<code>CodecID</code> string and the binary data stored in the
+<code>CodecPrivate</code> element—to signal the presence of Vorbis audio
+and deliver the initialization packets required by decoders.</p>
+<h3 id="the-trackentry-element">The TrackEntry Element</h3>
+<p>In Matroska, every media stream is defined within a
+<code>TrackEntry</code> master element located inside the container's
+<code>Tracks</code> element. To identify a stream as audio, Matroska
+sets the <code>TrackType</code> EBML element (ID <code>0x83</code>) to a
+value of <code>2</code>, which explicitly designates the stream as an
+audio track.</p>
+<h3 id="identification-via-codecid">Identification via CodecID</h3>
+<p>Matroska does not rely on four-character codes (FourCC) for native
+audio streams. Instead, it identifies the compression format using the
+<code>CodecID</code> element (ID <code>0x86</code>). For Vorbis audio
+streams, the <code>CodecID</code> string is strictly defined as:</p>
+<p><code>A_VORBIS</code></p>
+<p>When a demuxer parses the <code>TrackEntry</code> and encounters
+<code>A_VORBIS</code>, it flags the track as Vorbis-encoded audio and
+prepares the decoding pipeline accordingly.</p>
+<h3 id="initialization-data-via-codecprivate">Initialization Data via
+CodecPrivate</h3>
+<p>Vorbis differs from many other audio formats because an audio stream
+cannot be decoded without three specific header packets:</p>
+<ol type="1">
+<li><strong>Identification Header:</strong> Contains stream properties
+such as sample rate, channel count, and Vorbis version.</li>
+<li><strong>Comment Header:</strong> Contains user metadata and tags
+(Vorbis comments).</li>
+<li><strong>Setup Header:</strong> Contains codebooks and decoding
+configurations necessary to parse the audio blocks.</li>
+</ol>
+<p>Because Matroska stores only the raw Vorbis audio frames inside its
+data clusters (omitting native Ogg container page framing), all three
+initialization headers must be embedded directly inside the
+<code>CodecPrivate</code> element (ID <code>0x63A2</code>) of the track
+header.</p>
+<h3 id="header-lacing-in-codecprivate">Header Lacing in
+CodecPrivate</h3>
+<p>To store all three Vorbis header packets sequentially inside a single
+<code>CodecPrivate</code> binary field, Matroska uses a specialized
+header lacing format:</p>
+<ol type="1">
+<li><strong>Packet Count Byte:</strong> The first byte indicates the
+number of packets minus one. For Vorbis, this value is almost always
+<code>0x02</code>, indicating three packets.</li>
+<li><strong>Size of the First Packet:</strong> The length of the
+Identification Header, encoded using byte-based accumulation (bytes of
+<code>255</code> added together until a byte less than <code>255</code>
+appears).</li>
+<li><strong>Size of the Second Packet:</strong> The length of the
+Comment Header, encoded using the same accumulation method.</li>
+<li><strong>Packet Payloads:</strong> The raw payload of the first
+packet, followed immediately by the second packet, and finally the third
+packet (the Setup Header). The size of the third packet is not
+explicitly encoded; the demuxer calculates it by subtracting the first
+two packet lengths and the lacing overhead from the total size of the
+<code>CodecPrivate</code> buffer.</li>
+</ol>
+<h3 id="supplemental-audio-header-elements">Supplemental Audio Header
+Elements</h3>
+<p>While the Vorbis identification header inside
+<code>CodecPrivate</code> contains standard stream parameters, Matroska
+also duplicates basic audio characteristics inside the track header's
+<code>Audio</code> master element (ID <code>0xE1</code>):</p>
+<ul>
+<li><strong>SamplingFrequency (ID <code>0xB5</code>):</strong> Expressed
+as a floating-point number matching the sample rate defined in the
+Vorbis identification header.</li>
+<li><strong>Channels (ID <code>0x9F</code>):</strong> An integer
+specifying the channel count (e.g., 2 for stereo, 6 for 5.1
+surround).</li>
+</ul>
+<p>Demuxers read these parameters to configure output audio devices and
+pipeline buffers before fully initializing the underlying Vorbis decoder
+with the payloads retrieved from the <code>CodecPrivate</code>
+element.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

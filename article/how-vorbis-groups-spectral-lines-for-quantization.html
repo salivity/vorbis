@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Groups Spectral Lines for Quantization - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec compresses audio by converting time-domain PCM samples into frequency-domain spectral lines via the Modified Discrete Cosine Transform (MDCT), then grouping those lines into critical sub-bands tailored to human psychoacoustics. Rat">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-groups-spectral-lines-for-quantization">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Groups Spectral Lines for Quantization - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-groups-spectral-lines-for-quantization" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec compresses audio by converting time-domain PCM samples into frequency-domain spectral lines via the Modified Discrete Cosine Transform (MDCT), then grouping those lines into critical sub-bands tailored to human psychoacoustics. Rat" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-groups-spectral-lines-for-quantization">How Vorbis
+Groups Spectral Lines for Quantization</h1>
+<p>The Vorbis audio codec compresses audio by converting time-domain PCM
+samples into frequency-domain spectral lines via the Modified Discrete
+Cosine Transform (MDCT), then grouping those lines into critical
+sub-bands tailored to human psychoacoustics. Rather than applying a
+uniform quantization grid across the entire frequency range, Vorbis
+separates the spectrum into a spectral envelope ("floor") and remaining
+harmonic details ("residue"). By grouping MDCT spectral lines into
+non-uniform partitions based on critical bands—modeled after the Bark
+scale—Vorbis allocates bit budgets according to human auditory masking
+thresholds, concentrating precision where the ear is most sensitive.</p>
+<h3 id="time-to-frequency-transformation">Time-to-Frequency
+Transformation</h3>
+<p>The encoding process begins by dividing the input audio signal into
+overlapping windows and transforming them via the MDCT. This yields a
+set of discrete frequency coefficients, commonly referred to as spectral
+lines or MDCT bins. Because human hearing does not perceive frequency
+differences linearly, these raw spectral lines cannot be quantized
+uniformly without introducing perceptible distortion or wasting
+bits.</p>
+<h3 id="the-bark-scale-and-auditory-masking">The Bark Scale and Auditory
+Masking</h3>
+<p>Vorbis groups spectral lines using psychoacoustic principles derived
+from critical bands. In human hearing, frequencies within a single
+critical band mask weaker adjacent sounds. Vorbis translates linear MDCT
+frequencies (<span class="math inline">\(f\)</span>) into the Bark scale
+(<span class="math inline">\(z\)</span>), typically approximating it
+with equations such as:</p>
+<p><span class="math display">\[z = 13.1 \arctan(0.00076 f) + 3.5
+\arctan\left(\left(\frac{f}{7500}\right)^2\right)\]</span></p>
+<p>In this perceptual domain, critical bands have roughly equal widths.
+Consequently, MDCT spectral lines corresponding to lower frequencies are
+grouped into narrow sub-bands containing few lines, while
+higher-frequency sub-bands encompass substantially wider spans of
+spectral lines.</p>
+<h3 id="separation-of-floor-and-residue">Separation of Floor and
+Residue</h3>
+<p>Vorbis handles spectral quantization by decoupling the signal into
+two distinct components:</p>
+<ol type="1">
+<li><strong>Floor (Spectral Envelope):</strong> A macro-level curve
+approximating the overall energy and masking threshold across the
+frequency spectrum.</li>
+<li><strong>Residue (Fine Structure):</strong> The raw spectral lines
+divided by the floor curve, representing the normalized fine-grain
+harmonics and noise.</li>
+</ol>
+<p>Both components rely on critical band grouping, but they execute it
+through different mechanisms.</p>
+<h3 id="floor-grouping-floor-0-vs-floor-1">Floor Grouping: Floor 0 vs.
+Floor 1</h3>
+<p>Vorbis specifies two floor mechanisms that govern how spectral lines
+are gathered into critical bands:</p>
+<ul>
+<li><strong>Floor 0 (LSP/LCP Model):</strong> Floor 0 computes a
+spectral envelope using Linear Predictive Coding (LPC) and converts it
+to Line Spectral Pairs (LSP). The synthesis filter generates a
+continuous curve warped directly to the Bark scale. In this mode,
+sub-band grouping is continuous rather than discrete, mapping spectral
+lines dynamically along the Bark-warped axis.</li>
+<li><strong>Floor 1 (Piecewise Linear Model):</strong> Modern Vorbis
+encoders primarily use Floor 1. It establishes a set of fixed frequency
+points (nodes) along the spectrum. These nodes are placed closer
+together at lower frequencies and farther apart at higher frequencies,
+mirroring critical bandwidths. The encoder evaluates the MDCT lines
+between these nodes, computes an amplitude value for each node, and
+interpolates linearly (in the logarithmic domain) between them to
+establish the masking envelope.</li>
+</ul>
+<h3 id="residue-partitioning-and-quantization">Residue Partitioning and
+Quantization</h3>
+<p>Once the floor is established, the original MDCT spectral lines are
+divided by the synthesized floor curve. The resulting normalized
+coefficients are grouped into residue partitions for vector quantization
+(VQ).</p>
+<ol type="1">
+<li><strong>Sub-band Partitions:</strong> The full range of MDCT lines
+is split into contiguous, non-overlapping blocks called partitions.
+Low-frequency partitions span fewer lines to preserve spectral
+resolution, whereas high-frequency partitions span broader arrays of
+lines.</li>
+<li><strong>Classification:</strong> Each partition is assigned a
+"class" based on its energy content. Silence or heavily masked
+partitions receive low-energy class designations, while prominent
+tonalities receive higher classes.</li>
+<li><strong>Vector Quantization (VQ):</strong> Within each partition,
+the spectral lines are grouped into small multi-dimensional vectors
+(commonly 2, 4, or 8 adjacent lines). These vectors are matched against
+predetermined multidimensional codebooks using cascaded passes.</li>
+<li><strong>Entropy Coding:</strong> Partitions with similar statistical
+characteristics share Huffman codebooks, encoding multiple spectral
+lines per symbol to maximize compression efficiency.</li>
+</ol>
+<p>By decoupling the psychoacoustic envelope (Floor) from the underlying
+spectral details (Residue) and partitioning both according to critical
+bandwidths, Vorbis groups MDCT spectral lines efficiently, suppressing
+quantization noise below the human threshold of hearing.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Does Tremor Achieve Integer-Only Vorbis Decoding? - vorbis</title>
+    <meta name="description" content="The Tremor library (libvorbisidec) provides a fully compliant Vorbis audio decoder engineered specifically for processors lacking hardware floating-point units. By replacing IEEE 754 floating-point calculations with fixed-point math, customized lookup ta">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-does-tremor-achieve-integer-only-vorbis-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Does Tremor Achieve Integer-Only Vorbis Decoding? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-does-tremor-achieve-integer-only-vorbis-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Tremor library (libvorbisidec) provides a fully compliant Vorbis audio decoder engineered specifically for processors lacking hardware floating-point units. By replacing IEEE 754 floating-point calculations with fixed-point math, customized lookup ta" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-does-tremor-achieve-integer-only-vorbis-decoding">How Does
+Tremor Achieve Integer-Only Vorbis Decoding?</h1>
+<p>The Tremor library (libvorbisidec) provides a fully compliant Vorbis
+audio decoder engineered specifically for processors lacking hardware
+floating-point units. By replacing IEEE 754 floating-point calculations
+with fixed-point math, customized lookup tables, dynamic block scaling,
+and precision-managed arithmetic pipelines, Tremor decodes Vorbis
+bitstreams with minimal computational overhead while preserving high
+fidelity.</p>
+<h2 id="fixed-point-arithmetic-and-custom-number-formats">Fixed-Point
+Arithmetic and Custom Number Formats</h2>
+<p>Standard Vorbis decoding relies heavily on fractional numbers for
+inverse quantization, psychoacoustic curves, and windowing. Tremor
+replaces floating-point values with signed 32-bit fixed-point
+representations. By establishing fixed binary scale factors across
+distinct processing stages, the decoder performs fractional
+multiplications and additions using standard integer registers and ALU
+operations. When multiplying two 32-bit fixed-point numbers, Tremor
+utilizes 64-bit intermediate products followed by arithmetic right
+shifts to maintain proper scaling and discard redundant
+least-significant bits without sacrificing numerical range.</p>
+<h2 id="block-floating-point-and-dynamic-headroom-management">Block
+Floating-Point and Dynamic Headroom Management</h2>
+<p>Certain stages of audio decoding—most notably the frequency-to-time
+transform—exhibit wide dynamic ranges that risk integer overflow or loss
+of subtle details. Tremor addresses this challenge by adopting block
+floating-point strategies. Rather than tracking individual exponents for
+every audio sample, the decoder analyzes an entire block of frequency
+coefficients, normalizes them against a shared exponent, and applies
+headroom shifts. This block-level scaling prevents arithmetic overflow
+during intensive cumulative operations while preserving quantization
+resolution in quieter passages.</p>
+<h2 id="fast-inverse-mdct-using-integer-trigonometry">Fast Inverse MDCT
+Using Integer Trigonometry</h2>
+<p>The most computationally demanding phase of Vorbis decoding is the
+Inverse Modified Discrete Cosine Transform (IMDCT), which transforms
+frequency spectra back into time-domain audio samples. The reference
+decoder relies on floating-point sine and cosine evaluations. Tremor
+replaces these operations with an integerized fast Fourier transform
+(FFT) kernel supported by precomputed trigonometric lookup tables. Sine
+and cosine values are stored as pre-scaled 16-bit or 32-bit integers.
+Intermediate butterfly calculations within the transform pipeline
+utilize carefully balanced shift steps, ensuring that accumulation does
+not clip before the final windowing stage.</p>
+<h2 id="floor-curve-reconstruction-and-codebook-dequantization">Floor
+Curve Reconstruction and Codebook Dequantization</h2>
+<p>Vorbis represents spectral envelopes using two distinct floor
+mechanisms: Floor 0 (LSP-based) and Floor 1 (piecewise linear
+representation). In standard Vorbis, these curves require transcendental
+functions such as logarithms, square roots, and trigonometric
+projections. Tremor circumvents runtime transcendental computations
+through lookup tables that translate encoded indices directly into
+fixed-point representations. For Floor 1, linear interpolation across
+spectral bins is computed entirely via integer division and
+multiplication, producing smooth curves mapped straight to integer
+residue vectors.</p>
+<h2 id="windowing-and-overlap-add-operations">Windowing and Overlap-Add
+Operations</h2>
+<p>Once IMDCT time-domain samples are recovered, they must be multiplied
+by a synthesis window function and overlapped with the preceding audio
+frame. Tremor precomputes the Vorbis window slope as fixed-point
+fractional coefficients. The synthesis multiplication reduces to integer
+multiply-shift steps, followed by an addition stage that writes final
+audio data directly into 16-bit signed pulse-code modulation (PCM)
+output buffers. Through this comprehensive substitution of
+floating-point mathematics, Tremor enables robust Vorbis playback on
+resource-constrained embedded microcontrollers and digital signal
+processors.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

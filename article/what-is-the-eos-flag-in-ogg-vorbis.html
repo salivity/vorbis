@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is the EOS Flag in Ogg Vorbis? - vorbis</title>
+    <meta name="description" content="The End of Stream (EOS) flag is a fundamental control bit within the Ogg container format that marks the final page of a logical audio or multimedia stream. This article explains the role of the EOS flag in Ogg Vorbis, detail where it is located within t">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/what-is-the-eos-flag-in-ogg-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is the EOS Flag in Ogg Vorbis? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/what-is-the-eos-flag-in-ogg-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The End of Stream (EOS) flag is a fundamental control bit within the Ogg container format that marks the final page of a logical audio or multimedia stream. This article explains the role of the EOS flag in Ogg Vorbis, detail where it is located within t" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-the-eos-flag-in-ogg-vorbis">What Is the EOS Flag in Ogg
+Vorbis?</h1>
+<p>The End of Stream (EOS) flag is a fundamental control bit within the
+Ogg container format that marks the final page of a logical audio or
+multimedia stream. This article explains the role of the EOS flag in Ogg
+Vorbis, detail where it is located within the container structure,
+describe its critical function in media playback and decoding, and
+explore how it enables advanced features like stream chaining and
+multiplexing.</p>
+<h3 id="ogg-vs-vorbis-clarifying-the-layer">Ogg vs. Vorbis: Clarifying
+the Layer</h3>
+<p>To understand the EOS flag, it is important to distinguish between
+Ogg and Vorbis. Vorbis is the open-source audio compression codec, while
+Ogg is the framing container that encapsulates the raw Vorbis packets
+for transmission and storage. Raw Vorbis packets themselves do not
+contain an EOS marker. Instead, the EOS flag is set at the Ogg transport
+layer on the final Ogg page that holds the stream's concluding
+packets.</p>
+<h3 id="technical-location-of-the-eos-flag">Technical Location of the
+EOS Flag</h3>
+<p>An Ogg bitstream is divided into distinct chunks known as pages. Each
+page starts with a 27-byte capture header containing metadata such as
+stream serial numbers, page sequence numbers, and granule positions
+(playback timestamps).</p>
+<p>Within this header sits the <strong>Header Type Flag</strong> field,
+an 8-bit mask (byte offset 5 of the page header). The EOS marker is
+represented by bit <code>0x04</code>:</p>
+<ul>
+<li><code>0x01</code> (Continuation): Indicates the first packet on the
+page continues a packet from the previous page.</li>
+<li><code>0x02</code> (BOS / Beginning of Stream): Marks the initial
+page of a logical bitstream.</li>
+<li><code>0x04</code> (EOS / End of Stream): Marks the terminating page
+of a logical bitstream.</li>
+</ul>
+<p>When bit <code>0x04</code> is set, the parser recognizes that the
+current page is the last one belonging to that specific logical
+bitstream.</p>
+<h3 id="how-the-eos-flag-functions">How the EOS Flag Functions</h3>
+<ol type="1">
+<li><strong>Decoder Termination:</strong> When an audio player or
+decoder library (such as <code>libogg</code> and <code>libvorbis</code>)
+encounters a page with the <code>0x04</code> flag set, it flushes the
+remaining audio data from the buffer, renders the final samples, and
+cleanly terminates the decoding pipeline for that stream.</li>
+<li><strong>Resource Management:</strong> Audio engines allocate memory
+and processing threads to handle active streams. The EOS flag tells the
+engine that no further data packets will arrive under that serial
+number, enabling the safe release of decoder states, buffers, and memory
+handles.</li>
+<li><strong>Accurate Granule Calculations:</strong> The final page
+contains a granule position indicating the total number of audio samples
+in the file. The EOS flag confirms to the decoder that this position
+represents the definitive end of the track, which prevents playback
+cutoffs or artificial silence insertion.</li>
+</ol>
+<h3 id="chaining-and-multiplexing">Chaining and Multiplexing</h3>
+<p>The EOS flag is essential for handling advanced Ogg container
+configurations:</p>
+<ul>
+<li><strong>Chained Streams:</strong> Multiple separate logical streams
+can be placed end-to-end within a single physical file. For example, a
+single <code>.ogg</code> file might contain three different songs played
+sequentially. The EOS flag indicates where one song ends, prompting the
+decoder to reset its state and prepare for the new BOS (Beginning of
+Stream) flag of the next song without interrupting the physical media
+stream.</li>
+<li><strong>Grouped (Multiplexed) Streams:</strong> In files containing
+multiple synchronized streams (such as audio, subtitles, and video),
+each logical stream carries its own unique serial number and maintains
+its own independent EOS flag to signal when that specific component
+concludes.</li>
+</ul>
+<h3 id="consequences-of-a-missing-eos-flag">Consequences of a Missing
+EOS Flag</h3>
+<p>If an Ogg Vorbis file is corrupt, truncated, or incorrectly encoded
+without an EOS flag:</p>
+<ul>
+<li><strong>Decoder Hangs:</strong> Streaming clients may wait
+indefinitely for more data, causing playback to stall rather than finish
+naturally.</li>
+<li><strong>Player Errors:</strong> Some software players will report
+the file as damaged or fail to trigger playlist progression to the next
+track.</li>
+<li><strong>Improper Concatenation:</strong> If chained files lack EOS
+markers, decoders will fail to recognize stream boundaries, resulting in
+playback failure or severe audio distortion at transition points.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

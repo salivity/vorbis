@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ogg Page Header Structure for Vorbis Audio - vorbis</title>
+    <meta name="description" content="This article breaks down the binary structure of an Ogg page header encapsulating Vorbis audio data. It covers the mandatory 27-byte fixed header, the variable segment table, and the specific rules governing how Vorbis audio packets, timestamps (granule">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/ogg-page-header-structure-for-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ogg Page Header Structure for Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/ogg-page-header-structure-for-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article breaks down the binary structure of an Ogg page header encapsulating Vorbis audio data. It covers the mandatory 27-byte fixed header, the variable segment table, and the specific rules governing how Vorbis audio packets, timestamps (granule" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="ogg-page-header-structure-for-vorbis-audio">Ogg Page Header
+Structure for Vorbis Audio</h1>
+<p>This article breaks down the binary structure of an Ogg page header
+encapsulating Vorbis audio data. It covers the mandatory 27-byte fixed
+header, the variable segment table, and the specific rules governing how
+Vorbis audio packets, timestamps (granule positions), and stream states
+are represented within the Ogg transport framing.</p>
+<h3 id="the-ogg-page-format-overview">The Ogg Page Format Overview</h3>
+<p>The Ogg container is a stream-oriented container designed to
+multiplex and interleave multimedia data. Vorbis raw audio packets are
+segmented and wrapped into sequential "pages." Every Ogg page begins
+with a 27-byte fixed header, followed by a dynamic segment table, which
+is then immediately followed by the payload data containing the Vorbis
+bitstream.</p>
+<h3 id="fixed-header-fields-27-bytes">Fixed Header Fields (27
+Bytes)</h3>
+<p>The fixed-size portion of an Ogg page header contains eight fields
+arranged in the following layout:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field Name</th>
+<th style="text-align: left;">Size</th>
+<th style="text-align: left;">Offset</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Capture Pattern</strong></td>
+<td style="text-align: left;">4 bytes</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">ASCII string <code>OggS</code>
+(<code>0x4F 0x67 0x67 0x53</code>). Used for page frame
+synchronization.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Stream Structure
+Version</strong></td>
+<td style="text-align: left;">1 byte</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">Currently defined as <code>0x00</code>.
+Indicates the Ogg format version.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Header Type Flag</strong></td>
+<td style="text-align: left;">1 byte</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Bitfield indicating stream status
+(detailed below).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Granule Position</strong></td>
+<td style="text-align: left;">8 bytes</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">A 64-bit little-endian integer used for
+timeline mapping and seeking.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Bitstream Serial
+Number</strong></td>
+<td style="text-align: left;">4 bytes</td>
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">A 32-bit unique identifier for the
+specific Vorbis logical bitstream.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Page Sequence Number</strong></td>
+<td style="text-align: left;">4 bytes</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">A 32-bit monotonically increasing sequence
+number per logical stream.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Checksum (CRC32)</strong></td>
+<td style="text-align: left;">4 bytes</td>
+<td style="text-align: left;">22</td>
+<td style="text-align: left;">A 32-bit CRC covering the entire page
+(header with CRC field zeroed, plus payload).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Page Segments</strong></td>
+<td style="text-align: left;">1 byte</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">An unsigned integer (<span
+class="math inline">\(N\)</span>, from 0 to 255) defining the size of
+the segment table.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="header-type-flags">Header Type Flags</h3>
+<p>Byte 5 contains bitwise flags that signify boundaries within the
+bitstream:</p>
+<ul>
+<li><strong>0x01 (Continuation):</strong> The first packet on this page
+is a continuation of an unfinished packet from the previous page.</li>
+<li><strong>0x02 (Beginning of Stream - BOS):</strong> Indicates this is
+the very first page of the logical bitstream. For Vorbis, this page
+contains the Vorbis identification header.</li>
+<li><strong>0x04 (End of Stream - EOS):</strong> Indicates this is the
+final page of the logical bitstream.</li>
+</ul>
+<p>Combinations are permitted; for example, a short single-page stream
+can have both <code>0x02</code> and <code>0x04</code> set.</p>
+<h3 id="granule-position-in-vorbis">Granule Position in Vorbis</h3>
+<p>The 64-bit <strong>Granule Position</strong> represents the precise
+playback sample position of the stream:</p>
+<ul>
+<li>In Vorbis, it designates the total number of decoded audio samples
+(PCM frames) up to and including the end of the final completed packet
+on that page.</li>
+<li>If a page contains only partial packets that span into future pages
+without completing any packet, the granule position is set to
+<code>-1</code> (all bits set to <code>0xFF</code>).</li>
+<li>For the initial Vorbis header packets (Identification, Comment, and
+Setup), the granule position is set to <code>0</code>.</li>
+</ul>
+<h3 id="the-dynamic-segment-table-lacing-values">The Dynamic Segment
+Table (Lacing Values)</h3>
+<p>Directly following byte 26 is the segment table, which has a length
+equal to the value in the <strong>Page Segments</strong> field (0 to 255
+bytes). Each byte represents the length of a payload segment (0 to 255
+bytes).</p>
+<p>The Ogg format uses these "lacing values" to package variable-length
+Vorbis packets:</p>
+<ul>
+<li><strong>Segment Length &lt; 255:</strong> Marks the termination of a
+Vorbis packet. The byte's value is the exact length of that final
+segment.</li>
+<li><strong>Segment Length == 255:</strong> Indicates that the packet
+continues into the next segment.</li>
+</ul>
+<p><strong>Packet Sizing Example:</strong></p>
+<ul>
+<li>A Vorbis packet of 600 bytes is represented by three lacing values:
+<code>255</code>, <code>255</code>, and <code>90</code> (<span
+class="math inline">\(255 + 255 + 90 = 600\)</span>).</li>
+<li>A Vorbis packet of exactly 510 bytes is represented by:
+<code>255</code>, <code>255</code>, and <code>0</code> (the trailing
+<code>0</code> explicitly terminates the packet).</li>
+</ul>
+<p>The total payload size of the page is the mathematical sum of all
+entries in the segment table. The maximum data payload for a single Ogg
+page is <span class="math inline">\(255 \times 255 = 65,025\)</span>
+bytes.</p>
+<h3 id="vorbis-initialization-sequence">Vorbis Initialization
+Sequence</h3>
+<p>When encapsulating Vorbis, three specific header packets must appear
+at the beginning of the bitstream before any raw audio pages:</p>
+<ol type="1">
+<li><strong>Identification Header:</strong> Encapsulated in the initial
+page marked with the <code>BOS</code> flag (<code>0x02</code>). It
+defines audio parameters such as sample rate, channel count, and Vorbis
+version.</li>
+<li><strong>Comment Header:</strong> Contains user metadata, track
+details, and vendor strings.</li>
+<li><strong>Setup Header:</strong> Contains codebooks and floor/residue
+mapping configurations necessary for decoding the audio packets.</li>
+</ol>
+<p>Following these headers, all subsequent pages carry standard audio
+data packets, updating the granule position sequentially to track audio
+playback.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Ogg Vorbis Audio Over Standard HTTP - vorbis</title>
+    <meta name="description" content="Vorbis audio can easily be streamed over standard HTTP without relying on specialized media servers like Icecast or Shoutcast. Because Vorbis is typically encapsulated in the Ogg container format, standard web servers such as Nginx, Apache, or Caddy can">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/streaming-ogg-vorbis-audio-over-standard-http">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Streaming Ogg Vorbis Audio Over Standard HTTP - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/streaming-ogg-vorbis-audio-over-standard-http" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis audio can easily be streamed over standard HTTP without relying on specialized media servers like Icecast or Shoutcast. Because Vorbis is typically encapsulated in the Ogg container format, standard web servers such as Nginx, Apache, or Caddy can" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="streaming-ogg-vorbis-audio-over-standard-http">Streaming Ogg
+Vorbis Audio Over Standard HTTP</h1>
+<p>Vorbis audio can easily be streamed over standard HTTP without
+relying on specialized media servers like Icecast or Shoutcast. Because
+Vorbis is typically encapsulated in the Ogg container format, standard
+web servers such as Nginx, Apache, or Caddy can deliver audio files
+directly to modern web browsers and media players using standard HTTP
+requests. This article explains how progressive downloading enables Ogg
+Vorbis playback, how to configure a standard web server for it, and the
+distinction between on-demand streaming and live broadcasting.</p>
+<h3 id="how-vorbis-streaming-over-http-works">How Vorbis Streaming Over
+HTTP Works</h3>
+<p>When streaming pre-recorded audio, specialized streaming protocols
+(such as RTMP or RTSP) are unnecessary. Instead, standard HTTP
+progressive download is used.</p>
+<p>The Ogg container is designed to be streamable by nature. Essential
+codec initialization data—such as Vorbis identification, comment, and
+setup headers—is stored at the very beginning of the file. When a client
+requests an Ogg Vorbis file via a standard HTTP <code>GET</code>
+request:</p>
+<ol type="1">
+<li>The web server sends the initial bytes containing the Ogg
+headers.</li>
+<li>The client decodes these setup packets immediately and begins audio
+playback.</li>
+<li>The rest of the file continues to download in the background as
+playback proceeds.</li>
+</ol>
+<p>Additionally, modern web servers support HTTP Range requests
+(<code>Accept-Ranges: bytes</code>). This allows media players to
+request specific chunks of the file, enabling users to scrub or jump
+forward to unbuffered parts of the audio track without downloading the
+entire file first.</p>
+<h3 id="configuring-a-standard-web-server">Configuring a Standard Web
+Server</h3>
+<p>To stream Ogg Vorbis files reliably using a standard HTTP server, you
+only need to ensure two things: correct MIME type handling and
+byte-range support.</p>
+<h4 id="1-setting-the-proper-mime-type">1. Setting the Proper MIME
+Type</h4>
+<p>The web server must serve files with the correct
+<code>Content-Type</code> header so that clients recognize the stream.
+For Ogg Vorbis audio, the standard MIME type is:</p>
+<pre class="text"><code>audio/ogg</code></pre>
+<ul>
+<li><strong>Nginx:</strong> Ensure your <code>mime.types</code> file
+maps <code>.ogg</code> or <code>.oga</code> to
+<code>audio/ogg</code>.</li>
+<li><strong>Apache:</strong> Add the directive
+<code>AddType audio/ogg .ogg</code> to your configuration or
+<code>.htaccess</code> file.</li>
+</ul>
+<h4 id="2-byte-range-requests">2. Byte-Range Requests</h4>
+<p>Byte-range serving is enabled by default in almost all modern HTTP
+servers. As long as this feature is not explicitly disabled, users will
+have full seeking capabilities within the audio player.</p>
+<h3 id="client-side-playback">Client-Side Playback</h3>
+<p>Because major web browsers natively support Ogg Vorbis playback via
+HTML5, embedding audio on a website requires nothing more than the
+standard <code>&lt;audio&gt;</code> tag:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">audio</span><span class="ot"> controls preload</span><span class="op">=</span><span class="st">&quot;metadata&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">source</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;track.ogg&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;audio/ogg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  Your browser does not support the audio element.</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">audio</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>When set up this way, the browser requests the file directly from
+your general-purpose web server and manages buffering, decoding, and
+playback natively.</p>
+<h3 id="on-demand-vs-live-streaming">On-Demand vs. Live Streaming</h3>
+<p>While pre-recorded (on-demand) audio does not require specialized
+media infrastructure, real-time live broadcasting presents different
+requirements:</p>
+<ul>
+<li><strong>On-Demand (No media server required):</strong> Static
+<code>.ogg</code> files hosted on standard cloud storage (such as AWS
+S3) or conventional web hosting work out of the box.</li>
+<li><strong>Live Audio (Specialized software recommended):</strong>
+Broadcasting an ongoing, endless live stream requires pushing dynamic
+audio chunks. While this can theoretically be implemented via a standard
+web server using <code>Transfer-Encoding: chunked</code>, managing
+listener connections, dynamic source encoding, and buffering is
+typically better handled by dedicated streaming servers like
+Icecast.</li>
+</ul>
+<p>For podcasts, music tracks, voice recordings, and on-demand media
+playback, standard HTTP servers provide a lightweight, scalable, and
+completely capable delivery mechanism for Vorbis audio.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

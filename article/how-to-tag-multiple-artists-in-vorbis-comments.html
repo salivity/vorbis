@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Tag Multiple Artists in Vorbis Comments - vorbis</title>
+    <meta name="description" content="This article explains how multi-artist collaborations are handled within the standard Vorbis comment metadata framework used by formats like FLAC, Ogg Vorbis, and Opus. It covers the official specification's use of repeated fields, conventions for distin">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-to-tag-multiple-artists-in-vorbis-comments">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Tag Multiple Artists in Vorbis Comments - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-to-tag-multiple-artists-in-vorbis-comments" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how multi-artist collaborations are handled within the standard Vorbis comment metadata framework used by formats like FLAC, Ogg Vorbis, and Opus. It covers the official specification's use of repeated fields, conventions for distin" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-to-tag-multiple-artists-in-vorbis-comments">How to Tag
+Multiple Artists in Vorbis Comments</h1>
+<p>This article explains how multi-artist collaborations are handled
+within the standard Vorbis comment metadata framework used by formats
+like FLAC, Ogg Vorbis, and Opus. It covers the official specification's
+use of repeated fields, conventions for distinguishing main and guest
+artists, real-world software compatibility challenges, and best
+practices for cataloging collaborative tracks.</p>
+<h3 id="the-standard-approach-repeated-field-keys">The Standard
+Approach: Repeated Field Keys</h3>
+<p>The official Vorbis comment specification handles multi-value
+metadata, including multiple artists, by repeating the field key rather
+than combining multiple names into a single entry with delimiters.</p>
+<p>In a compliant metadata block, a collaboration between two artists is
+written as two distinct fields:</p>
+<pre class="text"><code>ARTIST=Alice
+ARTIST=Bob</code></pre>
+<p>Because Vorbis comments are structured as a simple list of
+<code>NAME=value</code> pairs, the specification allows any key to
+appear more than once. Media players and taggers that strictly follow
+the specification parse each <code>ARTIST</code> tag individually,
+adding the track to both Alice's and Bob's discographies without
+confusing their names as a single entity.</p>
+<h3 id="primary-vs-contributing-artists">Primary vs. Contributing
+Artists</h3>
+<p>Collaborations often involve different levels of contribution, such
+as guest features, producers, or primary album artists. Standard Vorbis
+comments accommodate these relationships using dedicated complementary
+fields:</p>
+<ul>
+<li><strong>ALBUMARTIST:</strong> Defines the main artist or band
+responsible for the overall release. If Alice releases an album
+featuring Bob on one track, <code>ALBUMARTIST=Alice</code> ensures the
+album stays unified in library views, while the track itself retains
+both <code>ARTIST=Alice</code> and <code>ARTIST=Bob</code>.</li>
+<li><strong>PERFORMER:</strong> Used when specific roles need
+delineation, such as <code>PERFORMER=Bob (vocals)</code> or
+<code>PERFORMER=Alice (guitar)</code>.</li>
+<li><strong>COMPOSER:</strong> Applied similarly for collaborative
+songwriting, repeating the key for each individual:
+<code>COMPOSER=Alice</code> and <code>COMPOSER=Bob</code>.</li>
+</ul>
+<h3 id="delimiters-and-real-world-software-workarounds">Delimiters and
+Real-World Software Workarounds</h3>
+<p>While repeated keys are the official standard, many media players and
+tagging tools fail to handle multiple instances of the same field
+correctly. Some applications read only the first occurrence, while
+others read only the last, causing contributing artists to disappear
+from library views.</p>
+<p>To overcome these software limitations, several alternative
+conventions have emerged:</p>
+<ol type="1">
+<li><strong>Text Delimiters:</strong> Some software writes multiple
+artists into a single string separated by delimiters like semicolons
+(<code>ARTIST=Alice; Bob</code>), slashes
+(<code>ARTIST=Alice / Bob</code>), or null characters (<code>\0</code>).
+When read by advanced players, these strings are split back into
+separate entries, though this behavior is not standardized by
+Xiph.Org.</li>
+<li><strong>Display Titles:</strong> To preserve correct visual
+presentation, some workflows set a single <code>ARTIST</code> tag to
+reflect the colloquial credit (e.g.,
+<code>ARTIST=Alice feat. Bob</code>) and store machine-readable
+multi-artist lists in auxiliary tags like <code>ARTISTS</code> (a
+multi-value convention popularized by MusicBrainz).</li>
+</ol>
+<h3 id="best-practices-for-tagging-collaborations">Best Practices for
+Tagging Collaborations</h3>
+<p>To ensure maximum compatibility across both standard-compliant and
+legacy software:</p>
+<ul>
+<li><strong>Use Repeated Keys for Native Formats:</strong> When using
+taggers like MusicBrainz Picard, Mp3tag, or Foobar2000, enable
+multi-value tagging to write discrete <code>ARTIST</code> fields
+according to the official Vorbis specification.</li>
+<li><strong>Always Populate ALBUMARTIST:</strong> Include a single,
+consistent <code>ALBUMARTIST</code> across all tracks on an album to
+prevent multi-artist tracks from splitting a single album into multiple
+fragmented entries in basic players.</li>
+<li><strong>Avoid Hardcoded Editorial Strings in the Artist
+Tag:</strong> Whenever possible, avoid formatting tags as
+<code>Artist A &amp; Artist B</code> or
+<code>Artist A feat. Artist B</code> in the primary <code>ARTIST</code>
+field, as this treats the collaborative phrase as an entirely new artist
+identity rather than linking the track to the respective
+individuals.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

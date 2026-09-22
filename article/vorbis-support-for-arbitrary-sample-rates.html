@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Support for Arbitrary Sample Rates - vorbis</title>
+    <meta name="description" content="This article explores whether the Vorbis audio compression format supports encoding audio at arbitrary or non-standard sampling rates, such as 22,050 Hz or other irregular frequencies. It examines the technical design defined in the Vorbis specification,">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-support-for-arbitrary-sample-rates">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Support for Arbitrary Sample Rates - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-support-for-arbitrary-sample-rates" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores whether the Vorbis audio compression format supports encoding audio at arbitrary or non-standard sampling rates, such as 22,050 Hz or other irregular frequencies. It examines the technical design defined in the Vorbis specification," />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-support-for-arbitrary-sample-rates">Vorbis Support for
+Arbitrary Sample Rates</h1>
+<p>This article explores whether the Vorbis audio compression format
+supports encoding audio at arbitrary or non-standard sampling rates,
+such as 22,050 Hz or other irregular frequencies. It examines the
+technical design defined in the Vorbis specification, how the reference
+encoder handles varied sample rates, and practical playback
+compatibility considerations.</p>
+<h3 id="vorbis-specification-and-sample-rate-storage">Vorbis
+Specification and Sample Rate Storage</h3>
+<p>The Vorbis bitstream specification natively supports arbitrary sample
+rates. In the Vorbis identification header, the sample rate is stored as
+an unsigned 32-bit integer (<code>audio_sample_rate</code>). Because of
+this design, the format is not restricted to a fixed list of predefined
+frequencies like some legacy codecs (such as early MP3 profiles). The
+bitstream technically allows any integer sampling rate between 1 Hz and
+<span class="math inline">\(2^{32} - 1\)</span> Hz (approximately 4.29
+GHz), easily accommodating standard rates, common downsampled rates like
+22,050 Hz, and completely non-standard rates such as 12,345 Hz.</p>
+<h3 id="standard-sub-multiples-vs-truly-arbitrary-rates">Standard
+Sub-Multiples vs. Truly Arbitrary Rates</h3>
+<p>A rate of 22,050 Hz is an industry-standard sub-multiple of the
+44,100 Hz CD audio rate. Vorbis has full, first-class tuning for 22,050
+Hz across all encoders.</p>
+<p>When dealing with truly arbitrary, non-standard rates (e.g., 23,456
+Hz or 31,000 Hz), Vorbis still succeeds at encoding. The reference
+library (<code>libvorbis</code>) uses internal tuning templates based on
+psychoacoustic models calibrated for standard rates (such as 8, 11.025,
+16, 22.05, 32, 44.1, 48, 88.2, and 96 kHz). When an arbitrary sample
+rate is supplied, the encoder maps or interpolates internal analysis
+settings to the closest available tuning profile while tagging the
+bitstream with the exact user-specified sample rate.</p>
+<h3 id="encoder-and-decoder-behavior">Encoder and Decoder Behavior</h3>
+<ul>
+<li><strong>libvorbis and oggenc:</strong> The standard command-line
+tool <code>oggenc</code> and applications using <code>libvorbis</code>
+accept non-standard sample rates without requiring pre-resampling. The
+encoder will construct the appropriate floor configurations and
+frequency vectors matching the actual input rate.</li>
+<li><strong>Decoders:</strong> Any compliant Vorbis decoder will read
+the exact sample rate from the identification header and output the
+decompressed PCM data at that precise frequency.</li>
+</ul>
+<h3 id="playback-and-hardware-considerations">Playback and Hardware
+Considerations</h3>
+<p>While the Vorbis format and decoders handle arbitrary sampling rates
+seamlessly, the target playback system may introduce limitations. Audio
+hardware (DACs) and operating system audio mixers generally operate on
+standard clock frequencies (e.g., 44,100 Hz, 48,000 Hz, 96,000 Hz). When
+playing a file with an uncommon rate:</p>
+<ol type="1">
+<li>The decoder outputs raw PCM at the non-standard rate.</li>
+<li>The operating system's software mixer or audio server automatically
+resamples the stream to the hardware's native output rate.</li>
+</ol>
+<p>In summary, Vorbis fully supports encoding and decoding at arbitrary
+sampling rates, whether they are standard reductions like 22,050 Hz or
+entirely custom frequencies.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Effects of Multiplexing Vorbis and Theora in Ogg - vorbis</title>
+    <meta name="description" content="Multiplexing Vorbis audio and Theora video within an Ogg container creates a unified, patent-free multimedia stream optimized for streaming and playback. This article examines the technical effects of this multiplexing process, detailing how the Ogg tran">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/effects-of-multiplexing-vorbis-and-theora-in-ogg">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Effects of Multiplexing Vorbis and Theora in Ogg - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/effects-of-multiplexing-vorbis-and-theora-in-ogg" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Multiplexing Vorbis audio and Theora video within an Ogg container creates a unified, patent-free multimedia stream optimized for streaming and playback. This article examines the technical effects of this multiplexing process, detailing how the Ogg tran" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="effects-of-multiplexing-vorbis-and-theora-in-ogg">Effects of
+Multiplexing Vorbis and Theora in Ogg</h1>
+<p>Multiplexing Vorbis audio and Theora video within an Ogg container
+creates a unified, patent-free multimedia stream optimized for streaming
+and playback. This article examines the technical effects of this
+multiplexing process, detailing how the Ogg transport layer interleaves
+audio and video packets, maintains synchronization, impacts bandwidth
+overhead, and dictates decoder buffering and seeking performance.</p>
+<h3 id="stream-interleaving-and-the-ogg-framing-architecture">Stream
+Interleaving and the Ogg Framing Architecture</h3>
+<p>The Ogg format functions as a general-purpose bitstream container.
+When Vorbis (audio) and Theora (video) are combined, they exist as
+independent logical bitstreams multiplexed into a single physical
+bitstream.</p>
+<p>During multiplexing, raw Vorbis packets and Theora packets are
+packaged into discrete Ogg pages. Each page contains a header (including
+a capture pattern, stream serial number, sequence number, and granule
+position) and up to 255 segments of payload data, totaling a maximum of
+roughly 64 KB per page. The multiplexer interleaves these pages
+temporally so that the audio and video data required for a specific
+playback window arrive at the decoder almost simultaneously.</p>
+<h3 id="time-synchronization-via-granule-positions">Time Synchronization
+via Granule Positions</h3>
+<p>Multiplexing uses Ogg's native timing mechanism—the granule
+position—to ensure audio and video remain synchronized. Because Vorbis
+and Theora define timing differently, the multiplexer must manage two
+distinct timestamp representations:</p>
+<ul>
+<li><strong>Vorbis:</strong> Granule positions correspond directly to
+the total number of audio samples decoded up to that point.</li>
+<li><strong>Theora:</strong> Granule positions are split-bit values
+representing both the frame number of the last keyframe (intra-frame)
+and the offset count of subsequent predicted frames (inter-frames).</li>
+</ul>
+<p>Because Ogg does not use a universal wall-clock timestamp in the
+packet headers, the multiplexer aligns the streams by mapping both the
+audio sample count and the video frame rates to a common timeline. This
+continuous cross-stream timing prevents audio-video drift during
+sequential playback.</p>
+<h3 id="buffer-management-and-latency">Buffer Management and
+Latency</h3>
+<p>The structural differences between Vorbis and Theora require the
+multiplexer to balance buffer sizes carefully:</p>
+<ul>
+<li><strong>Packet Size Disparity:</strong> Vorbis packets are
+relatively small, frequent, and exhibit low bitrate variation. Theora
+keyframes, by contrast, are substantially larger than inter-frames and
+consume multiple Ogg pages.</li>
+<li><strong>Interleaving Spacing:</strong> If a multiplexer clusters too
+many Theora pages consecutively without inserting Vorbis pages, the
+audio decoder will starve, causing audio dropouts. Conversely, sending
+audio too far ahead consumes excess playback memory. A well-multiplexed
+stream uses tight interleaving, allowing playback decoders to operate
+with minimal internal buffer memory.</li>
+</ul>
+<h3 id="bitrate-and-container-overhead">Bitrate and Container
+Overhead</h3>
+<p>Wrapping Vorbis and Theora into Ogg pages introduces framing
+overhead. Each Ogg page adds a minimum of 27 bytes for the page header,
+plus 1 byte per 255 bytes of payload for the lacing values.</p>
+<p>In a multiplexed stream, this container overhead typically accounts
+for 1% to 2% of the overall file size. While this slightly increases
+bandwidth consumption compared to raw elementary streams, it is
+necessary to provide frame boundaries, error detection (via 32-bit CRC
+checksums on every page), and stream identification.</p>
+<h3 id="impact-on-seeking-and-indexing">Impact on Seeking and
+Indexing</h3>
+<p>Ogg is fundamentally a streamable format designed without a mandatory
+centralized index table (such as the <code>moov</code> atom in MP4).
+Consequently, multiplexing Vorbis with Theora affects random access:</p>
+<ul>
+<li><strong>Bisection Searching:</strong> To seek to an arbitrary point,
+the playback engine must perform a bisection (binary) search across the
+physical stream, reading page headers to locate the target granule
+positions.</li>
+<li><strong>Keyframe Dependency:</strong> The player must locate the
+preceding Theora keyframe to reconstruct the video, while simultaneously
+locating the corresponding Vorbis audio sample to resume synchronized
+playback. Poorly interleaved streams increase the number of read
+operations required to align the two decoders during a seek
+operation.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

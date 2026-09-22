@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is the BOS Flag in a Vorbis Header Page? - vorbis</title>
+    <meta name="description" content="The Beginning of Stream (BOS) flag is a fundamental marker within the Ogg encapsulation format used by Vorbis audio, signaling the absolute start of a logical bitstream. This article explains the technical purpose of the BOS flag, its exact location in a">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/what-is-the-bos-flag-in-a-vorbis-header-page">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is the BOS Flag in a Vorbis Header Page? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/what-is-the-bos-flag-in-a-vorbis-header-page" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Beginning of Stream (BOS) flag is a fundamental marker within the Ogg encapsulation format used by Vorbis audio, signaling the absolute start of a logical bitstream. This article explains the technical purpose of the BOS flag, its exact location in a" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-the-bos-flag-in-a-vorbis-header-page">What Is the BOS
+Flag in a Vorbis Header Page?</h1>
+<p>The Beginning of Stream (BOS) flag is a fundamental marker within the
+Ogg encapsulation format used by Vorbis audio, signaling the absolute
+start of a logical bitstream. This article explains the technical
+purpose of the BOS flag, its exact location in an Ogg Vorbis page
+header, how decoders use it to initialize playback parameters, and its
+critical role in managing multiplexed and chained media streams.</p>
+<h3 id="location-and-structure-of-the-bos-flag">Location and Structure
+of the BOS Flag</h3>
+<p>Vorbis audio streams are typically wrapped in the Ogg container
+format, which divides data into discrete chunks called pages. Every Ogg
+page begins with a 27-byte capture header containing metadata about the
+page.</p>
+<p>Within this header, the fifth byte is designated as the "header type
+flag." This byte uses bitwise flags to indicate the page's position and
+continuity within the stream:</p>
+<ul>
+<li><strong>0x01 (Continuation):</strong> The page continues a packet
+started on a previous page.</li>
+<li><strong>0x02 (BOS - Beginning of Stream):</strong> This page is the
+initial page of a logical bitstream.</li>
+<li><strong>0x04 (EOS - End of Stream):</strong> This page is the final
+page of a logical bitstream.</li>
+</ul>
+<p>When bit 1 (mask <code>0x02</code>) is set, the page is officially
+designated as the BOS page.</p>
+<h3 id="the-role-of-the-bos-page-in-vorbis-decoding">The Role of the BOS
+Page in Vorbis Decoding</h3>
+<p>A Vorbis bitstream requires three mandatory header packets before any
+audio data can be decoded: the identification header, the comment
+header, and the setup (codebook) header.</p>
+<p>The page marked with the BOS flag must contain the Vorbis
+identification header. This packet delivers crucial metadata to the
+decoder, including:</p>
+<ul>
+<li>The Vorbis audio version</li>
+<li>The number of audio channels (e.g., mono, stereo, 5.1 surround)</li>
+<li>The audio sample rate (e.g., 44.1 kHz, 48 kHz)</li>
+<li>Bitrate limits (nominal, minimum, and maximum bitrates)</li>
+<li>Framing and block size information</li>
+</ul>
+<p>Because this identification packet resides on the BOS page, a decoder
+reading the stream can immediately allocate memory and configure the
+audio pipeline before encountering actual audio packets.</p>
+<h3 id="stream-multiplexing-and-identification">Stream Multiplexing and
+Identification</h3>
+<p>The Ogg container allows multiple media streams to be grouped
+together (multiplexed) into a single physical stream, such as combining
+Vorbis audio with Theora video. Each logical bitstream has a unique
+serial number assigned in the page header.</p>
+<p>The BOS flag is critical for handling these configurations:</p>
+<ol type="1">
+<li><strong>Multiplexed Streams:</strong> At the beginning of a
+multiplexed file, an Ogg container will output a cluster of BOS
+pages—one for each distinct stream—before sending any audio or video
+data. Decoders read every initial BOS page to inventory all available
+tracks and associate each track with its unique bitstream serial
+number.</li>
+<li><strong>Chained Streams:</strong> In continuous or concatenated
+streams (such as internet radio broadcasts), a new stream with different
+audio settings can follow immediately after an EOS (End of Stream) flag.
+The appearance of a new BOS flag alerts the decoder to re-initialize its
+settings for the new logical bitstream.</li>
+</ol>
+<h3 id="decoder-validation-and-error-prevention">Decoder Validation and
+Error Prevention</h3>
+<p>Enforcing the BOS flag helps decoders prevent playback errors. If an
+audio decoder begins parsing an Ogg file from an arbitrary point (such
+as during an incomplete download or mid-stream network capture) and does
+not encounter a BOS flag on the first page it reads, it knows that
+essential setup headers are missing. The decoder can safely reject the
+stream or scan forward until it finds a valid initialization boundary,
+preventing corrupted audio output or application crashes.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

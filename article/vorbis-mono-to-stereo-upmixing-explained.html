@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Mono-to-Stereo Upmixing Explained - vorbis</title>
+    <meta name="description" content="This article provides an overview of how the Vorbis audio codec handles mono-to-stereo upmixing during playback. While the native Vorbis format is designed to store single-channel audio efficiently without unnecessary channel data, converting this mono o">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-mono-to-stereo-upmixing-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Mono-to-Stereo Upmixing Explained - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-mono-to-stereo-upmixing-explained" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Vorbis audio codec handles mono-to-stereo upmixing during playback. While the native Vorbis format is designed to store single-channel audio efficiently without unnecessary channel data, converting this mono o" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-mono-to-stereo-upmixing-explained">Vorbis Mono-to-Stereo
+Upmixing Explained</h1>
+<p>This article provides an overview of how the Vorbis audio codec
+handles mono-to-stereo upmixing during playback. While the native Vorbis
+format is designed to store single-channel audio efficiently without
+unnecessary channel data, converting this mono output into a two-channel
+stereo field relies on a combination of codec channel mapping
+specifications, decoder libraries, and host audio rendering
+pipelines.</p>
+<h2 id="native-bitstream-channel-architecture">Native Bitstream Channel
+Architecture</h2>
+<p>Vorbis streams define the audio channel count explicitly in the main
+identification header. When an audio file is encoded in mono, the stream
+contains only a single logical channel (Channel 0). The Vorbis
+specification intentionally avoids embedding redundant data or applying
+artificial spatial effects within the bitstream to keep compression
+efficient. Consequently, the encoded file contains no inherent stereo
+separation, phase difference information, or directional cues.</p>
+<h2 id="the-role-of-the-vorbis-decoder">The Role of the Vorbis
+Decoder</h2>
+<p>During playback, the reference Vorbis decoding library
+(<code>libvorbis</code>) reads the single-channel packets and
+reconstructs the uncompressed pulse-code modulation (PCM) audio samples.
+At the pure codec level, <code>libvorbis</code> outputs an array
+containing only one channel of PCM data. The codec itself does not
+invent pseudo-stereo spatialization, delay effects, or reverberation to
+simulate stereo width.</p>
+<p>Instead, mono-to-stereo routing is handled through standardized
+channel mapping rules. Vorbis defines Channel 0 in a single-channel
+configuration as a monophonic center channel. When a playback
+application or audio framework requests a stereo stream from a mono
+source, the decoding wrapper (such as <code>libvorbisfile</code>) or the
+downstream audio engine maps this single center channel across the
+stereo output bus.</p>
+<h2 id="dual-mono-channel-duplication">Dual-Mono Channel
+Duplication</h2>
+<p>The actual upmixing mechanism implemented during playback is
+dual-mono duplication. The single decoded PCM stream is mirrored
+identically to both the left and right output channels:</p>
+<ul>
+<li><strong>Left Output:</strong> Channel 0 (Mono)</li>
+<li><strong>Right Output:</strong> Channel 0 (Mono)</li>
+</ul>
+<p>Because the identical signal arrives at both speakers simultaneously
+with zero phase variance, the listener perceives a phantom center image
+directly between the two stereo speakers.</p>
+<h2 id="gain-and-panning-compensation">Gain and Panning
+Compensation</h2>
+<p>When a single mono channel is duplicated across two stereo channels,
+the combined acoustic energy in the listening space increases. Depending
+on the audio API or media player handling the Vorbis stream:</p>
+<ul>
+<li><strong>Direct 1:1 Duplication (Unity Gain):</strong> Many software
+players route the full signal (<span class="math inline">\(0\text{
+dB}\)</span>) to both channels without alteration. This preserves the
+peak digital amplitude of each channel but can make the track sound
+slightly louder overall compared to multi-channel material.</li>
+<li><strong>Constant Power Panning (-3 dB Attenuation):</strong>
+Advanced audio mixing engines apply standard pan-law attenuation,
+typically reducing each channel by <span class="math inline">\(3\text{
+dB}\)</span>. This compensates for the acoustic summation of two
+speakers reproducing the same waveform, ensuring that the perceived
+loudness matches standard stereo tracks.</li>
+</ul>
+<h2
+id="difference-between-playback-upmixing-and-channel-coupling">Difference
+Between Playback Upmixing and Channel Coupling</h2>
+<p>It is important to distinguish playback mono-to-stereo upmixing from
+Vorbis's encoding features like channel coupling. During encoding,
+Vorbis can use lossless or lossy stereo coupling (polar mapping of
+magnitude and angle) to compress true stereo tracks into interdependent
+vectors. In contrast, playback upmixing of an existing mono file never
+invokes these encoding algorithms; it simply routes the solitary decoded
+center signal into a two-channel stereo soundstage.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

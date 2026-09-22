@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Bitstream Padding and Frame Boundaries - vorbis</title>
+    <meta name="description" content="This article explores the mechanisms used to handle padding and frame boundaries in Vorbis audio streams. While Vorbis is designed as a continuous bit-oriented format, it relies on a combination of bit-level zero-padding at packet terminations, transport">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-bitstream-padding-and-frame-boundaries">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Bitstream Padding and Frame Boundaries - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-bitstream-padding-and-frame-boundaries" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores the mechanisms used to handle padding and frame boundaries in Vorbis audio streams. While Vorbis is designed as a continuous bit-oriented format, it relies on a combination of bit-level zero-padding at packet terminations, transport" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-bitstream-padding-and-frame-boundaries">Vorbis Bitstream
+Padding and Frame Boundaries</h1>
+<p>This article explores the mechanisms used to handle padding and frame
+boundaries in Vorbis audio streams. While Vorbis is designed as a
+continuous bit-oriented format, it relies on a combination of bit-level
+zero-padding at packet terminations, transport-level framing via the Ogg
+encapsulation layer, and sample-level padding management using windowing
+and granule positions. Together, these systems ensure variable-length
+audio frames align correctly with physical storage and transport
+boundaries without introducing audio artifacts.</p>
+<h3 id="bit-level-octet-padding">Bit-Level Octet Padding</h3>
+<p>Vorbis audio packets are variable-length structures composed of
+arbitrary bit counts rather than whole bytes. Because raw hardware,
+network protocols, and storage containers operate on byte (octet)
+boundaries, Vorbis utilizes an internal bitpacking convention:</p>
+<ul>
+<li><strong>LSB-to-MSB Packing:</strong> Bits are read and written
+starting from the least significant bit (LSB) to the most significant
+bit (MSB) within each byte.</li>
+<li><strong>Zero-Bit Termination:</strong> When a Vorbis packet ends,
+the current byte may not be fully occupied. The encoder fills the
+remaining unused high-order bits of that final byte with zeros. This
+bit-level padding ensures that every Vorbis packet terminates precisely
+on an 8-bit boundary, allowing it to be safely handed off to the
+transport layer.</li>
+</ul>
+<p>Any trailing bits beyond the expected payload within that final octet
+are discarded by the Vorbis bitstream reader during decoding.</p>
+<h3 id="transport-layer-framing-via-ogg-lacing">Transport-Layer Framing
+via Ogg Lacing</h3>
+<p>Vorbis specifications explicitly omit internal sync codes,
+byte-padding markers, or frame boundary delimiters from the raw audio
+bitstream. Instead, framing boundaries are managed by the container
+layer, almost universally Ogg.</p>
+<p>Ogg manages frame boundaries using a segment table mechanism:</p>
+<ul>
+<li><strong>255-Byte Slices:</strong> A packet is sliced into 255-byte
+segments. In the Ogg page header, each segment is represented by a
+lacing byte indicating its length (up to 255).</li>
+<li><strong>Packet Boundaries:</strong> A lacing value of less than 255
+indicates the final segment of a packet.</li>
+<li><strong>Zero-Byte Padding (Lacing Value 0):</strong> If a Vorbis
+packet’s length is an exact multiple of 255 bytes, an additional lacing
+value of <code>0</code> is appended to the segment table. This zero-byte
+indicator explicitly signals the end of the packet boundary, preventing
+the decoder from merging the packet with the subsequent one.</li>
+</ul>
+<h3 id="audio-sample-boundary-and-granule-padding">Audio Sample Boundary
+and Granule Padding</h3>
+<p>Due to the Modified Discrete Cosine Transform (MDCT) used in Vorbis,
+audio must be encoded in overlapping windows (typically alternating
+between long and short window frames, such as 2048 and 256 samples).
+Because of the 50% overlap-add requirement, boundary frames cannot be
+fully reconstructed in isolation.</p>
+<p>To manage boundaries at the beginning and end of a stream:</p>
+<ul>
+<li><strong>Encoder Pre-roll and Priming:</strong> The encoder pads the
+beginning of an audio stream with a centered dummy or silent frame. This
+creates the necessary overlap state for the first real audio
+window.</li>
+<li><strong>Granule Position Truncation:</strong> Frame boundaries at
+the end of a bitstream often contain more transform samples than the
+source audio. The Ogg page header contains a <code>granulepos</code>
+field, which indicates the absolute sample count of the decoded PCM
+data. If the final MDCT frame generates surplus reconstructed samples
+(transform padding), the decoder uses the <code>granulepos</code> value
+to truncate the trailing samples, ensuring sample-accurate playback
+without gaps or clicks.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

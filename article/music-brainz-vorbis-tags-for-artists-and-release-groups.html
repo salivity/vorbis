@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicBrainz Vorbis Tags for Artists and Release Groups - vorbis</title>
+    <meta name="description" content="MusicBrainz standardizes metadata for Vorbis comment containers—used in formats like FLAC, Ogg Vorbis, and Opus—by mapping structured database entities into specific, standardized key-value pairs. This article outlines how MusicBrainz formats and sta">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/music-brainz-vorbis-tags-for-artists-and-release-groups">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MusicBrainz Vorbis Tags for Artists and Release Groups - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/music-brainz-vorbis-tags-for-artists-and-release-groups" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="MusicBrainz standardizes metadata for Vorbis comment containers—used in formats like FLAC, Ogg Vorbis, and Opus—by mapping structured database entities into specific, standardized key-value pairs. This article outlines how MusicBrainz formats and sta" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1
+id="musicbrainz-vorbis-tags-for-artists-and-release-groups">MusicBrainz
+Vorbis Tags for Artists and Release Groups</h1>
+<p>MusicBrainz standardizes metadata for Vorbis comment containers—used
+in formats like FLAC, Ogg Vorbis, and Opus—by mapping structured
+database entities into specific, standardized key-value pairs. This
+article outlines how MusicBrainz formats and standardizes artist
+information, release group identifiers, and associated UUIDs to ensure
+consistent playback, organization, and scrobbling across digital audio
+software.</p>
+<h3 id="vorbis-comment-architecture">Vorbis Comment Architecture</h3>
+<p>Vorbis comments are case-insensitive, UTF-8 encoded
+<code>KEY=Value</code> pairs that support repeated keys for multiple
+values. Rather than embedding flattened or proprietary strings,
+MusicBrainz uses standardized tag names and persistent 128-bit UUIDs
+(MusicBrainz Identifiers, or MBIDs) to link audio files directly to
+canonical database entries.</p>
+<h3 id="standardizing-artist-information">Standardizing Artist
+Information</h3>
+<p>MusicBrainz categorizes artist metadata across track-level performers
+and album-level contributors, standardizing both human-readable strings
+and machine-readable identifiers:</p>
+<ul>
+<li><strong><code>ARTIST</code></strong>: Stores the localized artist
+credit as it appears on the specific release liner notes.</li>
+<li><strong><code>ARTISTSORT</code></strong>: Stores the alphabetical
+sort name of the track artist (for example, "Beatles, The" instead of
+"The Beatles").</li>
+<li><strong><code>MUSICBRAINZ_ARTISTID</code></strong>: Contains the
+MBID of the track artist. If multiple artists collaborate, MusicBrainz
+standardizes this by writing separate, repeated
+<code>MUSICBRAINZ_ARTISTID</code> tags for each individual artist entity
+rather than joining them with delimiters.</li>
+<li><strong><code>ALBUMARTIST</code></strong>: Stores the primary artist
+or collective credited for the overall release.</li>
+<li><strong><code>ALBUMARTISTSORT</code></strong>: Stores the
+standardized alphabetical sort order for the primary release
+artist.</li>
+<li><strong><code>MUSICBRAINZ_ALBUMARTISTID</code></strong>: Contains
+the MBID corresponding to the primary album artist entity, supporting
+multiple instances for collaborative albums.</li>
+</ul>
+<h3 id="standardizing-release-group-metadata">Standardizing Release
+Group Metadata</h3>
+<p>In the MusicBrainz schema, a <strong>Release Group</strong>
+represents the abstract, conceptual project (such as the overarching
+album <em>Abbey Road</em>), while a <strong>Release</strong> represents
+a specific physical or digital issue (such as a 1987 UK CD or a 2019 US
+vinyl remaster). MusicBrainz standardizes release group classification
+using the following Vorbis comment keys:</p>
+<ul>
+<li><strong><code>MUSICBRAINZ_RELEASEGROUPID</code></strong>: Stores the
+unique MBID corresponding to the abstract release group. This allows
+media managers to group diverse pressings, reissues, and regional
+variants of the same core album under a single logical unit.</li>
+<li><strong><code>RELEASETYPE</code></strong>: Designates the release
+group category. MusicBrainz uses a hierarchical taxonomy including
+primary types (such as <code>album</code>, <code>single</code>,
+<code>ep</code>, <code>broadcast</code>, or <code>other</code>) and
+secondary types (such as <code>compilation</code>,
+<code>soundtrack</code>, <code>live</code>, <code>remix</code>, or
+<code>dj-mix</code>). When multiple types apply, standard taggers write
+multiple <code>RELEASETYPE</code> tags or format them as multi-value
+arrays according to the Vorbis specification.</li>
+<li><strong><code>MUSICBRAINZ_RELEASEGROUPTYPE</code></strong>: An
+alternative or historical field often mirrored alongside
+<code>RELEASETYPE</code> by taggers like MusicBrainz Picard to preserve
+backward compatibility with legacy media players.</li>
+</ul>
+<h3 id="multi-value-tag-execution">Multi-Value Tag Execution</h3>
+<p>MusicBrainz adheres strictly to the native Vorbis specification by
+avoiding concatenated string separators like slashes or semicolons
+whenever native multi-field tagging is supported. For releases featuring
+guest performers or split-album releases, each contributing artist's
+identifier is written as a distinct, subsequent
+<code>MUSICBRAINZ_ARTISTID</code> entry. This guarantees programmatic
+parsers can resolve accurate entity relationships without relying on
+text-parsing heuristics.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

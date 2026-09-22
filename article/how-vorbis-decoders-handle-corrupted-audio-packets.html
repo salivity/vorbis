@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Decoders Handle Corrupted Audio Packets - vorbis</title>
+    <meta name="description" content="When a Vorbis decoder encounters a corrupted audio packet, it prevents system crashes and harsh audio artifacts by discarding the damaged data and applying error concealment techniques. Because the Vorbis codec relies on overlapping transforms to reconst">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-decoders-handle-corrupted-audio-packets">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Decoders Handle Corrupted Audio Packets - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-decoders-handle-corrupted-audio-packets" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When a Vorbis decoder encounters a corrupted audio packet, it prevents system crashes and harsh audio artifacts by discarding the damaged data and applying error concealment techniques. Because the Vorbis codec relies on overlapping transforms to reconst" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-decoders-handle-corrupted-audio-packets">How Vorbis
+Decoders Handle Corrupted Audio Packets</h1>
+<p>When a Vorbis decoder encounters a corrupted audio packet, it
+prevents system crashes and harsh audio artifacts by discarding the
+damaged data and applying error concealment techniques. Because the
+Vorbis codec relies on overlapping transforms to reconstruct sound, a
+missing or corrupted frame disrupts the continuous audio stream. Rather
+than halting playback, compliant decoders isolate the bad packet,
+zero-out or mute the affected frame to blend the audio boundaries, and
+immediately resynchronize on the next valid packet.</p>
+<h3 id="detection-and-rejection">Detection and Rejection</h3>
+<p>Before audio decoding begins, transport layers like Ogg use cyclic
+redundancy checks (CRC) on each container page. If an entire page is
+flagged as corrupted, the enclosed Vorbis packets are discarded
+immediately. If the container passes but individual bits inside the
+audio packet are flipped or truncated, the Vorbis decoder detects the
+corruption when reading bitstream elements. These failures typically
+manifest as invalid codebook indices, out-of-range vector quantization
+values, or unexpected packet termination. Because Vorbis packets use
+variable-length entropy coding, a single corrupted bit desynchronizes
+the bitstream reader, forcing the decoder to reject the entire packet as
+unparseable.</p>
+<h3 id="the-impact-on-mdct-overlap-add">The Impact on MDCT
+Overlap-Add</h3>
+<p>Vorbis uses the Modified Discrete Cosine Transform (MDCT), an audio
+encoding process where adjacent audio frames overlap by 50%. The second
+half of one frame is crossfaded with the first half of the next to
+cancel out time-domain aliasing and prevent audible boundary seams. When
+a packet is corrupted and dropped, the decoder loses both the second
+half of the previous transition and the first half of the subsequent
+transition.</p>
+<h3 id="error-concealment-and-output">Error Concealment and Output</h3>
+<p>To handle the missing data without outputting loud, high-frequency
+digital clicks or pops, reference implementations like
+<code>libvorbis</code> implement specific error concealment
+strategies:</p>
+<ul>
+<li><strong>Zero-Filling and Ramping:</strong> The decoder treats the
+corrupted packet as silence. It uses a synthetic zero-energy window to
+complete the overlap-add process with the preceding valid frame. This
+ramps down the audio smoothly rather than creating an abrupt waveform
+cutoff.</li>
+<li><strong>Muting the Gap:</strong> For the duration of the corrupted
+packet, the decoder outputs silent samples corresponding to the packet's
+designated window size (short or long window).</li>
+<li><strong>Return Transition:</strong> When the next valid packet
+arrives, the decoder uses its first half to ramp the volume back up from
+the zero-level state, restoring normal playback.</li>
+</ul>
+<h3 id="resynchronization">Resynchronization</h3>
+<p>Vorbis audio packets are largely self-contained with respect to their
+transform data, provided the global setup headers transmitted at the
+start of the stream remain intact. Consequently, the decoder does not
+need to wait for a keyframe to recover. As soon as the corrupt packet is
+discarded and the boundary is smoothed, the decoder immediately resumes
+normal decoding on the following valid packet without cumulative drift
+or persistent state corruption.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

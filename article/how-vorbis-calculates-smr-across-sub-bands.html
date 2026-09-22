@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Calculates SMR Across Sub-Bands - vorbis</title>
+    <meta name="description" content="The Vorbis audio codec calculates the signal-to-mask ratio (SMR) by transforming audio into the frequency domain, mapping energy levels onto a non-linear psychoacoustic scale, and determining human auditory masking thresholds across critical sub-bands. B">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-calculates-smr-across-sub-bands">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Calculates SMR Across Sub-Bands - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-calculates-smr-across-sub-bands" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio codec calculates the signal-to-mask ratio (SMR) by transforming audio into the frequency domain, mapping energy levels onto a non-linear psychoacoustic scale, and determining human auditory masking thresholds across critical sub-bands. B" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-calculates-smr-across-sub-bands">How Vorbis
+Calculates SMR Across Sub-Bands</h1>
+<p>The Vorbis audio codec calculates the signal-to-mask ratio (SMR) by
+transforming audio into the frequency domain, mapping energy levels onto
+a non-linear psychoacoustic scale, and determining human auditory
+masking thresholds across critical sub-bands. By comparing the actual
+signal power in a given critical band to the combined masking threshold
+produced by neighboring tones and noise, the encoder derives the SMR.
+This ratio indicates how much quantization noise can be safely
+introduced without being detected by human ears, directly driving the
+quantization of Vorbis's spectral envelope and residue vectors.</p>
+<h3
+id="time-to-frequency-transformation-and-bark-mapping">Time-to-Frequency
+Transformation and Bark Mapping</h3>
+<p>The process begins by converting windowed time-domain audio samples
+into the frequency domain using the Modified Discrete Cosine Transform
+(MDCT). Because human auditory resolution is non-linear—higher
+resolution at lower frequencies and lower resolution at higher
+frequencies—Vorbis maps the linear MDCT frequency bins into critical
+bands approximating the Bark scale.</p>
+<p>The spectrum is divided into psychoacoustic partitions or sub-bands
+that mirror these critical bandwidths. For each sub-band, the encoder
+accumulates the spectral energy, establishing the raw signal energy
+(<span class="math inline">\(E_{signal}\)</span>) baseline.</p>
+<h3 id="tonality-and-noise-estimation">Tonality and Noise
+Estimation</h3>
+<p>Masking effectiveness depends heavily on whether a sound is a pure
+tone or broad-spectrum noise. Pure tones provide less masking than
+noise, and noise masks noise differently than tones mask tones.</p>
+<p>Vorbis analyzes the spectral predictability across successive MDCT
+frames and the local spectral tilt to assess tonality. Spectral flatness
+measures and temporal predictability vectors classify the energy in each
+sub-band on a continuum between purely tonal and purely noise-like. This
+classification determines the specific masking index applied during
+subsequent threshold calculations.</p>
+<h3 id="spreading-functions-and-threshold-generation">Spreading
+Functions and Threshold Generation</h3>
+<p>A sound at one frequency masks sounds at nearby frequencies, an
+effect modeled via a psychoacoustic spreading function. Vorbis
+calculates the masking threshold across sub-bands through the following
+steps:</p>
+<ol type="1">
+<li><strong>Absolute Threshold of Hearing (ATH):</strong> The codec
+references a baseline curve representing the quietest sound audible to
+the human ear in absolute silence across all frequencies.</li>
+<li><strong>Convolution with Spreading Functions:</strong> The energy of
+each sub-band is convolved across adjacent Bark bands using triangular
+or exponential spreading curves. The spreading function slopes
+differently depending on direction: the downward masking slope (lower
+frequencies masking higher ones) is generally less steep than the upward
+masking slope (higher frequencies masking lower ones).</li>
+<li><strong>Threshold Calculation:</strong> For each band <span
+class="math inline">\(i\)</span>, the tonal and noise-masking
+contributions from surrounding bands are summed along with the ATH:
+<span class="math display">\[T_{mask}(i) = \max\left(\text{ATH}(i),
+\sum_{j} E(j) \cdot S(j, i) \cdot M_{offset}\right)\]</span> Where <span
+class="math inline">\(E(j)\)</span> is the energy of band <span
+class="math inline">\(j\)</span>, <span class="math inline">\(S(j,
+i)\)</span> is the spreading function value from band <span
+class="math inline">\(j\)</span> to <span
+class="math inline">\(i\)</span>, and <span
+class="math inline">\(M_{offset}\)</span> is the masking offset dictated
+by the tonality index.</li>
+</ol>
+<h3 id="deriving-the-signal-to-mask-ratio-smr">Deriving the
+Signal-to-Mask Ratio (SMR)</h3>
+<p>Once the masking threshold (<span
+class="math inline">\(T_{mask}\)</span>) and the signal energy (<span
+class="math inline">\(E_{signal}\)</span>) are calculated for each
+sub-band, the encoder computes the SMR in decibels:</p>
+<p><span class="math display">\[\text{SMR}_{dB} = 10
+\log_{10}(E_{signal}) - 10 \log_{10}(T_{mask})\]</span></p>
+<ul>
+<li>A <strong>high SMR</strong> means the audio signal is significantly
+louder than the masking threshold, indicating that low quantization
+noise is permissible and more bits must be assigned to preserve
+fidelity.</li>
+<li>A <strong>low or negative SMR</strong> means the signal is fully or
+partially masked by surrounding energy or the ATH, allowing aggressive
+quantization (or complete suppression) without causing audible
+distortion.</li>
+</ul>
+<h3 id="application-in-the-vorbis-architecture">Application in the
+Vorbis Architecture</h3>
+<p>Unlike MP3 or AAC, which use rigid scale-factor bands for
+quantization directly, Vorbis uses the calculated SMR values to guide
+two distinct stages:</p>
+<ol type="1">
+<li><strong>The Floor Formulation:</strong> Vorbis constructs a spectral
+envelope (typically "Floor 1," a piecewise linear curve in the log/Bark
+domain) that traces the calculated masking thresholds across the
+sub-bands.</li>
+<li><strong>Residue Quantization:</strong> The original MDCT spectrum is
+divided by the floor curve, leaving a normalized "residue." Sub-bands
+with high SMR receive fine vector quantization in the residue stage,
+while sub-bands with low SMR are quantized coarsely or grouped into
+low-bitrate codebooks.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

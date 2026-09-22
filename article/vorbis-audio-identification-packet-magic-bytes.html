@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Audio Identification Packet Magic Bytes - vorbis</title>
+    <meta name="description" content="This article explains the magic byte sequence used to identify a Vorbis audio identification packet within an audio stream. It breaks down the exact hexadecimal and ASCII representations of the sequence, details the structure of the packet header, and ou">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-audio-identification-packet-magic-bytes">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Audio Identification Packet Magic Bytes - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-audio-identification-packet-magic-bytes" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains the magic byte sequence used to identify a Vorbis audio identification packet within an audio stream. It breaks down the exact hexadecimal and ASCII representations of the sequence, details the structure of the packet header, and ou" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-audio-identification-packet-magic-bytes">Vorbis Audio
+Identification Packet Magic Bytes</h1>
+<p>This article explains the magic byte sequence used to identify a
+Vorbis audio identification packet within an audio stream. It breaks
+down the exact hexadecimal and ASCII representations of the sequence,
+details the structure of the packet header, and outlines the role this
+sequence plays in decoding Ogg Vorbis media.</p>
+<h2 id="the-magic-byte-sequence">The Magic Byte Sequence</h2>
+<p>The magic byte sequence that identifies a Vorbis audio identification
+packet is a 7-byte sequence:</p>
+<ul>
+<li><strong>Hexadecimal:</strong>
+<code>0x01 0x76 0x6F 0x72 0x62 0x69 0x73</code></li>
+<li><strong>ASCII / String representation:</strong>
+<code>\x01vorbis</code></li>
+</ul>
+<p>Any parser reading a Vorbis bitstream expects this exact sequence at
+the start of the primary identification packet.</p>
+<h2 id="byte-breakdown">Byte Breakdown</h2>
+<p>The 7-byte identifier consists of two distinct components:</p>
+<ol type="1">
+<li><strong>Packet Type Flag (<code>0x01</code>):</strong> The first
+byte indicates the header packet type. Vorbis defines three specific
+header packet types that must appear in order at the start of an audio
+stream:
+<ul>
+<li><code>0x01</code>: Identification packet</li>
+<li><code>0x03</code>: Comment packet</li>
+<li><code>0x05</code>: Setup (codebook) packet</li>
+</ul></li>
+<li><strong>Identifier String (<code>vorbis</code>):</strong> The
+remaining six bytes are the ASCII representation of the lowercase string
+<code>"vorbis"</code> (<code>0x76</code>, <code>0x6F</code>,
+<code>0x72</code>, <code>0x62</code>, <code>0x69</code>,
+<code>0x73</code>).</li>
+</ol>
+<h2 id="role-in-stream-parsing">Role in Stream Parsing</h2>
+<p>In an Ogg container, the identification packet is the very first
+packet of a Vorbis logical bitstream. Demuxers and decoders read the
+initial 7 bytes to confirm that the encapsulated stream is indeed Vorbis
+audio rather than another codec such as Theora, FLAC, or Opus.</p>
+<p>Immediately following the <code>\x01vorbis</code> sequence, the
+packet provides fundamental stream parameters:</p>
+<ul>
+<li><strong>Vorbis Version:</strong> 4 bytes (32-bit unsigned integer,
+typically <code>0x00000000</code>)</li>
+<li><strong>Audio Channels:</strong> 1 byte (unsigned 8-bit integer
+representing channel count)</li>
+<li><strong>Audio Sample Rate:</strong> 4 bytes (32-bit unsigned
+integer, in Hz)</li>
+<li><strong>Bitrate Maximum:</strong> 4 bytes (32-bit signed
+integer)</li>
+<li><strong>Bitrate Nominal:</strong> 4 bytes (32-bit signed
+integer)</li>
+<li><strong>Bitrate Minimum:</strong> 4 bytes (32-bit signed
+integer)</li>
+<li><strong>Block Sizes:</strong> 1 byte (encodes two block sizes as
+powers of two)</li>
+<li><strong>Framing Bit:</strong> 1 bit (must be set to non-zero
+<code>1</code> to validate the packet)</li>
+</ul>
+<p>If the first 7 bytes do not match
+<code>0x01 0x76 0x6F 0x72 0x62 0x69 0x73</code>, the decoder rejects the
+stream as an invalid or corrupted Vorbis bitstream.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

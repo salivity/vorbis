@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oggenc Encoding Parameters for Vorbis Audio Quality - vorbis</title>
+    <meta name="description" content="The oggenc command-line utility is the standard tool for encoding raw or uncompressed audio into the lossy Ogg Vorbis format. While Vorbis is designed to deliver superior sound fidelity at lower bitrates compared to legacy formats like MP3, tuning the en">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/oggenc-encoding-parameters-for-vorbis-audio-quality">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Oggenc Encoding Parameters for Vorbis Audio Quality - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/oggenc-encoding-parameters-for-vorbis-audio-quality" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The oggenc command-line utility is the standard tool for encoding raw or uncompressed audio into the lossy Ogg Vorbis format. While Vorbis is designed to deliver superior sound fidelity at lower bitrates compared to legacy formats like MP3, tuning the en" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="oggenc-encoding-parameters-for-vorbis-audio-quality">Oggenc
+Encoding Parameters for Vorbis Audio Quality</h1>
+<p>The <code>oggenc</code> command-line utility is the standard tool for
+encoding raw or uncompressed audio into the lossy Ogg Vorbis format.
+While Vorbis is designed to deliver superior sound fidelity at lower
+bitrates compared to legacy formats like MP3, tuning the encoder
+correctly is essential for balancing file size and acoustic
+transparency. This article covers the primary encoding parameters
+<code>oggenc</code> provides for quality control, detailing variable
+bitrate quality levels, average bitrate targets, constraint boundaries,
+and the bitrate management engine.</p>
+<h3 id="quality-based-encoding--q-or---quality">Quality-Based Encoding
+(<code>-q</code> or <code>--quality</code>)</h3>
+<p>The <code>-q</code> parameter is the recommended method for encoding
+Vorbis audio. Vorbis is inherently a variable bitrate (VBR) format, and
+quality mode allows the encoder to dynamically allocate data based on
+the complexity of the audio signal without trying to hit a predetermined
+file size.</p>
+<ul>
+<li><strong>Syntax:</strong>
+<code>oggenc -q &lt;value&gt; input.wav</code></li>
+<li><strong>Range:</strong> <code>-1.0</code> to <code>10.0</code>
+(fractional values like <code>4.5</code> or <code>6.2</code> are fully
+supported).</li>
+<li><strong>Behavior:</strong>
+<ul>
+<li><code>-q 0</code> yields roughly 64 kbps (suitable for low-bandwidth
+voice or simple audio).</li>
+<li><code>-q 3</code> yields roughly 112 kbps (often the default for
+basic listening).</li>
+<li><code>-q 5</code> to <code>-q 6</code> yields roughly 160–192 kbps
+(considered perceptually transparent for the vast majority of
+listeners).</li>
+<li><code>-q 10</code> yields roughly 500 kbps (maximum quality
+setting).</li>
+</ul></li>
+</ul>
+<p>Using <code>-q</code> ensures that complex passages receive more bits
+while silent or simple passages consume minimal space, resulting in the
+highest possible acoustic efficiency.</p>
+<h3 id="nominal-bitrate-targeting--b-or---bitrate">Nominal Bitrate
+Targeting (<code>-b</code> or <code>--bitrate</code>)</h3>
+<p>If an application requires a predictable average file size rather
+than an arbitrary quality scale, the <code>-b</code> parameter specifies
+a target average bitrate (ABR) in kilobits per second.</p>
+<ul>
+<li><strong>Syntax:</strong>
+<code>oggenc -b &lt;bitrate_in_kbps&gt; input.wav</code></li>
+<li><strong>Behavior:</strong> The encoder uses a quality scale
+internally that approximates the requested average bitrate over the
+duration of the track. While it still operates as VBR, it adjusts its
+internal quality metrics to meet the overall average size target.</li>
+</ul>
+<h3 id="bitrate-limiting--m-and--m">Bitrate Limiting (<code>-m</code>
+and <code>-M</code>)</h3>
+<p>For scenarios where bandwidth constraints exist, <code>oggenc</code>
+provides parameters to establish floor and ceiling limits on the
+stream's bitrate:</p>
+<ul>
+<li><strong>Minimum Bitrate (<code>-m</code> or
+<code>--min-bitrate</code>):</strong> Sets a lower bound in kbps. The
+encoder avoids dropping below this rate even during simple passages or
+silence.</li>
+<li><strong>Maximum Bitrate (<code>-M</code> or
+<code>--max-bitrate</code>):</strong> Sets an upper bound in kbps. The
+encoder compresses complex peaks more aggressively to ensure the stream
+does not exceed this threshold.</li>
+</ul>
+<h3 id="the-bitrate-management-engine---managed">The Bitrate Management
+Engine (<code>--managed</code>)</h3>
+<p>By default, specifying <code>-b</code>, <code>-m</code>, or
+<code>-M</code> acts primarily as guidance to the VBR engine unless
+<code>--managed</code> is explicitly invoked.</p>
+<ul>
+<li><strong>Syntax:</strong>
+<code>oggenc --managed -b 128 -M 160 input.wav</code></li>
+<li><strong>Behavior:</strong> Forces <code>oggenc</code> to strictly
+adhere to the bitrate constraints at the expense of overall audio
+quality. While useful for fixed-bandwidth streaming or hardware decoders
+with strict buffer limitations, using <code>--managed</code> reduces the
+encoder's efficiency compared to pure quality-mode (<code>-q</code>)
+encoding.</li>
+</ul>
+<h3 id="advanced-tuning---advanced-encode-option">Advanced Tuning
+(<code>--advanced-encode-option</code>)</h3>
+<p>For granular low-level control, <code>oggenc</code> allows advanced
+users to interact directly with internal <code>libvorbis</code>
+parameters using the <code>--advanced-encode-option</code> flag. This
+interface enables manual adjustments to:</p>
+<ul>
+<li>Psychoacoustic coupling thresholds.</li>
+<li>Low-pass filter cutoffs.</li>
+<li>Temporal masking curves and noise shaping.</li>
+</ul>
+<p>Because the default psychoacoustic tuning in <code>libvorbis</code>
+is already heavily optimized, these options are rarely necessary outside
+of specialized acoustic research. For general distribution and
+archiving, using <code>-q</code> between <code>4.0</code> and
+<code>7.0</code> remains the optimal approach for tuning Vorbis
+quality.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

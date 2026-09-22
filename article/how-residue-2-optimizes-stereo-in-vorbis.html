@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Residue 2 Optimizes Stereo in Vorbis - vorbis</title>
+    <meta name="description" content="This article examines how Residue 2 improves encoding efficiency in the Ogg Vorbis audio format through strategic data interleaving. By grouping spectral coefficients from multiple audio channels into a single unified stream prior to vector quantization,">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-residue-2-optimizes-stereo-in-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Residue 2 Optimizes Stereo in Vorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-residue-2-optimizes-stereo-in-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how Residue 2 improves encoding efficiency in the Ogg Vorbis audio format through strategic data interleaving. By grouping spectral coefficients from multiple audio channels into a single unified stream prior to vector quantization," />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-residue-2-optimizes-stereo-in-vorbis">How Residue 2
+Optimizes Stereo in Vorbis</h1>
+<p>This article examines how Residue 2 improves encoding efficiency in
+the Ogg Vorbis audio format through strategic data interleaving. By
+grouping spectral coefficients from multiple audio channels into a
+single unified stream prior to vector quantization, Residue 2 enables
+the encoder to exploit inter-channel correlation. This design eliminates
+cross-channel redundancy in stereo and multichannel audio, allowing
+Vorbis to deliver high-fidelity audio at substantially lower
+bitrates.</p>
+<h3 id="the-role-of-residues-in-vorbis">The Role of Residues in
+Vorbis</h3>
+<p>In the Vorbis encoding pipeline, input audio is transformed into the
+frequency domain via the Modified Discrete Cosine Transform (MDCT). The
+encoder computes a spectral floor—an approximation of the signal's
+energy distribution and psychoacoustic masking curve—and divides the raw
+spectrum by this floor. The remaining high-frequency details constitute
+the "residue."</p>
+<p>The residue vectors contain the exact spectral peaks and fine details
+that must be compressed and transmitted. Vorbis defines three residue
+encoding formats: Residue 0, Residue 1, and Residue 2. Each handles
+multichannel vector structures differently.</p>
+<h3 id="how-residue-2-implements-interleaving">How Residue 2 Implements
+Interleaving</h3>
+<p>While Residue 0 encodes each channel's coefficients independently and
+Residue 1 groups coefficients across channels in larger segmented
+blocks, Residue 2 interleaves channel data on a sample-by-sample
+basis.</p>
+<p>In a standard two-channel stereo setup, the spectral coefficients for
+the left (<span class="math inline">\(L\)</span>) and right (<span
+class="math inline">\(R\)</span>) channels are sequenced chronologically
+into a single, merged array:</p>
+<p><span class="math display">\[[L_0, R_0, L_1, R_1, L_2, R_2, \dots,
+L_n, R_n]\]</span></p>
+<p>Rather than treating the audio as two discrete streams of length
+<span class="math inline">\(N\)</span>, the encoder transforms it into a
+single virtual channel of length <span
+class="math inline">\(2N\)</span>.</p>
+<h3
+id="exploiting-inter-channel-redundancy-via-vector-quantization">Exploiting
+Inter-Channel Redundancy via Vector Quantization</h3>
+<p>Vorbis uses Vector Quantization (VQ) to encode residue values. In VQ,
+multidimensional groups of numbers are replaced by a single index
+referencing a predefined codebook entry.</p>
+<p>Because Residue 2 interleaves coefficients before quantization, the
+dimensions of the vector codebook directly span both audio channels
+simultaneously:</p>
+<ul>
+<li><strong>Two-Dimensional Quantization:</strong> A 2D codebook
+quantizes pairs consisting of <span class="math inline">\((L_k,
+R_k)\)</span>. Instead of predicting the left sample and right sample
+separately, the codebook entry represents the exact energy balance and
+relationship between both channels at frequency bin <span
+class="math inline">\(k\)</span>.</li>
+<li><strong>Four-Dimensional Quantization:</strong> A 4D codebook
+quantizes <span class="math inline">\((L_k, R_k, L_{k+1},
+R_{k+1})\)</span>, capturing both cross-channel balance and
+adjacent-frequency spectral continuity in a single codeword.</li>
+</ul>
+<p>Stereo audio frequently contains common acoustic information, such as
+centered vocals, bass, or shared room reverberation. Residue 2 allows
+the codebook to naturally mirror these shared properties. If both
+channels share similar energy at a specific frequency, a single codebook
+entry encapsulates this relationship with fewer bits than encoding two
+independent vectors.</p>
+<h3 id="synergies-with-channel-coupling">Synergies with Channel
+Coupling</h3>
+<p>Residue 2 functions alongside Vorbis's channel coupling mechanisms,
+such as mid/side (M/S) stereo and point stereo. When M/S coupling is
+active, the left and right channels are converted into sum (<span
+class="math inline">\(M\)</span>) and difference (<span
+class="math inline">\(S\)</span>) signals before quantization.</p>
+<p>When Residue 2 is applied to coupled channels, the interleaved stream
+alternates between mid and side coefficients (<span
+class="math inline">\([M_0, S_0, M_1, S_1, \dots]\)</span>). In heavily
+correlated passages, the difference signal (<span
+class="math inline">\(S\)</span>) drops close to zero. Residue 2's
+multidimensional codebooks can efficiently represent <span
+class="math inline">\((M_k, 0)\)</span> states using specialized
+low-entropy codewords, maximizing bit distribution toward the audible
+audio components.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

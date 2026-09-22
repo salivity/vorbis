@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Disable Channel Coupling in Vorbis - vorbis</title>
+    <meta name="description" content="Disabling channel coupling in Ogg Vorbis forces the encoder to process audio channels completely independently rather than sharing spectral data between them. This guide outlines the exact encoding settings required to disable channel coupling using both">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-to-disable-channel-coupling-in-vorbis">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Disable Channel Coupling in Vorbis - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-to-disable-channel-coupling-in-vorbis" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Disabling channel coupling in Ogg Vorbis forces the encoder to process audio channels completely independently rather than sharing spectral data between them. This guide outlines the exact encoding settings required to disable channel coupling using both" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-to-disable-channel-coupling-in-vorbis">How to Disable
+Channel Coupling in Vorbis</h1>
+<p>Disabling channel coupling in Ogg Vorbis forces the encoder to
+process audio channels completely independently rather than sharing
+spectral data between them. This guide outlines the exact encoding
+settings required to disable channel coupling using both the official
+<code>oggenc</code> reference encoder and FFmpeg, explaining the syntax,
+default behaviors, and practical trade-offs involved in using uncoupled
+stereo.</p>
+<h3 id="using-oggenc-vorbis-tools">Using oggenc (Vorbis-tools)</h3>
+<p>The official reference implementation from Xiph.Org provides a direct
+command-line switch to turn off stereo coupling.</p>
+<p>To disable coupling, pass the <code>--disable-coupling</code>
+flag:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">oggenc</span> <span class="at">--disable-coupling</span> <span class="at">-q</span> 6 input.wav <span class="at">-o</span> output.ogg</span></code></pre></div>
+<ul>
+<li><strong>Command breakdown:</strong>
+<ul>
+<li><code>--disable-coupling</code>: Forces the encoder to encode stereo
+channels completely independently.</li>
+<li><code>-q 6</code>: Sets the variable bitrate (VBR) quality level (on
+a scale from -1 to 10).</li>
+<li><code>input.wav</code>: The source audio file.</li>
+<li><code>-o output.ogg</code>: The resulting uncoupled Ogg Vorbis
+file.</li>
+</ul></li>
+</ul>
+<h3 id="using-ffmpeg-libvorbis">Using FFmpeg (libvorbis)</h3>
+<p>When using FFmpeg, Vorbis encoding is typically handled through the
+external <code>libvorbis</code> library. The encoder option for coupling
+accepts a boolean value (<code>1</code> for enabled, <code>0</code> for
+disabled).</p>
+<p>To disable coupling in FFmpeg, set <code>-coupling 0</code>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input.wav <span class="at">-c:a</span> libvorbis <span class="at">-coupling</span> 0 <span class="at">-q:a</span> 6 output.ogg</span></code></pre></div>
+<ul>
+<li><strong>Command breakdown:</strong>
+<ul>
+<li><code>-c:a libvorbis</code>: Specifies the standard libvorbis audio
+codec.</li>
+<li><code>-coupling 0</code>: Explicitly disables channel coupling in
+the underlying libvorbis library.</li>
+<li><code>-q:a 6</code>: Sets the audio quality scale (roughly
+equivalent to <code>oggenc -q 6</code>).</li>
+</ul></li>
+</ul>
+<h3 id="why-disable-channel-coupling">Why Disable Channel Coupling?</h3>
+<p>By default, Vorbis employs two forms of stereo coupling to maximize
+bitrate efficiency:</p>
+<ol type="1">
+<li><strong>Point Stereo:</strong> Fuses high frequencies into a single
+mono signal with directional panning metadata.</li>
+<li><strong>Phase Coupling (Lossless Stereo):</strong> Dynamically
+factors phase and amplitude differences between channels.</li>
+</ol>
+<p>While coupling significantly reduces file sizes at equal perceived
+quality for standard music tracks, disabling it is necessary in specific
+use cases:</p>
+<ul>
+<li><strong>Dual-Mono Content:</strong> When an audio file carries two
+completely unrelated audio signals on the left and right channels (such
+as two different languages, or a microphone track on one side and a
+sound effect on the other). Coupling unrelated signals introduces
+cross-talk and audible artifacts.</li>
+<li><strong>Binaural Audio:</strong> Specialized head-related transfer
+function (HRTF) recordings rely on precise phase differences between
+ears; coupling mechanisms can degrade spatial localization.</li>
+<li><strong>Critical Measurement and Testing:</strong> When running
+automated acoustic analysis, discrete audio channels must remain
+isolated without any inter-channel algorithmic interaction.</li>
+</ul>
+<h3 id="impact-on-bitrate-and-file-size">Impact on Bitrate and File
+Size</h3>
+<p>Channel coupling accounts for significant compression savings in
+standard stereo music. When channel coupling is disabled, the encoder
+must spend individual bit budgets on each channel. To achieve the same
+perceived audio fidelity as a coupled Vorbis stream, uncoupled files
+generally require a 10% to 20% higher bitrate.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

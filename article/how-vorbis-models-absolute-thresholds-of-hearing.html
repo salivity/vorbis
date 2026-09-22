@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Models Absolute Thresholds of Hearing - vorbis</title>
+    <meta name="description" content="The Vorbis audio compression format relies on a psychoacoustic model that eliminates spectral components undetectable by the human ear, governed primarily by the Absolute Threshold of Hearing (ATH). By evaluating audio frequencies against empirical curve">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-models-absolute-thresholds-of-hearing">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Models Absolute Thresholds of Hearing - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-models-absolute-thresholds-of-hearing" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio compression format relies on a psychoacoustic model that eliminates spectral components undetectable by the human ear, governed primarily by the Absolute Threshold of Hearing (ATH). By evaluating audio frequencies against empirical curve" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-models-absolute-thresholds-of-hearing">How Vorbis
+Models Absolute Thresholds of Hearing</h1>
+<p>The Vorbis audio compression format relies on a psychoacoustic model
+that eliminates spectral components undetectable by the human ear,
+governed primarily by the Absolute Threshold of Hearing (ATH). By
+evaluating audio frequencies against empirical curves that represent
+human auditory sensitivity in quiet environments, Vorbis establishes the
+baseline sound pressure level below which sound cannot be perceived.
+This article examines how Vorbis mathematically approximates the ATH
+across the frequency spectrum, integrates this baseline into its
+envelope structures, and uses it to optimize quantization and bit
+allocation.</p>
+<h3 id="the-auditory-baseline-and-frequency-warping">The Auditory
+Baseline and Frequency Warping</h3>
+<p>Human hearing sensitivity is non-linear across the audible spectrum
+(roughly 20 Hz to 20 kHz). The ear is exceptionally sensitive to
+frequencies between 2 kHz and 5 kHz—critical for speech
+comprehension—while requiring substantially more acoustic energy to
+perceive sounds below 100 Hz or above 15 kHz.</p>
+<p>To model this accurately, the Vorbis psychoacoustic system maps
+linear frequency measurements (in Hertz) to non-linear perceptual
+scales, such as the Bark scale or equivalent critical-band warping. This
+transformation groups frequencies into critical bandwidths that match
+the physical structure of the human cochlea, allowing the encoder to
+calculate threshold limits according to biological hearing mechanisms
+rather than raw mathematical intervals.</p>
+<h3 id="the-mathematical-formulation-of-the-ath-curve">The Mathematical
+Formulation of the ATH Curve</h3>
+<p>Vorbis estimates the quiet threshold using mathematical
+approximations derived from empirical psychoacoustic data, closely
+related to Terhardt’s threshold equation:</p>
+<p><span class="math display">\[\text{ATH}(f) = 3.64
+\left(\frac{f}{1000}\right)^{-0.8} - 6.5 e^{-0.6 \left(\frac{f}{1000} -
+3.3\right)^2} + 10^{-3} \left(\frac{f}{1000}\right)^4 \quad (\text{in dB
+SPL})\]</span></p>
+<p>In this formulation, <span class="math inline">\(f\)</span>
+represents frequency in Hertz:</p>
+<ul>
+<li>The first term, <span
+class="math inline">\(3.64(f/1000)^{-0.8}\)</span>, models the steep
+drop-off in sensitivity at low frequencies.</li>
+<li>The exponential term models the heightened sensitivity trough around
+3.3 kHz caused by ear canal resonance.</li>
+<li>The quartic term, <span
+class="math inline">\(10^{-3}(f/1000)^4\)</span>, reflects the sharp
+rise in perceptual thresholds at high frequencies, leading toward
+complete inaudibility near 20 kHz.</li>
+</ul>
+<p>In the encoder implementation, this curve is converted into
+normalized internal energy units corresponding to the current sampling
+rate and block size.</p>
+<h3 id="representation-via-spectral-floor-mechanisms">Representation via
+Spectral Floor Mechanisms</h3>
+<p>Vorbis encodes spectral data by separating it into two components:
+the spectral "floor" (representing the coarse energy envelope and
+masking profile) and the "residue" (representing the high-resolution
+spectral details).</p>
+<p>The ATH is integrated directly into the masking floor calculation.
+Vorbis predominantly employs the Floor 1 configuration, which represents
+the masking curve as a series of piecewise linear segments plotted over
+a logarithmic frequency axis and a decibel amplitude axis. The ATH
+serves as the absolute baseline floor:</p>
+<ol type="1">
+<li>The encoder computes the theoretical ATH curve across all MDCT
+(Modified Discrete Cosine Transform) bins.</li>
+<li>The ATH is combined with dynamic masking thresholds generated by
+simultaneous masking (where louder tones drown out nearby weaker
+tones).</li>
+<li>The resulting minimum curve is sampled at specific nodes and encoded
+efficiently via vector quantization.</li>
+</ol>
+<h3 id="bit-allocation-and-quantization">Bit Allocation and
+Quantization</h3>
+<p>Once the ATH is calculated across all spectral bins, it acts as a
+cutoff threshold during the quantization phase:</p>
+<ul>
+<li><strong>Coefficient Zeroing:</strong> Any spectral coefficient in
+the MDCT domain whose magnitude falls below the local ATH value is
+quantized to zero. Because these frequencies are physically inaudible to
+human listeners, allocating bits to preserve them would waste data.</li>
+<li><strong>Dynamic Masking Adaptation:</strong> In the presence of loud
+audio events, dynamic masking curves rise well above the ATH,
+superseding it. However, during quiet passages or in frequency bands
+devoid of prominent tones, the ATH remains the governing floor
+limit.</li>
+<li><strong>Bitrate Tuning:</strong> Encoder quality settings adjust the
+overall sensitivity curve. Higher quality modes shift the operative
+threshold lower to preserve faint ambient nuances, while lower bitrates
+raise the threshold closer to or above the theoretical ATH, discarding
+subtle audio details to meet bandwidth targets.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

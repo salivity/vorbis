@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Window and Sine Window Relationship - vorbis</title>
+    <meta name="description" content="The Vorbis window is a non-linear mathematical transformation of the classical sine window, engineered specifically for audio coding applications utilizing the Modified Discrete Cosine Transform (MDCT). By taking the sine of a scaled, squared sine window">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-window-and-sine-window-relationship">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Window and Sine Window Relationship - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-window-and-sine-window-relationship" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis window is a non-linear mathematical transformation of the classical sine window, engineered specifically for audio coding applications utilizing the Modified Discrete Cosine Transform (MDCT). By taking the sine of a scaled, squared sine window" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-window-and-sine-window-relationship">Vorbis Window and
+Sine Window Relationship</h1>
+<p>The Vorbis window is a non-linear mathematical transformation of the
+classical sine window, engineered specifically for audio coding
+applications utilizing the Modified Discrete Cosine Transform (MDCT). By
+taking the sine of a scaled, squared sine window function, the Vorbis
+window satisfies the Princen-Bradley condition for perfect
+reconstruction while providing superior stopband attenuation and steeper
+rolloff compared to a standard half-sine shape.</p>
+<h2 id="mathematical-definitions">Mathematical Definitions</h2>
+<p>For a window length of <span class="math inline">\(N\)</span> (where
+<span class="math inline">\(n = 0, 1, \dots, N-1\)</span>), the standard
+symmetric sine window commonly used in time-domain aliasing cancellation
+(TDAC) filter banks is defined as:</p>
+<p><span class="math display">\[w_{\text{sine}}(n) = \sin\left(
+\frac{\pi}{N} \left( n + \frac{1}{2} \right) \right)\]</span></p>
+<p>The Vorbis window, introduced in the Vorbis I audio specification, is
+defined as:</p>
+<p><span class="math display">\[w_{\text{vorbis}}(n) = \sin\left(
+\frac{\pi}{2} \sin^2\left( \frac{\pi}{N} \left( n + \frac{1}{2} \right)
+\right) \right)\]</span></p>
+<h2 id="direct-functional-composition">Direct Functional
+Composition</h2>
+<p>The mathematical link between the two windows is a direct functional
+composition. If the sine window value is expressed as a normalized
+variable <span class="math inline">\(x = w_{\text{sine}}(n)\)</span>,
+the Vorbis window evaluates to:</p>
+<p><span class="math display">\[w_{\text{vorbis}}(n) = \sin\left(
+\frac{\pi}{2} \cdot w_{\text{sine}}^2(n) \right)\]</span></p>
+<p>This maps the linear amplitude values of the sine window through a
+quadratic scaling factor multiplied by <span
+class="math inline">\(\frac{\pi}{2}\)</span>, which is then passed into
+an outer sine function.</p>
+<h2 id="preservation-of-the-princen-bradley-condition">Preservation of
+the Princen-Bradley Condition</h2>
+<p>In MDCT-based audio compression, windows must satisfy the
+Princen-Bradley condition for perfect reconstruction across 50%
+overlapping frames:</p>
+<p><span class="math display">\[w^2(n) + w^2\left(n + \frac{N}{2}\right)
+= 1\]</span></p>
+<p>The standard sine window inherently satisfies this condition:</p>
+<p><span class="math display">\[w_{\text{sine}}^2(n) +
+w_{\text{sine}}^2\left(n + \frac{N}{2}\right) = \sin^2(\theta) +
+\cos^2(\theta) = 1\]</span></p>
+<p>where <span class="math inline">\(\theta = \frac{\pi}{N}\left(n +
+\frac{1}{2}\right)\)</span>.</p>
+<p>Because <span class="math inline">\(w_{\text{sine}}^2(n) +
+w_{\text{sine}}^2\left(n + \frac{N}{2}\right) = 1\)</span>, scaling both
+terms by <span class="math inline">\(\frac{\pi}{2}\)</span> yields
+complementary angles:</p>
+<p><span class="math display">\[\frac{\pi}{2} w_{\text{sine}}^2(n) +
+\frac{\pi}{2} w_{\text{sine}}^2\left(n + \frac{N}{2}\right) =
+\frac{\pi}{2}\]</span></p>
+<p>Letting <span class="math inline">\(\phi = \frac{\pi}{2}
+w_{\text{sine}}^2(n)\)</span>, the shifted component becomes <span
+class="math inline">\(\frac{\pi}{2} - \phi\)</span>. Substituting these
+angles into the Vorbis window formulation gives:</p>
+<p><span class="math display">\[w_{\text{vorbis}}^2(n) +
+w_{\text{vorbis}}^2\left(n + \frac{N}{2}\right) = \sin^2(\phi) +
+\sin^2\left(\frac{\pi}{2} - \phi\right) = \sin^2(\phi) + \cos^2(\phi) =
+1\]</span></p>
+<p>Thus, the mathematical formulation guarantees that the Vorbis window
+preserves the exact time-domain aliasing cancellation properties of the
+original sine window.</p>
+<h2 id="differences-in-spectral-behavior">Differences in Spectral
+Behavior</h2>
+<p>Applying the square and outer sine functions modifies the envelope's
+slope:</p>
+<ul>
+<li><strong>Tapering:</strong> Near <span class="math inline">\(n =
+0\)</span> and <span class="math inline">\(n = N-1\)</span>, where <span
+class="math inline">\(w_{\text{sine}}(n) \approx 0\)</span>, the Vorbis
+window approaches zero quadratically rather than linearly, yielding
+significantly lower values near the frame boundaries.</li>
+<li><strong>Passband:</strong> Near the center (<span
+class="math inline">\(n \approx N/2\)</span>), the Vorbis window
+flattens more broadly close to <span
+class="math inline">\(1.0\)</span>.</li>
+</ul>
+<p>This steeper transition between the center and the boundaries
+produces higher sidelobe attenuation and reduces spectral leakage in
+transform-based audio coding relative to the standard sine window.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

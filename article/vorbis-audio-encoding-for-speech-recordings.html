@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Audio Encoding for Speech Recordings - vorbis</title>
+    <meta name="description" content="Vorbis handles speech-only voice recordings by treating human speech as a standard wideband audio signal using a transform-based psychoacoustic framework rather than a dedicated vocal-tract model. While it lacks the voice-specific optimizations found in">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-audio-encoding-for-speech-recordings">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Audio Encoding for Speech Recordings - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-audio-encoding-for-speech-recordings" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis handles speech-only voice recordings by treating human speech as a standard wideband audio signal using a transform-based psychoacoustic framework rather than a dedicated vocal-tract model. While it lacks the voice-specific optimizations found in" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-audio-encoding-for-speech-recordings">Vorbis Audio
+Encoding for Speech Recordings</h1>
+<p>Vorbis handles speech-only voice recordings by treating human speech
+as a standard wideband audio signal using a transform-based
+psychoacoustic framework rather than a dedicated vocal-tract model.
+While it lacks the voice-specific optimizations found in speech codecs
+like Opus (SILK) or Speex, Vorbis effectively compresses voice through
+variable bitrate encoding, transient detection, and psychoacoustic
+masking. This allows it to deliver natural, transparent voice
+reproduction at moderate bitrates, though it is less efficient than
+specialized speech algorithms at ultra-low bitrates.</p>
+<h2 id="general-purpose-transform-model">General-Purpose Transform
+Model</h2>
+<p>Unlike dedicated telecommunication codecs that rely on Code-Excited
+Linear Prediction (CELP) or parametric modeling to simulate the human
+vocal tract, Vorbis uses the Modified Discrete Cosine Transform (MDCT).
+This means Vorbis does not attempt to break down speech into pitch
+filters or vocal-formant parameters. Instead, it converts overlapping
+windows of the audio waveform into frequency-domain representations,
+encoding the vocal recording just as it would any complex musical
+acoustic event.</p>
+<h2 id="dynamic-windowing-and-transients">Dynamic Windowing and
+Transients</h2>
+<p>Speech is characterized by rapid shifts between steady vowel sounds
+(voiced speech) and sharp, percussive consonants (unvoiced speech such
+as plosives like "p" and "t", or fricatives like "s"). Vorbis
+accommodates this dynamic behavior using variable window sizes:</p>
+<ul>
+<li><strong>Short Windows:</strong> Deployed during rapid consonants and
+plosives to maintain high temporal resolution and avoid pre-echo
+artifacts.</li>
+<li><strong>Long Windows:</strong> Utilized during sustained vowel
+sounds and steady vocal tones to optimize frequency resolution and
+coding efficiency.</li>
+</ul>
+<h2 id="psychoacoustic-masking-and-noise-shaping">Psychoacoustic Masking
+and Noise Shaping</h2>
+<p>Vorbis relies heavily on human hearing models to eliminate inaudible
+data. In voice-only recordings:</p>
+<ul>
+<li><strong>Frequency Masking:</strong> Louder vocal formants naturally
+mask fainter adjacent frequencies, allowing the encoder to quantize
+masked spectrums more aggressively without perceived loss in
+quality.</li>
+<li><strong>Background Attenuation:</strong> Subtle room reverberations
+and low-level ambient noise are either masked by the primary vocal
+signal or discarded based on defined hearing thresholds.</li>
+</ul>
+<h2 id="variable-bitrate-vbr-handling">Variable Bitrate (VBR)
+Handling</h2>
+<p>Vorbis is inherently a Variable Bitrate (VBR) codec. In speech audio,
+this provides a significant advantage during conversational pauses:</p>
+<ul>
+<li><strong>Active Speech:</strong> The bitrate scales up to provide
+adequate bandwidth for capturing vocal inflections and harmonic
+overtones.</li>
+<li><strong>Silences and Pauses:</strong> During pauses between words or
+sentences, the encoder drastically reduces the data allocated, saving
+storage and bandwidth without requiring a separate Voice Activity
+Detection (VAD) module.</li>
+</ul>
+<h2 id="strengths-and-limitations-with-voice-audio">Strengths and
+Limitations with Voice Audio</h2>
+<h3 id="strengths">Strengths</h3>
+<ul>
+<li><strong>Acoustic Naturalness:</strong> Because Vorbis does not force
+speech into a synthetic vocal-tract model, voices retain their full
+tonal character, natural room acoustics, and breath details.</li>
+<li><strong>Full-Band Fidelity:</strong> Vorbis can easily encode
+full-spectrum audio (up to 44.1 kHz or 48 kHz), avoiding the narrow,
+"telephonic" sound associated with traditional narrowband speech
+codecs.</li>
+<li><strong>Robustness with Non-Speech Elements:</strong> If a voice
+recording contains background music, unexpected sounds, or overlapping
+ambient noise, Vorbis encodes the entire scene accurately without the
+audio distortion that specialized speech codecs often introduce.</li>
+</ul>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li><strong>Bitrate Inefficiency at Low Thresholds:</strong> At bitrates
+below 24 to 32 kbps (mono), Vorbis begins to struggle, producing
+metallic or watery low-pass artifacts. Specialized speech codecs can
+maintain intelligible voice communications at bitrates as low as 6 to 12
+kbps.</li>
+<li><strong>High Latency:</strong> The overlapping MDCT windowing system
+introduces algorithmic delay, making Vorbis suitable for voice
+recording, archiving, and streaming, but poorly suited for real-time,
+bidirectional voice communication.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

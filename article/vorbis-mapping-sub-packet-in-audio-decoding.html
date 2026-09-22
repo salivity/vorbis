@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Mapping Sub-Packet in Audio Decoding - vorbis</title>
+    <meta name="description" content="The Vorbis mapping sub-packet serves as the structural blueprint that connects decoded audio channels to their corresponding frequency envelope and spectral data during playback. Encoded within the Vorbis setup header, the mapping configuration dictates">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-mapping-sub-packet-in-audio-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Mapping Sub-Packet in Audio Decoding - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-mapping-sub-packet-in-audio-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis mapping sub-packet serves as the structural blueprint that connects decoded audio channels to their corresponding frequency envelope and spectral data during playback. Encoded within the Vorbis setup header, the mapping configuration dictates" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-mapping-sub-packet-in-audio-decoding">Vorbis Mapping
+Sub-Packet in Audio Decoding</h1>
+<p>The Vorbis mapping sub-packet serves as the structural blueprint that
+connects decoded audio channels to their corresponding frequency
+envelope and spectral data during playback. Encoded within the Vorbis
+setup header, the mapping configuration dictates how channels are
+grouped, couples stereo channels for joint-stereo processing, and routes
+distinct floor and residue decoders to their proper audio channels.
+Without this mapping layer, a decoder cannot reconstruct the unified
+spectral representation required to synthesize the final time-domain
+audio waveform.</p>
+<h3 id="structural-role-in-the-vorbis-bitstream">Structural Role in the
+Vorbis Bitstream</h3>
+<p>A Vorbis bitstream organizes audio frames using a hierarchy of
+configurations: modes, mappings, floors, and residues. Each audio packet
+begins by signaling a specific "mode" index. The chosen mode directly
+references a mapping configuration defined in the header's mapping
+sub-packet.</p>
+<p>The mapping sub-packet provides the exact routing table the decoder
+needs to interpret the audio packet's payload. Instead of hardcoding
+static channel behaviors, Vorbis uses mappings to flexibly change how
+channels are organized and decoded on a frame-by-frame basis.</p>
+<h3 id="channel-grouping-and-submaps">Channel Grouping and Submaps</h3>
+<p>The primary function of a mapping is organizing channels into
+"submaps." A submap is a collection of channels that share common
+decoding parameters:</p>
+<ul>
+<li><strong>Floor Assignment:</strong> The mapping dictates which floor
+configuration (Floor 0 or Floor 1) generates the spectral curve for each
+channel in the submap. The floor represents the rough frequency envelope
+(audible volume contour across frequencies).</li>
+<li><strong>Residue Assignment:</strong> The mapping assigns a residue
+configuration (Residue 0, 1, or 2) to each submap. Residues represent
+the fine spectral details that sit on top of the floor curve.</li>
+</ul>
+<p>By grouping multiple channels into a single submap, an encoder can
+instruct the decoder to use a single interleaved residue pass across
+multiple channels, greatly increasing compression efficiency.</p>
+<h3 id="channel-coupling-and-stereo-decoding">Channel Coupling and
+Stereo Decoding</h3>
+<p>The mapping sub-packet configures channel coupling, Vorbis's
+implementation of joint stereo. When channel coupling is active, the
+mapping defines:</p>
+<ul>
+<li><strong>Angle/Magnitude Step Pairing:</strong> The mapping specifies
+which channels are paired together (typically left and right, or
+surround pairs) and the order of transformation.</li>
+<li><strong>Phase Decoupling:</strong> During decode time, the residue
+unpacker outputs angle and magnitude vectors instead of raw left/right
+frequency coefficients. The mapping instructs the decoder to execute the
+mathematical decoupling step: calculating the original independent
+channel spectra from the angle-magnitude pairs.</li>
+</ul>
+<h3 id="executing-the-reconstruction-pipeline">Executing the
+Reconstruction Pipeline</h3>
+<p>During active decoding of an audio frame, the mapping sub-packet
+orchestrates the final assembly of the frequency domain spectrum before
+time-domain synthesis:</p>
+<ol type="1">
+<li><strong>Floor Decoding:</strong> The decoder parses the floor data
+for each channel as defined by the mapping.</li>
+<li><strong>Residue Unpacking:</strong> The decoder decodes the residue
+vectors according to the submap layout.</li>
+<li><strong>Decoupling Math:</strong> If channel coupling is present in
+the mapping, the decoder recalculates the distinct channel components
+from the coupled vectors.</li>
+<li><strong>Dot Product Multiplication:</strong> The decoder multiplies
+each channel's residue values by its corresponding floor curve.</li>
+</ol>
+<p>Once the mapping guides the successful multiplication of floor and
+residue for every channel, the data is complete and ready for the
+Inverse Modified Discrete Cosine Transform (IMDCT) and overlap-add
+stage, yielding pulse-code modulated (PCM) audio.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

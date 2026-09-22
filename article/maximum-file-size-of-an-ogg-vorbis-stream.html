@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maximum File Size of an Ogg Vorbis Stream - vorbis</title>
+    <meta name="description" content="This article examines the maximum file size limits of an Ogg Vorbis bitstream by analyzing the underlying specifications of the Ogg container format and the Vorbis audio codec. While the theoretical limit of a single continuous Ogg logical bitstream reac">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/maximum-file-size-of-an-ogg-vorbis-stream">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Maximum File Size of an Ogg Vorbis Stream - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/maximum-file-size-of-an-ogg-vorbis-stream" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the maximum file size limits of an Ogg Vorbis bitstream by analyzing the underlying specifications of the Ogg container format and the Vorbis audio codec. While the theoretical limit of a single continuous Ogg logical bitstream reac" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="maximum-file-size-of-an-ogg-vorbis-stream">Maximum File Size of
+an Ogg Vorbis Stream</h1>
+<p>This article examines the maximum file size limits of an Ogg Vorbis
+bitstream by analyzing the underlying specifications of the Ogg
+container format and the Vorbis audio codec. While the theoretical limit
+of a single continuous Ogg logical bitstream reaches approximately
+281.47 terabytes, stream chaining features allow it to be virtually
+infinite. In practice, file system limits and player implementation
+constraints determine the real-world threshold.</p>
+<h3 id="the-ogg-container-specifications">The Ogg Container
+Specifications</h3>
+<p>Vorbis is an audio coding format, but file sizes and streaming
+constraints are governed by its container format, Ogg. The Ogg transport
+bitstream is organized into sequential packets grouped into "pages."
+Each page carries specific metadata that determines the size
+boundaries:</p>
+<ul>
+<li><strong>Page Size:</strong> An Ogg page contains an array of up to
+255 segments, with each segment holding a maximum of 255 bytes. This
+limits the maximum payload of a single Ogg page to 65,025 bytes (roughly
+64 KB), excluding the header.</li>
+<li><strong>Page Sequence Number:</strong> Each page within a logical
+bitstream includes a 32-bit unsigned integer representing the sequence
+number. This allows up to 4,294,967,296 (<span
+class="math inline">\(2^{32}\)</span>) pages in a single sequence.</li>
+</ul>
+<p>Multiplying the maximum payload size (65,025 bytes) by the maximum
+number of sequence pages (<span class="math inline">\(2^{32}\)</span>)
+results in a theoretical maximum of roughly 281.47 terabytes (TB) for a
+single logical bitstream.</p>
+<h3 id="audio-duration-limits-granule-position">Audio Duration Limits
+(Granule Position)</h3>
+<p>The Ogg Vorbis specification uses a 64-bit signed integer for the
+"granule position," which tracks the exact audio sample count for
+decoding and seeking. Even at extremely high sampling rates, such as 192
+kHz, a 64-bit sample counter allows for over 1.5 million years of
+continuous audio playback before numeric overflow occurs, ensuring that
+playback duration does not limit file size.</p>
+<h3 id="chained-streams-and-unbounded-limits">Chained Streams and
+Unbounded Limits</h3>
+<p>Ogg natively supports chained streams, meaning multiple logical
+bitstreams can be appended end-to-end within the same physical file or
+stream. When a logical bitstream finishes, a new bitstream can begin
+with its page sequence counter reset to zero. Because of this
+architecture, the Ogg specification has no inherent cap, allowing
+continuous or live bitstreams to run infinitely without terminating.</p>
+<h3 id="real-world-constraints">Real-World Constraints</h3>
+<p>Although the specification accommodates hundreds of terabytes or
+unbounded streams, actual limits depend on external factors:</p>
+<ol type="1">
+<li><strong>File Systems:</strong> Storing an Ogg Vorbis file locally is
+bounded by the storage volume's file system (for example, 4 GB on FAT32
+or 16 TB on standard ext4 setups).</li>
+<li><strong>Software Implementations:</strong> Many audio players and
+decoders use 32-bit signed file-offset pointers, which can cause
+playback errors or prevent seeking in files that exceed 2 gigabytes (GB)
+or 4 gigabytes (GB).</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

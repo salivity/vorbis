@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tremor Vorbis Stereo Decoding RAM Requirements - vorbis</title>
+    <meta name="description" content="Decoding a stereo Vorbis stream using Tremor (libvorbisidec) typically requires between 16 KB and 48 KB of dynamic RAM (heap), with an average typical consumption of around 20 KB to 30 KB for standard audio profiles. Tremor is a fixed-point version of th">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/tremor-vorbis-stereo-decoding-ram-requirements">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tremor Vorbis Stereo Decoding RAM Requirements - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/tremor-vorbis-stereo-decoding-ram-requirements" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Decoding a stereo Vorbis stream using Tremor (libvorbisidec) typically requires between 16 KB and 48 KB of dynamic RAM (heap), with an average typical consumption of around 20 KB to 30 KB for standard audio profiles. Tremor is a fixed-point version of th" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="tremor-vorbis-stereo-decoding-ram-requirements">Tremor Vorbis
+Stereo Decoding RAM Requirements</h1>
+<p>Decoding a stereo Vorbis stream using Tremor (libvorbisidec)
+typically requires between 16 KB and 48 KB of dynamic RAM (heap), with
+an average typical consumption of around 20 KB to 30 KB for standard
+audio profiles. Tremor is a fixed-point version of the Vorbis reference
+decoder specifically engineered for resource-constrained embedded
+systems and microcontrollers, drastically reducing memory overhead
+compared to the standard floating-point libvorbis implementation.</p>
+<h3 id="breakdown-of-memory-usage">Breakdown of Memory Usage</h3>
+<p>The exact memory required during decoding is determined by several
+core components of the Vorbis format and Tremor’s internal design:</p>
+<ul>
+<li><strong>Internal Decoder State:</strong> Tremor allocates tracking
+structures, floor calculation tables, codebook references, and mode
+configurations when the stream headers are parsed. This base footprint
+typically accounts for 8 KB to 12 KB of heap space.</li>
+<li><strong>Overlap-Add (PCM) Buffers:</strong> Vorbis relies on
+overlapping window frames to reconstruct audio. Tremor must store the
+synthesis window and past PCM samples across channels to blend
+consecutive frames. For a stereo stream using typical block sizes (e.g.,
+long blocks of 2048 or 4096 samples), the PCM ring buffers and overlap
+memory consume approximately 8 KB to 16 KB.</li>
+<li><strong>Working Vector Buffers:</strong> Intermediate decode buffers
+used for inverse Modified Discrete Cosine Transform (iMDCT) and residue
+unpacking require temporary workspace. Tremor optimizes this by reusing
+buffers across phases, generally keeping working scratchpad requirements
+under 6 KB to 8 KB.</li>
+<li><strong>Bitstream and Input Buffers:</strong> The underlying Ogg
+bitstream parser (<code>libogg</code> or Tremor's integrated parser)
+requires an input buffer to assemble full packets. This usually requires
+2 KB to 8 KB, depending on how the application supplies raw stream
+chunks to the decoder.</li>
+</ul>
+<h3 id="key-factors-affecting-ram-footprint">Key Factors Affecting RAM
+Footprint</h3>
+<ol type="1">
+<li><strong>Window / Block Size:</strong> Vorbis streams use variable
+block sizes (short and long). Audio encoded with long block sizes of
+4096 or 8192 samples requires proportionally larger windowing and
+overlap buffers than audio limited to 1024 or 2048 samples.</li>
+<li><strong>Channel Count:</strong> Memory requirements scale almost
+linearly with channel count for the synthesis buffers. A mono stream can
+reduce memory usage down to roughly 12 KB to 20 KB, while standard
+stereo requires the typical 20 KB to 30 KB footprint.</li>
+<li><strong>Static Allocation vs. Dynamic Heap:</strong> Default Tremor
+utilizes dynamic allocation (<code>malloc</code> and <code>free</code>).
+Embedded developers frequently patch Tremor to use static allocation or
+custom memory pools, locking the memory budget to a fixed ceiling
+(typically 32 KB to 40 KB) to prevent runtime heap fragmentation.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

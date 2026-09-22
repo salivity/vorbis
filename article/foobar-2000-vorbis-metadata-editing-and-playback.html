@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foobar2000 Vorbis Metadata Editing and Playback - vorbis</title>
+    <meta name="description" content="Foobar2000 provides native, highly efficient handling of Ogg Vorbis files, combining bit-perfect playback with an advanced tagging engine. This article examines how the player decodes Vorbis streams, manages gapless playback and ReplayGain, and manipulat">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/foobar-2000-vorbis-metadata-editing-and-playback">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Foobar2000 Vorbis Metadata Editing and Playback - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/foobar-2000-vorbis-metadata-editing-and-playback" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Foobar2000 provides native, highly efficient handling of Ogg Vorbis files, combining bit-perfect playback with an advanced tagging engine. This article examines how the player decodes Vorbis streams, manages gapless playback and ReplayGain, and manipulat" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="foobar2000-vorbis-metadata-editing-and-playback">Foobar2000
+Vorbis Metadata Editing and Playback</h1>
+<p>Foobar2000 provides native, highly efficient handling of Ogg Vorbis
+files, combining bit-perfect playback with an advanced tagging engine.
+This article examines how the player decodes Vorbis streams, manages
+gapless playback and ReplayGain, and manipulates Vorbis Comments
+directly through its built-in metadata editing tools without altering
+the underlying audio data.</p>
+<h3 id="vorbis-playback-architecture">Vorbis Playback Architecture</h3>
+<p>Foobar2000 handles Ogg Vorbis natively using optimized decoding
+libraries based on official Xiph.Org specifications. The player streams
+the Ogg container directly, demuxing the Vorbis bitstream with minimal
+CPU overhead and outputting high-precision PCM data (up to 32-bit
+floating point) to the system audio pipeline.</p>
+<p>Key playback features include:</p>
+<ul>
+<li><strong>True Gapless Playback:</strong> Vorbis introduces
+sample-count padding at the beginning and end of streams due to its
+block-based transform design. Foobar2000 reads the exact sample counts
+stored in the Vorbis headers, stripping priming and padding samples to
+ensure sample-accurate, gapless transitions between tracks.</li>
+<li><strong>ReplayGain Processing:</strong> Foobar2000 calculates and
+applies ReplayGain adjustments on the fly. For Vorbis files, it reads
+<code>REPLAYGAIN_TRACK_GAIN</code>, <code>REPLAYGAIN_TRACK_PEAK</code>,
+<code>REPLAYGAIN_ALBUM_GAIN</code>, and
+<code>REPLAYGAIN_ALBUM_PEAK</code> metadata keys. The player adjusts
+digital volume non-destructively during decoding without altering the
+original audio samples.</li>
+</ul>
+<h3 id="vorbis-metadata-editing-vorbis-comments">Vorbis Metadata Editing
+(Vorbis Comments)</h3>
+<p>Vorbis files use a simple, structured metadata standard called Vorbis
+Comments, consisting of UTF-8 encoded <code>KEY=Value</code> pairs.
+Foobar2000 interacts with these comments directly rather than trying to
+force an ID3 structure onto the container.</p>
+<h4 id="non-destructive-header-updates">Non-Destructive Header
+Updates</h4>
+<p>When editing tags, Foobar2000 modifies only the comment header packet
+within the Ogg encapsulation. It rewrites the header block and adjusts
+page sequence numbers without touching the audio packets, eliminating
+the risk of stream corruption or generation loss.</p>
+<h4 id="managing-tags-via-the-properties-window">Managing Tags via the
+Properties Window</h4>
+<p>Accessing the <strong>Properties</strong> dialog (via right-click or
+<code>Alt + Enter</code>) provides direct access to the metadata
+table:</p>
+<ul>
+<li><strong>Standard Fields:</strong> Standard tags like
+<code>TITLE</code>, <code>ARTIST</code>, <code>ALBUM</code>,
+<code>TRACKNUMBER</code>, and <code>DATE</code> are mapped automatically
+to user-friendly UI fields.</li>
+<li><strong>Custom and Extended Fields:</strong> Foobar2000 allows users
+to add arbitrary metadata fields. Any custom key entered into the
+properties dialog is written directly to the file as a valid Vorbis
+Comment field.</li>
+<li><strong>Multi-Value Fields:</strong> The Vorbis Comment format
+allows identical field keys (e.g., multiple <code>GENRE</code> or
+<code>ARTIST</code> lines). Foobar2000 natively supports this standard.
+In the UI, multiple values are separated by semicolons (<code>;</code>),
+which the editor then writes to the file as distinct key-value
+pairs.</li>
+</ul>
+<h4 id="embedded-artwork-handling">Embedded Artwork Handling</h4>
+<p>Historically, Vorbis Comments lacked a formal mechanism for embedded
+cover art, leading to non-standard Base64-encoded strings. Foobar2000
+adheres to modern Xiph specifications by writing embedded art using the
+<code>METADATA_BLOCK_PICTURE</code> structure. This embeds binary
+picture data—including MIME type, description, dimensions, and color
+depth—safely inside the comment header, maintaining compatibility with
+modern media players.</p>
+<h3 id="batch-tagging-and-advanced-tools">Batch Tagging and Advanced
+Tools</h3>
+<p>Foobar2000 includes tools that streamline Vorbis library
+management:</p>
+<ul>
+<li><strong>Automatically Fill Values:</strong> Derives metadata from
+folder structures and filenames using customizable syntax (e.g.,
+<code>%artist% - %album%\%track% - %title%</code>).</li>
+<li><strong>Mass Tagging:</strong> Users can highlight hundreds of
+Vorbis tracks simultaneously to edit unified metadata, add ReplayGain
+tags in batches, or rename files on disk based on existing Vorbis
+Comments.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

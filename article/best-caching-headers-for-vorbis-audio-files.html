@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best Caching Headers for Vorbis Audio Files - vorbis</title>
+    <meta name="description" content="Serving Vorbis audio files (.ogg) over HTTP requires an effective caching strategy to reduce bandwidth usage, improve user playback experience, and lower server load. This article covers the recommended HTTP caching headers, conditional validation mechan">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/best-caching-headers-for-vorbis-audio-files">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Best Caching Headers for Vorbis Audio Files - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/best-caching-headers-for-vorbis-audio-files" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Serving Vorbis audio files (.ogg) over HTTP requires an effective caching strategy to reduce bandwidth usage, improve user playback experience, and lower server load. This article covers the recommended HTTP caching headers, conditional validation mechan" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="best-caching-headers-for-vorbis-audio-files">Best Caching
+Headers for Vorbis Audio Files</h1>
+<p>Serving Vorbis audio files (<code>.ogg</code>) over HTTP requires an
+effective caching strategy to reduce bandwidth usage, improve user
+playback experience, and lower server load. This article covers the
+recommended HTTP caching headers, conditional validation mechanisms, and
+byte-range request configurations necessary to optimize the delivery and
+streaming of Vorbis audio.</p>
+<h3 id="1-cache-control">1. Cache-Control</h3>
+<p>The <code>Cache-Control</code> header defines who can cache the file
+and for how long. Audio files are typically static assets that consume
+significant bandwidth, making aggressive caching beneficial.</p>
+<ul>
+<li><p><strong>For Versioned or Permanent Audio Files:</strong> If the
+filename includes a hash or version string (e.g.,
+<code>track-v1.ogg</code>), instruct caches to store it
+indefinitely:</p>
+<pre class="http"><code>Cache-Control: public, max-age=31536000, immutable</code></pre>
+<ul>
+<li><code>public</code>: Allows both browser caches and intermediary
+CDNs or proxies to store the file.</li>
+<li><code>max-age=31536000</code>: Sets the cache lifespan to one year
+(in seconds).</li>
+<li><code>immutable</code>: Tells the browser the file will never
+change, preventing conditional revalidation requests on subsequent page
+loads.</li>
+</ul></li>
+<li><p><strong>For Audio Files with Static URLs:</strong> If the file
+URL remains the same even when updated, use a shorter TTL paired with
+background revalidation:</p>
+<pre class="http"><code>Cache-Control: public, max-age=86400, stale-while-revalidate=604800</code></pre>
+<ul>
+<li><code>max-age=86400</code>: Caches the file for 24 hours.</li>
+<li><code>stale-while-revalidate=604800</code>: Serves stale content
+immediately while fetching an update in the background if the file is up
+to one week old.</li>
+</ul></li>
+</ul>
+<h3 id="2-validation-headers-etag-and-last-modified">2. Validation
+Headers: ETag and Last-Modified</h3>
+<p>When a cached audio file expires, the client needs to verify whether
+the file on the server has changed. Supplying validation headers avoids
+re-downloading identical audio tracks.</p>
+<ul>
+<li><strong>ETag:</strong> Provides a unique hash of the file content.
+<pre class="http"><code>ETag: &quot;686897696a7c876b7e&quot;</code></pre></li>
+<li><strong>Last-Modified:</strong> Specifies the exact date and time
+the file was last updated on disk.
+<pre class="http"><code>Last-Modified: Wed, 21 Oct 2025 07:28:00 GMT</code></pre></li>
+</ul>
+<p>When these headers are present, clients make
+<code>If-None-Match</code> or <code>If-Modified-Since</code> requests.
+If the file is unchanged, the server returns an
+<code>HTTP 304 Not Modified</code> status code without sending the audio
+payload again.</p>
+<h3 id="3-accept-ranges-essential-for-audio-streaming">3. Accept-Ranges
+(Essential for Audio Streaming)</h3>
+<p>While not strictly a caching header, the <code>Accept-Ranges</code>
+header is mandatory for proper audio delivery. It enables clients to
+request specific byte ranges for seeking and buffering.</p>
+<pre class="http"><code>Accept-Ranges: bytes</code></pre>
+<p>When this header is configured, media players can request arbitrary
+chunks of the file via the <code>Range</code> header (e.g.,
+<code>Range: bytes=0-1048575</code>). The server will respond with
+<code>HTTP 206 Partial Content</code>, allowing users to scrub through
+audio without waiting for the entire file to download.</p>
+<h3 id="4-content-type">4. Content-Type</h3>
+<p>Ensure the MIME type is properly set alongside the caching directives
+so the browser knows how to process the audio stream:</p>
+<pre class="http"><code>Content-Type: audio/ogg</code></pre>
+<p><em>(Note: While <code>audio/vorbis</code> exists historically,
+<code>audio/ogg</code> is the standard MIME type for Vorbis audio inside
+an Ogg container).</em></p>
+<h3 id="recommended-header-summary">Recommended Header Summary</h3>
+<p>A standard HTTP response for a static Vorbis file should look like
+this:</p>
+<pre class="http"><code>HTTP/1.1 200 OK
+Content-Type: audio/ogg
+Content-Length: 4528120
+Accept-Ranges: bytes
+Cache-Control: public, max-age=31536000, immutable
+ETag: &quot;vorbis-file-hash&quot;
+Last-Modified: Mon, 15 Jan 2024 10:00:00 GMT</code></pre></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Encodes High-Frequency Transients - vorbis</title>
+    <meta name="description" content="Vorbis manages high-frequency transient percussion, such as cymbals and hi-hats, through dynamic window switching, psychoacoustic temporal masking, and a two-tier spectral encoding architecture. By alternating between long and short transform blocks, the">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-encodes-high-frequency-transients">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Encodes High-Frequency Transients - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-encodes-high-frequency-transients" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis manages high-frequency transient percussion, such as cymbals and hi-hats, through dynamic window switching, psychoacoustic temporal masking, and a two-tier spectral encoding architecture. By alternating between long and short transform blocks, the" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-encodes-high-frequency-transients">How Vorbis Encodes
+High-Frequency Transients</h1>
+<p>Vorbis manages high-frequency transient percussion, such as cymbals
+and hi-hats, through dynamic window switching, psychoacoustic temporal
+masking, and a two-tier spectral encoding architecture. By alternating
+between long and short transform blocks, the codec contains quantization
+distortion within narrow time frames, preventing audible pre-echo
+artifacts while accurately preserving the sharp attack and sustained,
+noise-like decay characteristic of metalloid percussion.</p>
+<h3 id="the-transient-challenge-and-pre-echo">The Transient Challenge
+and Pre-Echo</h3>
+<p>Percussive instruments like cymbals generate sudden bursts of energy
+with fast attack times and broad, high-frequency spectra. In
+transform-based lossy audio codecs using the Modified Discrete Cosine
+Transform (MDCT), these sharp attacks present a fundamental challenge:
+the trade-off between time resolution and frequency resolution.</p>
+<p>If a transient occurs in the middle of a large transform block, the
+quantization noise introduced by lossy compression gets distributed
+evenly across the entire duration of that block. This creates
+"pre-echo"—an audible artifact where the noise of the cymbal hit
+precedes the actual transient attack. Because human auditory backward
+masking only hides sounds occurring a few milliseconds prior to a loud
+event, pre-echo that bleeds backward beyond roughly 5 to 20 milliseconds
+becomes immediately noticeable to the listener.</p>
+<h3 id="dynamic-window-switching">Dynamic Window Switching</h3>
+<p>To resolve the time-frequency conflict, Vorbis utilizes dynamic
+window switching. The encoder continuously analyzes the incoming signal
+for rapid increases in energy across high-frequency bands.</p>
+<ul>
+<li><strong>Long Blocks (typically 2048 samples):</strong> Used during
+steady-state sounds, sustained resonance, or silence to maximize
+frequency resolution and compression efficiency.</li>
+<li><strong>Short Blocks (typically 256 samples):</strong> Triggered
+immediately before and during a transient event.</li>
+</ul>
+<p>By shrinking the block size by a factor of eight when a cymbal strike
+is detected, Vorbis dramatically increases its temporal resolution. This
+confines the quantization error to a very brief window—short enough to
+fall entirely within the human ear's temporal pre-masking window.
+Intermediate overlapping windows ensure smooth, alias-free crossfades
+between long and short block states.</p>
+<h3 id="the-floor-and-residue-system">The Floor and Residue System</h3>
+<p>Vorbis processes audio by splitting the frequency spectrum into two
+distinct layers: the "floor" and the "residue."</p>
+<ol type="1">
+<li><strong>The Floor (Spectral Envelope):</strong> Represents the
+macro-level energy curve across the frequency range. For high-frequency
+percussion, the floor captures the overall brightness and energy
+distribution of the hit without recording individual frequency
+peaks.</li>
+<li><strong>The Residue (Fine Detail):</strong> Represents the remaining
+signal after subtracting the floor. Because cymbal crashes behave
+largely like shaped, high-frequency white noise rather than harmonically
+linked tones, Vorbis relies heavily on vector quantization to encode the
+residue.</li>
+</ol>
+<p>Rather than wasting bits attempting to replicate the exact phase of
+every microscopic high-frequency peak, the Vorbis residue codebooks are
+designed to preserve the statistical energy and stochastic texture of
+the sound. This prevents the metallic, phasey artifacts common in older
+codecs like MP3.</p>
+<h3 id="encoder-tuning-and-transient-sensitivity">Encoder Tuning and
+Transient Sensitivity</h3>
+<p>Early implementations of Vorbis occasionally suffered from a "swishy"
+or dull character on complex cymbals due to conservative transient
+detection thresholds. Modern implementations—most notably those tuned
+with the aoTuV (Aoyumi's tuned Vorbis) patches—remedied this by
+recalibrating psychoacoustic sensitivity curves.</p>
+<p>Modern Vorbis encoders dynamically allocate extra bits to the
+transient frames and adjust the noise floor masking curves specifically
+in the 8 kHz to 16 kHz range. This targeted bit distribution ensures
+that the explosive attack of a cymbal retains its sharp, instantaneous
+impact while the subsequent high-frequency shimmer decays smoothly
+without collapsing into noise or phase cancellation.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

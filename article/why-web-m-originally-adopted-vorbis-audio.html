@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why WebM Originally Adopted Vorbis Audio - vorbis</title>
+    <meta name="description" content="When Google launched the WebM project in May 2010 to create a royalty-free media format for the web, it paired the VP8 video codec with Vorbis audio inside a Matroska-based container. WebM adopted Vorbis primarily because it was a mature, patent-unencumb">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/why-web-m-originally-adopted-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why WebM Originally Adopted Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/why-web-m-originally-adopted-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When Google launched the WebM project in May 2010 to create a royalty-free media format for the web, it paired the VP8 video codec with Vorbis audio inside a Matroska-based container. WebM adopted Vorbis primarily because it was a mature, patent-unencumb" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-webm-originally-adopted-vorbis-audio">Why WebM Originally
+Adopted Vorbis Audio</h1>
+<p>When Google launched the WebM project in May 2010 to create a
+royalty-free media format for the web, it paired the VP8 video codec
+with Vorbis audio inside a Matroska-based container. WebM adopted Vorbis
+primarily because it was a mature, patent-unencumbered, open-source
+audio standard capable of competing with proprietary formats like AAC.
+At the time of WebM's launch, Vorbis was the only fully realized, widely
+tested, royalty-free audio codec available that aligned with the
+open-web initiative.</p>
+<h3 id="commitment-to-royalty-free-licensing">Commitment to Royalty-Free
+Licensing</h3>
+<p>The primary objective behind the WebM project was to provide an open
+alternative to the proprietary H.264 and AAC media standards, which
+required expensive licensing fees through patent pools like MPEG LA.
+Because Google aimed to make WebM natively supported by all modern web
+browsers without legal or financial barriers, every component of the
+container had to be open-source. Vorbis, developed by the Xiph.Org
+Foundation, was completely open, well-documented, and free of known
+patent claims, making it a natural fit for WebM's licensing goals.</p>
+<h3 id="codec-maturity-and-reliability">Codec Maturity and
+Reliability</h3>
+<p>By 2010, Vorbis had been actively developed and maintained for nearly
+a decade. Unlike experimental codecs, Vorbis was a battle-tested format
+with stable reference implementations, predictable CPU usage, and
+widespread developer familiarity. It provided perceptual audio quality
+that rivaled or exceeded MP3 and approached AAC at standard bitrates,
+ensuring that WebM files would deliver acceptable compression efficiency
+without sacrificing sound fidelity.</p>
+<h3 id="existing-browser-and-software-support">Existing Browser and
+Software Support</h3>
+<p>Key open-web browsers, including Mozilla Firefox and Opera, had
+already integrated native Vorbis support for the HTML5
+<code>&lt;audio&gt;</code> and <code>&lt;video&gt;</code> tags using the
+Ogg container. By adopting Vorbis for WebM, browser vendors did not need
+to build or license a completely new audio decoding pipeline. They only
+had to integrate support for demuxing the WebM container (a subset of
+Matroska) and feed the audio stream into their existing Vorbis decoders.
+This significantly accelerated the adoption of WebM across major web
+platforms.</p>
+<h3 id="the-absence-of-the-opus-codec">The Absence of the Opus
+Codec</h3>
+<p>Modern WebM implementations heavily favor the Opus audio codec, but
+Opus did not exist in a finalized state in 2010. The IETF work that
+merged Skype's SILK codec with Xiph.Org's CELT codec to create Opus was
+still underway. Opus was not officially standardized until RFC 6716 was
+published in September 2012. Until Opus matured and gained industry
+consensus, Vorbis stood as the only production-ready, open-source audio
+codec capable of serving the needs of the WebM project.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

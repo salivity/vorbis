@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed-Point vs Float Vorbis: Are Differences Audible? - vorbis</title>
+    <meta name="description" content="This article examines whether decoding Vorbis audio using fixed-point arithmetic results in perceptible sound differences compared to using high-precision 64-bit floating-point decoders. While mathematical precision errors and low-level quantization nois">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/fixed-point-vs-float-vorbis-are-differences-audible">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Fixed-Point vs Float Vorbis: Are Differences Audible? - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/fixed-point-vs-float-vorbis-are-differences-audible" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines whether decoding Vorbis audio using fixed-point arithmetic results in perceptible sound differences compared to using high-precision 64-bit floating-point decoders. While mathematical precision errors and low-level quantization nois" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="fixed-point-vs-float-vorbis-are-differences-audible">Fixed-Point
+vs Float Vorbis: Are Differences Audible?</h1>
+<p>This article examines whether decoding Vorbis audio using fixed-point
+arithmetic results in perceptible sound differences compared to using
+high-precision 64-bit floating-point decoders. While mathematical
+precision errors and low-level quantization noise do exist in
+fixed-point implementations, these differences remain virtually
+imperceptible to human hearing under real-world listening conditions due
+to psychoacoustic masking and standard playback limits.</p>
+<h3 id="the-technical-divide-fixed-point-vs-64-bit-float">The Technical
+Divide: Fixed-Point vs. 64-Bit Float</h3>
+<p>The Ogg Vorbis audio format relies heavily on mathematical
+transformations, primarily the Inverse Modified Discrete Cosine
+Transform (IMDCT) and windowing functions, to reconstruct audio samples
+from compressed spectral data.</p>
+<ul>
+<li><strong>64-bit Floating-Point (Double Precision):</strong> Standard
+reference implementations, such as modern builds of
+<code>libvorbis</code>, can compute these transformations using
+floating-point math. A 64-bit float provides 53 bits of precision
+(mantissa), offering a dynamic range exceeding 1,500 dB. Rounding errors
+in this environment are far below physical measurement limits.</li>
+<li><strong>Fixed-Point Arithmetic:</strong> Designed for
+resource-constrained hardware lacking a dedicated Floating-Point Unit
+(FPU), implementations like <code>Tremor</code>
+(<code>libvorbisidec</code>) use integer operations. Most fixed-point
+decoders use 32-bit registers to hold intermediate products and scale
+data down to standard 16-bit or 24-bit PCM outputs.</li>
+</ul>
+<h3 id="why-quantization-errors-rarely-matter">Why Quantization Errors
+Rarely Matter</h3>
+<p>Every mathematical operation in fixed-point decoding risks truncation
+or rounding error. These errors manifest as low-level quantization
+noise. However, several factors prevent this noise from becoming
+audible:</p>
+<ol type="1">
+<li><strong>Noise Floor Discrepancy:</strong> A well-designed 32-bit
+fixed-point IMDCT maintains internal noise levels lower than -90 dBFS to
+-100 dBFS. When truncated to a standard 16-bit output (which has a
+dynamic range of ~96 dB), the arithmetic noise floor sits right at or
+below the lowest detectable bit.</li>
+<li><strong>Vorbis is Inherently Lossy:</strong> The Vorbis encoding
+process already discards audio data deemed imperceptible by human
+auditory masking models. The original lossy compression introduces far
+more variance relative to the uncompressed master than the subtle
+rounding variations introduced during fixed-point decoding.</li>
+<li><strong>Auditory Masking:</strong> Any slight mathematical deviation
+introduced during fixed-point reconstruction occurs simultaneously with
+loud frequency components. Human ears cannot discern rounding artifacts
+that are 80 dB to 90 dB quieter than the primary signal playing at the
+same instant.</li>
+</ol>
+<h3 id="scenarios-where-differences-might-emerge">Scenarios Where
+Differences Might Emerge</h3>
+<p>While indistinguishable under standard conditions, audible or
+measurable differences can emerge in specific edge cases:</p>
+<ul>
+<li><strong>Extreme Digital Amplification:</strong> If a fixed-point
+decoded stream is heavily amplified downstream in a digital audio
+workstation (DAW) without prior dithering, the raised noise floor may
+become audible as low-level hiss.</li>
+<li><strong>Low-Bit Internal Precision:</strong> If a non-standard or
+poorly optimized fixed-point decoder performs intermediate calculations
+using only 16-bit integers instead of 32-bit accumulators, truncation
+errors compound, causing audible harmonic distortion and clipping on
+high-transient peaks.</li>
+<li><strong>Subsequent Processing Cascades:</strong> Passing fixed-point
+decoded audio through multiple dynamic range compressors or limiters can
+elevate subtle truncation artifacts above the threshold of
+audibility.</li>
+</ul>
+<h3 id="conclusion">Conclusion</h3>
+<p>In double-blind ABX listening tests, a properly implemented
+fixed-point Vorbis decoder (such as Xiph.Org's Tremor) is acoustically
+transparent when compared to a 64-bit floating-point decoder. Although a
+bit-for-bit null test between the two outputs will yield a residual
+difference file, this difference consists strictly of sub-audible
+arithmetic noise well beneath human psychoacoustic thresholds.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

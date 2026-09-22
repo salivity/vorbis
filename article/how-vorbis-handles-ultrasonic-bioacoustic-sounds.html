@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Handles Ultrasonic Bioacoustic Sounds - vorbis</title>
+    <meta name="description" content="This article examines how the Vorbis audio compression format processes ultrasonic frequencies and evaluates its suitability for scientific bioacoustic research. While Vorbis is capable of storing high sample rates technically, its underlying psychoacous">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-handles-ultrasonic-bioacoustic-sounds">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Handles Ultrasonic Bioacoustic Sounds - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-handles-ultrasonic-bioacoustic-sounds" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the Vorbis audio compression format processes ultrasonic frequencies and evaluates its suitability for scientific bioacoustic research. While Vorbis is capable of storing high sample rates technically, its underlying psychoacous" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-handles-ultrasonic-bioacoustic-sounds">How Vorbis
+Handles Ultrasonic Bioacoustic Sounds</h1>
+<p>This article examines how the Vorbis audio compression format
+processes ultrasonic frequencies and evaluates its suitability for
+scientific bioacoustic research. While Vorbis is capable of storing high
+sample rates technically, its underlying psychoacoustic design,
+aggressive low-pass filtering, and frequency-masking algorithms mean
+that default encoding eliminates or heavily distorts ultrasonic signals.
+Consequently, applying Vorbis to bioacoustics requires precise encoder
+adjustments, though lossless alternatives remain the standard for
+high-frequency scientific data.</p>
+<h3 id="psychoacoustic-filtering-vs-ultrasonic-data">Psychoacoustic
+Filtering vs. Ultrasonic Data</h3>
+<p>The primary challenge with using Ogg Vorbis in bioacoustics stems
+from its original design purpose: efficient consumer audio storage tuned
+strictly to human hearing (approximately 20 Hz to 20 kHz). Standard
+Vorbis encoders apply an automatic low-pass filter that truncates any
+sound above 16 kHz to 20 kHz, depending on the chosen bitrate. In
+bioacoustic research focusing on bats, marine mammals, or insects—where
+vocalizations regularly exceed 40 kHz and reach up to 150 kHz or
+more—default Vorbis encoding removes the target biological signals
+entirely.</p>
+<h3 id="high-sample-rate-support-and-manual-overrides">High Sample Rate
+Support and Manual Overrides</h3>
+<p>At the container and algorithmic levels, Vorbis does not inherently
+prohibit ultrasound. The specification supports arbitrary sampling rates
+up to <span class="math inline">\((2^{32}-1)\)</span> Hz, allowing files
+to store recordings made at scientific rates such as 192 kHz, 384 kHz,
+or 500 kHz.</p>
+<p>To preserve ultrasonic information, researchers must explicitly
+override default encoder configurations using command-line parameters
+(such as disabling the low-pass filter or manually extending the cutoff
+frequency to match the Nyquist limit of the recording). When properly
+configured with a sufficiently high nominal bitrate, the Modified
+Discrete Cosine Transform (MDCT) used by Vorbis can capture ultrasonic
+frequencies without immediate elimination.</p>
+<h3 id="artifacts-and-analytical-consequences">Artifacts and Analytical
+Consequences</h3>
+<p>Even when configured to retain frequencies above 20 kHz, Vorbis
+introduces specific risks to scientific measurements:</p>
+<ul>
+<li><strong>Distorted Bit Allocation:</strong> Vorbis calculates
+quantization noise based on human thresholds of hearing. Because it
+lacks a model for non-human hearing, it allocates fewer bits to
+ultrasonic bands, often resulting in elevated noise floors around
+high-frequency harmonics.</li>
+<li><strong>Transient Smearing:</strong> Many ultrasonic bioacoustic
+signals, such as bat echolocation clicks, are brief, high-energy
+transients. Lossy transform coding can cause pre-echo and temporal
+smearing, altering measured call durations, rise times, and interval
+timings.</li>
+<li><strong>Phase Inaccuracies:</strong> Vorbis does not prioritize
+phase preservation. Bioacoustic techniques reliant on beamforming, array
+localization, or precise cross-correlation will suffer degraded accuracy
+when analyzing Vorbis-compressed audio.</li>
+</ul>
+<h3 id="practical-implications-for-research">Practical Implications for
+Research</h3>
+<p>Because Vorbis introduces irreversible spectral alterations, lossless
+audio formats such as uncompressed WAV or FLAC (which supports sample
+rates up to 655.35 kHz) are preferred in bioacoustic research. If
+bandwidth or storage constraints necessitate using Vorbis for
+large-scale field monitoring, researchers must thoroughly benchmark
+manually tuned encoder parameters against raw recordings to ensure that
+critical spectral measurements remain statistically valid.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

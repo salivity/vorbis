@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Floor 1 Piecewise Linear Interpolation - vorbis</title>
+    <meta name="description" content="In the Vorbis audio codec, the Floor 1 subsystem defines the broad spectral envelope of an audio frame by approximating energy distribution across frequencies using piecewise linear interpolation. This article breaks down how Floor 1 defines coordinate n">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-floor-1-piecewise-linear-interpolation">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Floor 1 Piecewise Linear Interpolation - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-floor-1-piecewise-linear-interpolation" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the Vorbis audio codec, the Floor 1 subsystem defines the broad spectral envelope of an audio frame by approximating energy distribution across frequencies using piecewise linear interpolation. This article breaks down how Floor 1 defines coordinate n" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-floor-1-piecewise-linear-interpolation">Vorbis Floor 1
+Piecewise Linear Interpolation</h1>
+<p>In the Vorbis audio codec, the Floor 1 subsystem defines the broad
+spectral envelope of an audio frame by approximating energy distribution
+across frequencies using piecewise linear interpolation. This article
+breaks down how Floor 1 defines coordinate nodes, hierarchically encodes
+amplitude values, and applies deterministic, integer-based linear
+rendering in the decibel domain to reconstruct an accurate
+psychoacoustic masking curve.</p>
+<h3 id="the-role-of-the-spectral-floor">The Role of the Spectral
+Floor</h3>
+<p>Vorbis separates audio spectrum representation into two distinct
+elements: the "floor" and the "residue." The floor represents the
+overall energy envelope across frequencies, modeling human auditory
+thresholds and masking curves. The residue captures the fine spectral
+details that deviate from this envelope. Floor 1 is the primary
+mechanism used in Vorbis to describe this envelope efficiently.</p>
+<h3 id="node-configuration-and-the-frequency-axis-x-values">Node
+Configuration and the Frequency Axis (X-Values)</h3>
+<p>Floor 1 establishes a sequence of discrete frequency bins, known as
+nodes or control points. The horizontal positions (<span
+class="math inline">\(X\)</span>-values) of these nodes are fixed during
+stream initialization and transmitted in the Vorbis setup header:</p>
+<ul>
+<li><strong>Non-Uniform Spacing:</strong> The <span
+class="math inline">\(X\)</span>-coordinates are arranged non-linearly
+across the spectrum, spaced more densely at lower frequencies and
+farther apart at higher frequencies. This mirrors the Bark scale or
+equivalent rectangular bandwidth (ERB) curves of human hearing.</li>
+<li><strong>Range Bounds:</strong> Every Floor 1 configuration includes
+two mandatory endpoint nodes representing the lowest and highest
+frequency points (bin 0 and the Nyquist limit).</li>
+</ul>
+<p>Because the encoder and decoder share the exact same predefined <span
+class="math inline">\(X\)</span>-coordinates, the audio stream only
+needs to transmit the amplitude values (<span
+class="math inline">\(Y\)</span>-values) for each active node per audio
+frame.</p>
+<h3 id="hierarchical-amplitude-encoding-y-values">Hierarchical Amplitude
+Encoding (Y-Values)</h3>
+<p>Rather than storing the <span class="math inline">\(Y\)</span>-values
+independently, Floor 1 uses a hierarchical tree structure to predict
+amplitudes:</p>
+<ol type="1">
+<li><strong>Endpoint Quantization:</strong> The two edge nodes are
+quantized and encoded first.</li>
+<li><strong>Intermediate Prediction:</strong> For any node situated
+between two already established nodes, its predicted value is calculated
+via linear interpolation between those two surrounding anchor
+points.</li>
+<li><strong>Residual Transmission:</strong> The encoder calculates the
+difference between the node’s actual energy value and its linearly
+predicted value. This difference is Huffman-coded. If a node does not
+deviate meaningfully from the linear path, its residual can be omitted
+entirely.</li>
+</ol>
+<h3 id="piecewise-linear-interpolation-mechanics">Piecewise Linear
+Interpolation Mechanics</h3>
+<p>Once the decoder recovers all node values <span
+class="math inline">\((X_i, Y_i)\)</span>, it connects adjacent nodes
+with straight line segments across the frequency spectrum.</p>
+<h4 id="1-interpolation-in-the-decibel-domain">1. Interpolation in the
+Decibel Domain</h4>
+<p>The <span class="math inline">\(Y\)</span>-coordinates represent
+signal magnitude on a logarithmic (decibel) scale. Performing standard
+linear interpolation between two points <span
+class="math inline">\((X_A, Y_A)\)</span> and <span
+class="math inline">\((X_B, Y_B)\)</span> yields intermediate values
+along a straight line in the dB domain:</p>
+<p><span class="math display">\[Y(x) = Y_A + (Y_B - Y_A) \cdot \frac{x -
+X_A}{X_B - X_A}\]</span></p>
+<p>Because the vertical axis is logarithmic, a straight line connecting
+two nodes translates to an exponential curve when converted back to
+linear amplitude. This directly matches human perception of sound
+loudness across frequency intervals.</p>
+<h4 id="2-deterministic-integer-arithmetic">2. Deterministic Integer
+Arithmetic</h4>
+<p>Digital audio decoders running on different hardware architectures
+often produce slight variations in floating-point calculations. To
+prevent drift and ensure identical output across platforms, the Vorbis
+specification mandates a bit-exact, integer-only line drawing algorithm
+derived from Bresenham’s algorithm.</p>
+<p>The specification explicitly dictates how integer division,
+truncation, and rounding must occur when stepping from <span
+class="math inline">\(X_A\)</span> to <span
+class="math inline">\(X_B\)</span>. This ensures that every compliant
+Vorbis decoder constructs the exact same sequence of discrete integer
+floor values across all MDCT (Modified Discrete Cosine Transform)
+bins.</p>
+<h3 id="application-to-the-audio-spectrum">Application to the Audio
+Spectrum</h3>
+<p>After the piecewise line segments are generated across the entire
+spectrum, the resulting curve represents the completed spectral
+floor:</p>
+<ol type="1">
+<li>The integer floor values are mapped back to linear scale amplitudes
+via a lookup table or de-quantization formula.</li>
+<li>The decoder reads the quantized MDCT residue vector from the
+bitstream.</li>
+<li>The residue vector is multiplied point-by-point with the
+interpolated linear floor curve, restoring the proper energy proportions
+across all frequency bands prior to the inverse MDCT transform.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

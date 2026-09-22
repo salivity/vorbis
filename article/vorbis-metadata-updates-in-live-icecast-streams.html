@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Metadata Updates in Live Icecast Streams - vorbis</title>
+    <meta name="description" content="In continuous live Icecast streams, Vorbis metadata updates without interrupting audio playback by utilizing chained Ogg bitstreams. Unlike MP3 streams that inject out-of-band ICY byte intervals, Ogg Vorbis is a containerized format requiring metadata to">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-metadata-updates-in-live-icecast-streams">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Metadata Updates in Live Icecast Streams - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-metadata-updates-in-live-icecast-streams" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In continuous live Icecast streams, Vorbis metadata updates without interrupting audio playback by utilizing chained Ogg bitstreams. Unlike MP3 streams that inject out-of-band ICY byte intervals, Ogg Vorbis is a containerized format requiring metadata to" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-metadata-updates-in-live-icecast-streams">Vorbis Metadata
+Updates in Live Icecast Streams</h1>
+<p>In continuous live Icecast streams, Vorbis metadata updates without
+interrupting audio playback by utilizing chained Ogg bitstreams. Unlike
+MP3 streams that inject out-of-band ICY byte intervals, Ogg Vorbis is a
+containerized format requiring metadata to reside within specific header
+packets. This article details how source encoders, the Icecast server,
+and media players collaborate using Ogg stream chaining and Vorbis
+comment packets to refresh track and artist information dynamically
+during a live broadcast.</p>
+<h3 id="the-ogg-vorbis-container-and-metadata-structure">The Ogg Vorbis
+Container and Metadata Structure</h3>
+<p>Ogg Vorbis audio is packaged into an Ogg physical container holding a
+logical bitstream with a distinct serial number. A standard Vorbis
+logical bitstream begins with three mandatory header packets:</p>
+<ol type="1">
+<li><strong>Identification Header:</strong> Contains basic audio
+parameters, such as sample rate, channel count, and Vorbis version.</li>
+<li><strong>Comment Header:</strong> Holds the metadata, stored as UTF-8
+key-value pairs (such as <code>TITLE=Song Name</code> and
+<code>ARTIST=Artist Name</code>).</li>
+<li><strong>Setup Header:</strong> Contains codebooks and time-domain
+configurations required to decode the subsequent audio packets.</li>
+</ol>
+<p>Because metadata is stored only within the comment header at the
+initialization stage of a bitstream, new metadata cannot simply be
+inserted into existing Vorbis audio packets.</p>
+<h3 id="ogg-chaining-the-mechanism-for-updates">Ogg Chaining: The
+Mechanism for Updates</h3>
+<p>To change metadata in a continuous live stream, the encoding source
+client uses a feature called Ogg chaining (or chained bitstreams).
+Instead of dropping the HTTP connection, the source performs a bitstream
+transition within the same transport layer:</p>
+<ol type="1">
+<li><strong>Stream Termination:</strong> The encoder sets the End of
+Stream (EOS) flag on the final page of the current Ogg logical
+stream.</li>
+<li><strong>New Stream Initialization:</strong> The encoder immediately
+initiates a new logical bitstream marked with a Beginning of Stream
+(BOS) flag and a new serial number.</li>
+<li><strong>Header Transmission:</strong> The encoder sends the three
+required Vorbis headers for the new stream, including an updated comment
+header containing the new track details.</li>
+<li><strong>Continuous Audio:</strong> Vorbis audio packets resume
+immediately under the new stream serial number.</li>
+</ol>
+<p>Because this transition occurs within consecutive bytes of the
+continuous network connection, no audio gap is incurred if the player
+supports seamless chaining.</p>
+<h3 id="the-role-of-the-icecast-server">The Role of the Icecast
+Server</h3>
+<p>Icecast operates primarily as a byte-distribution relay and does not
+decode or re-encode the Vorbis audio. However, it actively monitors the
+stream to handle metadata synchronization:</p>
+<ul>
+<li><strong>Pass-through Forwarding:</strong> Icecast passes the chained
+Ogg pages, including the new BOS/EOS markers and header packets,
+directly down to connected listeners.</li>
+<li><strong>Header Parsing:</strong> Icecast parses the Vorbis comment
+headers within each incoming logical stream. It extracts standard tags
+(like <code>TITLE</code> and <code>ARTIST</code>) to update the server's
+internal state, XML/JSON status endpoints, and public web
+interfaces.</li>
+<li><strong>Admin Metadata Overrides:</strong> While source clients
+typically drive chained stream updates, Icecast also allows
+administrators to send metadata updates via HTTP requests
+(<code>/admin/metadata</code>). In pure Ogg Vorbis configurations,
+however, encoder-driven stream chaining remains the standard method to
+keep audio headers and player displays strictly in sync.</li>
+</ul>
+<h3 id="listener-client-handling">Listener Client Handling</h3>
+<p>For metadata updates to display correctly, the listening client must
+implement continuous chained Ogg playback:</p>
+<ul>
+<li><strong>Parsing the Serial Change:</strong> When the player
+encounters an EOS marker followed by a BOS marker with a new serial
+number, it reads the new Vorbis comment header.</li>
+<li><strong>Refreshing Display:</strong> The player updates its
+interface with the new title and artist information extracted from the
+comment header.</li>
+<li><strong>Uninterrupted Decoding:</strong> If the audio properties
+(sample rate, channels) in the new identification header match the
+previous stream, robust decoders transition seamlessly across the
+boundary without resetting buffers or causing audible pops.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

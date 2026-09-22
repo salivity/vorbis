@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Identification Header Packet Parameters - vorbis</title>
+    <meta name="description" content="The Vorbis identification header is the initial configuration packet required to decode an Ogg Vorbis audio stream. This packet establishes the baseline decoding environment by defining critical stream attributes such as audio channels, sample rate, sugg">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-identification-header-packet-parameters">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Identification Header Packet Parameters - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-identification-header-packet-parameters" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis identification header is the initial configuration packet required to decode an Ogg Vorbis audio stream. This packet establishes the baseline decoding environment by defining critical stream attributes such as audio channels, sample rate, sugg" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-identification-header-packet-parameters">Vorbis
+Identification Header Packet Parameters</h1>
+<p>The Vorbis identification header is the initial configuration packet
+required to decode an Ogg Vorbis audio stream. This packet establishes
+the baseline decoding environment by defining critical stream attributes
+such as audio channels, sample rate, suggested bitrates, window sizes,
+and stream integrity markers. Without successfully parsing this header,
+a decoder cannot interpret the subsequent setup data or compressed audio
+payloads.</p>
+<h3 id="packet-type-and-codec-identifier">Packet Type and Codec
+Identifier</h3>
+<ul>
+<li><strong>Packet Type (8 bits):</strong> An 8-bit value that must be
+set to <code>0x01</code> to denote an identification header.</li>
+<li><strong>Identifier Pattern (48 bits):</strong> The continuous 6-byte
+ASCII string <code>"vorbis"</code> (represented in hexadecimal as
+<code>0x76, 0x6F, 0x72, 0x62, 0x69, 0x73</code>). This confirms the
+bitstream format.</li>
+</ul>
+<h3 id="core-audio-parameters">Core Audio Parameters</h3>
+<ul>
+<li><strong>Vorbis Version (32 bits):</strong> An unsigned 32-bit
+integer indicating the Vorbis version. In the current specification,
+this value must always be <code>0</code>.</li>
+<li><strong>Audio Channels (8 bits):</strong> An unsigned 8-bit integer
+specifying the number of channels. This value must be greater than zero
+(for example, <code>1</code> for mono or <code>2</code> for
+stereo).</li>
+<li><strong>Audio Sample Rate (32 bits):</strong> An unsigned 32-bit
+integer indicating the sampling rate in Hertz (such as
+<code>44100</code> or <code>48000</code>). This value must be greater
+than zero.</li>
+</ul>
+<h3 id="bitrate-management-fields">Bitrate Management Fields</h3>
+<ul>
+<li><strong>Bitrate Maximum (32 bits):</strong> A signed 32-bit integer
+indicating the maximum allowed bitrate in bits per second. If this
+constraint is unspecified or unused, it is set to <code>0</code> or
+treated as a negative/null limit depending on decoder
+implementation.</li>
+<li><strong>Bitrate Nominal (32 bits):</strong> A signed 32-bit integer
+representing the preferred or nominal bitrate in bits per second. A
+value of <code>0</code> indicates that the encoder did not specify a
+target bitrate (common in variable bitrate encoding).</li>
+<li><strong>Bitrate Minimum (32 bits):</strong> A signed 32-bit integer
+indicating the minimum allowed bitrate in bits per second. A value of
+<code>0</code> signifies no minimum constraint.</li>
+</ul>
+<h3 id="block-sizes-and-framing">Block Sizes and Framing</h3>
+<ul>
+<li><strong>Blocksize 0 (4 bits):</strong> An unsigned 4-bit integer
+representing the exponent <span class="math inline">\(n\)</span> used to
+calculate the short transform window size as <span
+class="math inline">\(2^n\)</span>. Valid values range from 6 (64
+samples) to 13 (8192 samples).</li>
+<li><strong>Blocksize 1 (4 bits):</strong> An unsigned 4-bit integer
+representing the exponent <span class="math inline">\(n\)</span> used to
+calculate the long transform window size as <span
+class="math inline">\(2^n\)</span>. Valid values also range from 6 to
+13, with the requirement that <code>blocksize_0</code> must be less than
+or equal to <code>blocksize_1</code>.</li>
+<li><strong>Framing Flag (1 bit):</strong> A single bit that must be
+non-zero (<code>1</code>). It functions as an integrity check to verify
+that the identification header has unpacked correctly and is properly
+synchronized.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Surround Sound Channel Mapping Standards - vorbis</title>
+    <meta name="description" content="This article provides an overview of how the Vorbis audio compression format defines and structures multi-channel audio tracks. Unlike many common digital audio standards that place channels in conventional consumer playback orders, Vorbis follows a dist">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-surround-sound-channel-mapping-standards">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Surround Sound Channel Mapping Standards - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-surround-sound-channel-mapping-standards" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Vorbis audio compression format defines and structures multi-channel audio tracks. Unlike many common digital audio standards that place channels in conventional consumer playback orders, Vorbis follows a dist" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-surround-sound-channel-mapping-standards">Vorbis Surround
+Sound Channel Mapping Standards</h1>
+<p>This article provides an overview of how the Vorbis audio compression
+format defines and structures multi-channel audio tracks. Unlike many
+common digital audio standards that place channels in conventional
+consumer playback orders, Vorbis follows a distinct layout defined by
+the Xiph.Org Foundation. Understanding these channel assignments is
+essential for correctly encoding, decoding, and converting surround
+sound audio without misrouting speakers.</p>
+<h3 id="the-xiphorg-vorbis-i-specification">The Xiph.Org Vorbis I
+Specification</h3>
+<p>Vorbis relies on its own channel mapping scheme defined in the
+official Vorbis I specification. The standard uses a spatial, geometric
+ordering approach: channels generally span horizontally from left to
+right across the front soundstage, followed by surround or rear
+channels, and conclude with low-frequency effects (LFE).</p>
+<p>This layout contrasts with other industry standards such as
+Microsoft’s WAVE format, SMPTE, or ITU-R BS.775, which typically
+position the Low-Frequency Effects (subwoofer) channel earlier in the
+stream.</p>
+<h3 id="standard-channel-layouts">Standard Channel Layouts</h3>
+<p>Vorbis specifies predefined mappings for channel counts from 1 to
+8:</p>
+<ul>
+<li><strong>1 Channel (Mono):</strong> Center mono channel.</li>
+<li><strong>2 Channels (Stereo):</strong> Left, Right.</li>
+<li><strong>3 Channels:</strong> Front Left, Center, Front Right.</li>
+<li><strong>4 Channels (Quadraphonic):</strong> Front Left, Front Right,
+Rear Left, Rear Right.</li>
+<li><strong>5 Channels:</strong> Front Left, Center, Front Right, Rear
+Left, Rear Right.</li>
+<li><strong>6 Channels (5.1 Surround):</strong> Front Left, Center,
+Front Right, Rear Left, Rear Right, LFE.</li>
+<li><strong>7 Channels (6.1 Surround):</strong> Front Left, Center,
+Front Right, Side Left, Side Right, Rear Center, LFE.</li>
+<li><strong>8 Channels (7.1 Surround):</strong> Front Left, Center,
+Front Right, Side Left, Side Right, Rear Left, Rear Right, LFE.</li>
+</ul>
+<h3 id="vorbis-vs-conventional-51-and-71-mappings">Vorbis vs.
+Conventional 5.1 and 7.1 Mappings</h3>
+<p>The primary distinction between Vorbis and common alternatives (like
+AC-3, DTS, AAC, and standard WAV files) lies in the placement of the
+Center and LFE channels:</p>
+<ul>
+<li><strong>Vorbis 5.1 layout:</strong> Front Left, Center, Front Right,
+Rear Left, Rear Right, LFE.</li>
+<li><strong>Standard WAV/SMPTE 5.1 layout:</strong> Front Left, Front
+Right, Center, LFE, Rear Left, Rear Right.</li>
+</ul>
+<p>In a standard 5.1 WAV file, the subwoofer occupies the fourth
+channel, while the center speaker occupies the third. In a Vorbis
+stream, the center channel is placed second, and the LFE channel is
+placed last (channel six).</p>
+<h3 id="transcoding-and-playback-implications">Transcoding and Playback
+Implications</h3>
+<p>Because Vorbis enforces its own channel assignment rules, software
+decoders and hardware audio sinks must remap the audio stream to match
+output hardware configurations. When transcoding between formats—such as
+converting a 5.1 AAC or Dolby Digital track to Ogg Vorbis—the channels
+must be reordered according to the Vorbis specification. If this
+remapping step is bypassed, the center channel and right channel will
+swap positions, and the subwoofer track will route directly to a
+surround speaker.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

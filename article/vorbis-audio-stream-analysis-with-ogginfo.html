@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Audio Stream Analysis with ogginfo - vorbis</title>
+    <meta name="description" content="Analyzing Vorbis streams at a technical level requires utilities that can parse both the outer Ogg encapsulation container and the underlying Vorbis audio codec packets. This article details the usage of ogginfo, the definitive command-line tool for tech">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-audio-stream-analysis-with-ogginfo">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Audio Stream Analysis with ogginfo - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-audio-stream-analysis-with-ogginfo" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Analyzing Vorbis streams at a technical level requires utilities that can parse both the outer Ogg encapsulation container and the underlying Vorbis audio codec packets. This article details the usage of ogginfo, the definitive command-line tool for tech" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-audio-stream-analysis-with-ogginfo">Vorbis Audio Stream
+Analysis with ogginfo</h1>
+<p>Analyzing Vorbis streams at a technical level requires utilities that
+can parse both the outer Ogg encapsulation container and the underlying
+Vorbis audio codec packets. This article details the usage of
+<code>ogginfo</code>, the definitive command-line tool for technical
+Vorbis stream analysis, outlining its core features, installation
+methods, output metrics, and relevant alternatives for in-depth audio
+inspection.</p>
+<h3 id="the-primary-tool-ogginfo">The Primary Tool: ogginfo</h3>
+<p>The standard, most comprehensive command-line tool for technical
+Vorbis stream analysis is <strong><code>ogginfo</code></strong>.
+Distributed as part of the official <code>vorbis-tools</code> suite
+maintained by Xiph.Org, <code>ogginfo</code> parses Ogg Vorbis
+bitstreams to validate stream integrity and output low-level technical
+parameters.</p>
+<h3 id="installation">Installation</h3>
+<p><code>ogginfo</code> is available across all major package managers
+via the <code>vorbis-tools</code> package:</p>
+<ul>
+<li><strong>Debian/Ubuntu:</strong>
+<code>sudo apt install vorbis-tools</code></li>
+<li><strong>Fedora/RHEL:</strong>
+<code>sudo dnf install vorbis-tools</code></li>
+<li><strong>Arch Linux:</strong>
+<code>sudo pacman -S vorbis-tools</code></li>
+<li><strong>macOS (Homebrew):</strong>
+<code>brew install vorbis-tools</code></li>
+</ul>
+<h3 id="basic-usage-and-syntax">Basic Usage and Syntax</h3>
+<p>To analyze an audio file, pass the file path to
+<code>ogginfo</code>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ogginfo</span> audio.ogg</span></code></pre></div>
+<p>To increase reporting depth for multiplexed streams or corrupted
+data, append the verbose flag:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ogginfo</span> <span class="at">-v</span> audio.ogg</span></code></pre></div>
+<h3 id="metrics-provided-by-ogginfo">Metrics Provided by ogginfo</h3>
+<p><code>ogginfo</code> analyzes both packet headers and bitstream
+framing, printing a comprehensive report that includes:</p>
+<ul>
+<li><strong>Stream Multiplexing Details:</strong> Logical bitstream
+serial numbers and chaining status.</li>
+<li><strong>Vorbis Identification Data:</strong> Codec version, audio
+channels (mono, stereo, multichannel), and sampling frequency in
+Hz.</li>
+<li><strong>Bitrate Measurements:</strong> Nominal, maximum, and minimum
+bitrates encoded into the header, alongside the actual calculated
+average bitrate derived from the entire stream.</li>
+<li><strong>Timing and Length:</strong> Total playback duration down to
+individual sample accuracy, along with total sample counts.</li>
+<li><strong>Packet and Framing Overhead:</strong> Total packet counts,
+average packet size, container overhead percentage, and end-of-stream
+(EOS) marker confirmation.</li>
+<li><strong>Stream Integrity:</strong> Detection of discontinuous
+sequence numbers, truncated packets, or corrupted page checksums.</li>
+<li><strong>Comment Metadata:</strong> The vendor identification string
+(identifying the exact encoder library used) and user comments (metadata
+tags such as TITLE, ARTIST, and ALBUM).</li>
+</ul>
+<h3 id="alternative-tools">Alternative Tools</h3>
+<p>While <code>ogginfo</code> is the primary native tool for Vorbis,
+other command-line utilities provide specialized stream inspection:</p>
+<ul>
+<li><strong><code>oggz-info</code>:</strong> Part of the
+<code>oggz-tools</code> suite, this utility focuses heavily on Ogg
+container-level metrics, timestamp validation, and page structures,
+making it ideal for debugging container synchronization issues.</li>
+<li><strong><code>ffprobe</code>:</strong> Part of the FFmpeg framework,
+<code>ffprobe -show_streams -show_packets audio.ogg</code> provides
+cross-format packet-level timing and frame analysis, though it offers
+less Vorbis-specific codec internals than <code>ogginfo</code>.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorbis Subsonic and DC Digital Filtering - vorbis</title>
+    <meta name="description" content="The Vorbis audio compression format eliminates subsonic and direct current (DC) energy to prevent inaudible low-frequency signals from wasting bit allocation and causing artifacts during time-to-frequency transformation. To achieve this, the reference Vo">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/vorbis-subsonic-and-dc-digital-filtering">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorbis Subsonic and DC Digital Filtering - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/vorbis-subsonic-and-dc-digital-filtering" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Vorbis audio compression format eliminates subsonic and direct current (DC) energy to prevent inaudible low-frequency signals from wasting bit allocation and causing artifacts during time-to-frequency transformation. To achieve this, the reference Vo" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="vorbis-subsonic-and-dc-digital-filtering">Vorbis Subsonic and DC
+Digital Filtering</h1>
+<p>The Vorbis audio compression format eliminates subsonic and direct
+current (DC) energy to prevent inaudible low-frequency signals from
+wasting bit allocation and causing artifacts during time-to-frequency
+transformation. To achieve this, the reference Vorbis encoder
+(<code>libvorbis</code>) applies digital pre-processing via Infinite
+Impulse Response (IIR) high-pass filtering combined with
+frequency-domain quantization constraints. This article examines the
+specific digital filtering mechanisms Vorbis uses to suppress DC bias
+and infrasonic rumble.</p>
+<h2 id="the-impact-of-dc-and-subsonic-energy">The Impact of DC and
+Subsonic Energy</h2>
+<p>DC offset (energy at 0 Hz) and subsonic frequencies (below 20 Hz) are
+imperceptible to human hearing, but they pose significant problems for
+lossy audio encoders:</p>
+<ul>
+<li><strong>Dynamic Range Waste:</strong> DC offsets shift the
+zero-crossing baseline of the audio waveform, reducing available
+headroom.</li>
+<li><strong>Spectral Leakage:</strong> The Modified Discrete Cosine
+Transform (MDCT) decomposes signals into overlapping spectral bins.
+High-amplitude DC bias or very low-frequency content leaks across
+multiple adjacent low-frequency bins, reducing coding efficiency.</li>
+<li><strong>Bit Wastage:</strong> Encoding imperceptible low-frequency
+information consumes valuable bits that could otherwise enhance audible
+bands.</li>
+</ul>
+<h2 id="pre-transform-iir-high-pass-filtering">Pre-Transform IIR
+High-Pass Filtering</h2>
+<p>Before running the time-domain signal through the psychoacoustic
+model and the MDCT, the Vorbis reference encoder applies an IIR
+high-pass filter during its pre-processing stage.</p>
+<ul>
+<li><strong>Filter Architecture:</strong> The implementation utilizes an
+Infinite Impulse Response (IIR) DC-blocking filter—typically configured
+as a multi-pole Butterworth or biquad high-pass topology.</li>
+<li><strong>Cutoff Frequency:</strong> The cutoff frequency is placed
+right at the lower threshold of human hearing, typically between 15 Hz
+and 20 Hz depending on the target sample rate and quality preset.</li>
+<li><strong>Phase and Attenuation:</strong> The filter introduces a
+steep roll-off below the cutoff point, providing heavy attenuation down
+to 0 Hz. While IIR filters introduce slight non-linear phase shifts near
+the cutoff, these phase variations are imperceptible at infrasonic
+frequencies and are outweighed by the coding gain.</li>
+</ul>
+<h2 id="transform-domain-interaction-the-mdct-iv">Transform Domain
+Interaction: The MDCT-IV</h2>
+<p>Once the signal is filtered, Vorbis processes the audio in
+overlapping frames using the Type-IV Modified Discrete Cosine Transform
+(MDCT-IV).</p>
+<p>The MDCT-IV possesses a natural half-sample frequency shift, placing
+the center of the lowest transform bin at:</p>
+<p><span class="math display">\[f_0 = \frac{f_s}{4N}\]</span></p>
+<p>Because there is no dedicated bin centered exactly at 0 Hz, the MDCT
+inherently avoids storing an isolated DC term. However, the
+pre-transform IIR filter remains necessary; without it, unresolved DC
+energy would smear across the first several low-frequency bins.</p>
+<h2 id="psychoacoustic-masking-and-floor-representation">Psychoacoustic
+Masking and Floor Representation</h2>
+<p>In addition to time-domain pre-filtering, Vorbis reinforces subsonic
+suppression through its spectral envelope architecture (Floor 1):</p>
+<ul>
+<li><strong>Bark Scale Binning:</strong> Floor 1 synthesizes the general
+spectral shape using piecewise linear interpolation mapped to a
+logarithmic/Bark scale.</li>
+<li><strong>Zeroing Inaudible Sub-bands:</strong> The psychoacoustic
+model evaluates the energy against absolute thresholds of hearing. Any
+residual energy leaking past the high-pass filter below the audible
+range is quantized to zero during the residue encoding stage, ensuring
+that no bits are spent on subsonic components.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

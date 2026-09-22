@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Tremor Implements Trigonometry Without an FPU - vorbis</title>
+    <meta name="description" content="The Tremor decoder (libvorbisidec) decodes Ogg Vorbis audio on platforms lacking hardware floating-point units (FPUs) by substituting floating-point arithmetic with integer-based fixed-point math. Audio decompression algorithms like Vorbis rely heavily o">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-tremor-implements-trigonometry-without-an-fpu">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Tremor Implements Trigonometry Without an FPU - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-tremor-implements-trigonometry-without-an-fpu" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Tremor decoder (libvorbisidec) decodes Ogg Vorbis audio on platforms lacking hardware floating-point units (FPUs) by substituting floating-point arithmetic with integer-based fixed-point math. Audio decompression algorithms like Vorbis rely heavily o" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-tremor-implements-trigonometry-without-an-fpu">How Tremor
+Implements Trigonometry Without an FPU</h1>
+<p>The Tremor decoder (libvorbisidec) decodes Ogg Vorbis audio on
+platforms lacking hardware floating-point units (FPUs) by substituting
+floating-point arithmetic with integer-based fixed-point math. Audio
+decompression algorithms like Vorbis rely heavily on trigonometric
+functions—specifically sine and cosine—to perform the Inverse Modified
+Discrete Cosine Transform (IMDCT). Tremor bypasses standard runtime
+trigonometric libraries by utilizing precalculated lookup tables,
+quadrant symmetry, algorithmic transforms, and precise bit-shift
+operations to perform all necessary computations within standard integer
+registers.</p>
+<h3 id="fixed-point-representation">Fixed-Point Representation</h3>
+<p>Standard Vorbis decoders represent audio waveforms and transformation
+coefficients as IEEE 754 floating-point values. Tremor represents
+fractional real numbers as scaled integers, primarily using Q-format
+arithmetic (such as Q31, where a 32-bit signed integer allocates 1 sign
+bit and 31 fractional bits). In this format:</p>
+<ul>
+<li>A trigonometric value of <code>1.0</code> is represented as the
+maximum integer value (<span
+class="math inline">\(2^{31}-1\)</span>).</li>
+<li>A value of <code>0.0</code> is <code>0</code>.</li>
+<li>A value of <code>-1.0</code> is <span
+class="math inline">\(-2^{31}\)</span>.</li>
+</ul>
+<p>This integer scaling allows the processor's standard Arithmetic Logic
+Unit (ALU) to handle fractions natively without an FPU.</p>
+<h3 id="precomputed-lookup-tables-luts">Precomputed Lookup Tables
+(LUTs)</h3>
+<p>Runtime evaluation of trigonometric functions via Taylor series or
+polynomial approximations (like Chebyshev polynomials) is
+computationally prohibitive on low-power integer hardware. Tremor
+completely avoids calculating trigonometric functions on the fly.</p>
+<p>Instead, it relies on static, precomputed lookup tables embedded
+directly in the source code. These tables contain fixed-point
+representations of the exact twiddle factors (sine and cosine phase
+factors) required during the IMDCT and spectral synthesis stages.</p>
+<h3 id="symmetry-and-memory-optimization">Symmetry and Memory
+Optimization</h3>
+<p>Storing every required sine and cosine value would consume excessive
+ROM and cache, which are strictly limited on embedded targets. Tremor
+minimizes table sizes by leveraging fundamental trigonometric
+identities:</p>
+<ul>
+<li><strong>Quarter-Wave Symmetry:</strong> Since <span
+class="math inline">\(\cos(\theta) = \sin(\frac{\pi}{2} -
+\theta)\)</span> and values repeat symmetrically across the four
+quadrants of a circle, Tremor only stores values for a fraction of the
+circle (typically one quadrant or octant).</li>
+<li><strong>Sign Inversion:</strong> Negative values and reflections
+across axes are resolved via simple two's-complement negation and index
+offsets rather than dedicated table entries.</li>
+</ul>
+<h3 id="imdct-reduction-and-fft-folding">IMDCT Reduction and FFT
+Folding</h3>
+<p>The most computationally intensive trigonometric operation in Vorbis
+is the IMDCT, which maps frequency spectrum data back into time-domain
+audio samples.</p>
+<p>Rather than computing the <span
+class="math inline">\(N\)</span>-point IMDCT directly—which would
+require an <span class="math inline">\(O(N^2)\)</span> number of
+trigonometric multiplications—Tremor reformulates the IMDCT into an
+<span class="math inline">\(N/4\)</span>-point complex Fast Fourier
+Transform (FFT). This algorithmic reduction drastically shrinks the
+quantity of unique angles required, reducing both table memory
+requirements and the total number of integer multiplications needed per
+audio frame.</p>
+<h3 id="64-bit-accumulation-and-scaling">64-Bit Accumulation and
+Scaling</h3>
+<p>Multiplying two 32-bit fixed-point numbers (such as an audio sample
+by a sine factor) yields a 64-bit intermediate product. Tremor manages
+this through specialized macros and inline assembly instructions
+optimized for targets like ARM (e.g., <code>SMULL</code> or
+<code>SMLAL</code> instructions) and MIPS.</p>
+<p>After multiplication, the result is shifted right by the fractional
+bit depth (such as 31 bits) to normalize the value back into a 32-bit
+register. Tremor carefully stages these scaling shifts throughout the
+transform pipeline to maintain maximum dynamic range while preventing
+integer overflow and minimizing quantization noise.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

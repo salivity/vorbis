@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbis Error Concealment Minimizes Glitches - vorbis</title>
+    <meta name="description" content="Vorbis packet loss concealment (PLC) minimizes audible glitches during network transmission by reconstructing missing audio data instead of muting the stream or leaving abrupt gaps. When packets drop in transit, the decoder utilizes the overlapping archi">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbis-error-concealment-minimizes-glitches">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbis Error Concealment Minimizes Glitches - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbis-error-concealment-minimizes-glitches" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Vorbis packet loss concealment (PLC) minimizes audible glitches during network transmission by reconstructing missing audio data instead of muting the stream or leaving abrupt gaps. When packets drop in transit, the decoder utilizes the overlapping archi" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbis-error-concealment-minimizes-glitches">How Vorbis
+Error Concealment Minimizes Glitches</h1>
+<p>Vorbis packet loss concealment (PLC) minimizes audible glitches
+during network transmission by reconstructing missing audio data instead
+of muting the stream or leaving abrupt gaps. When packets drop in
+transit, the decoder utilizes the overlapping architecture of the
+Modified Discrete Cosine Transform (MDCT), spectral extrapolation from
+previous valid frames, and rapid amplitude fading to disguise missing
+waveforms. These mechanisms work together to eliminate clicks, pops, and
+sudden dropouts, maintaining a continuous and natural listening
+experience.</p>
+<h3 id="overlapping-mdct-frames">Overlapping MDCT Frames</h3>
+<p>The primary structural defense against packet loss in Vorbis is its
+use of the Modified Discrete Cosine Transform (MDCT). Vorbis encodes
+audio in overlapping frames, typically with a 50% overlap between
+consecutive blocks.</p>
+<p>Because adjacent frames share time-domain information:</p>
+<ul>
+<li>The second half of an earlier frame overlaps with the first half of
+the current frame.</li>
+<li>If a packet containing the current frame is lost, the decoder still
+retains the tail end of the preceding frame and can combine it with the
+beginning of a subsequent received frame.</li>
+<li>The overlap-add process inherently smooths boundary transitions,
+preventing the hard, sharp edge transitions in the waveform that human
+ears perceive as clicks or pops.</li>
+</ul>
+<h3 id="spectral-parameter-extrapolation">Spectral Parameter
+Extrapolation</h3>
+<p>When an entire packet is missing, the decoder cannot perform a
+standard inverse transform for that frame. Instead of inserting silence,
+Vorbis decoders extrapolate spectral data from the last correctly
+decoded frame.</p>
+<p>Vorbis separates audio into two main components: the spectral floor
+(which defines the general tonal shape and energy distribution) and the
+residue (the fine spectral detail). During packet loss:</p>
+<ol type="1">
+<li><strong>Floor Re-use:</strong> The decoder duplicates the floor
+parameters of the previous valid frame, preserving the overall tonal
+balance.</li>
+<li><strong>Residue Estimation:</strong> The high-frequency residue is
+either repeated with modified phase characteristics or substituted with
+shaped pseudo-random noise. This masks the gap because the ear is less
+sensitive to phase coherence disruptions in short intervals than to
+total energy loss.</li>
+</ol>
+<h3 id="windowing-and-boundary-smoothing">Windowing and Boundary
+Smoothing</h3>
+<p>Vorbis applies non-rectangular window functions (typically the Vorbis
+window or a derived sine window) to frame boundaries before synthesis.
+When a packet is lost, the concealed synthetic frame is processed
+through the same windowing functions as normal frames.</p>
+<p>This structural tapering ensures that whatever data is generated to
+cover the lost packet tapers to zero at the frame edges. Even if the
+estimated data does not perfectly align with the actual lost content,
+the windowing guarantees that no high-frequency step discontinuities are
+introduced into the final output.</p>
+<h3 id="graceful-energy-fading">Graceful Energy Fading</h3>
+<p>If packet loss extends across several consecutive packets, repeating
+previous spectral characteristics will create an unnatural, metallic
+ringing or buzzing artifact.</p>
+<p>To prevent this:</p>
+<ul>
+<li>The decoder applies an exponential attenuation curve to subsequent
+lost frames.</li>
+<li>The volume of the synthesized audio drops rapidly across missing
+blocks (often over 20 to 50 milliseconds).</li>
+<li>The signal smoothly transitions into clean silence rather than
+abruptly cutting off.</li>
+<li>When valid packets resume, the decoder crossfades back to the real
+signal, restoring full amplitude smoothly.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

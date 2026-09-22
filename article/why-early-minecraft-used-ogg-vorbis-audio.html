@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Early Minecraft Used Ogg Vorbis Audio - vorbis</title>
+    <meta name="description" content="When Minecraft was first developed, its creator Markus "Notch" Persson faced technical and legal constraints regarding how audio was stored, streamed, and played back. Early versions of the game relied on the Ogg Vorbis (.ogg) container and codec for all">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/why-early-minecraft-used-ogg-vorbis-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why Early Minecraft Used Ogg Vorbis Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/why-early-minecraft-used-ogg-vorbis-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When Minecraft was first developed, its creator Markus "Notch" Persson faced technical and legal constraints regarding how audio was stored, streamed, and played back. Early versions of the game relied on the Ogg Vorbis (.ogg) container and codec for all" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-early-minecraft-used-ogg-vorbis-audio">Why Early Minecraft
+Used Ogg Vorbis Audio</h1>
+<p>When <em>Minecraft</em> was first developed, its creator Markus
+"Notch" Persson faced technical and legal constraints regarding how
+audio was stored, streamed, and played back. Early versions of the game
+relied on the Ogg Vorbis (<code>.ogg</code>) container and codec for all
+ambient sounds and C418’s music tracks primarily due to software
+licensing costs, technical compatibility with Java-based game libraries,
+and the need for efficient memory usage through audio streaming.</p>
+<h3 id="freedom-from-audio-patent-licensing">Freedom From Audio Patent
+Licensing</h3>
+<p>During <em>Minecraft</em>’s early development between 2009 and 2011,
+the most widely used compressed audio format—MP3—was encumbered by
+software patents owned by the Fraunhofer Institute and Technicolor.
+Commercial software and game developers distributing MP3 files were
+required to pay royalties and licensing fees based on sales volume.</p>
+<p>In contrast, Vorbis was explicitly designed by the Xiph.Org
+Foundation as an open-source, patent-free, and royalty-free alternative
+to MP3. Because <em>Minecraft</em> started as an independent,
+self-published project, adopting a format free from licensing risk and
+ongoing legal costs was an obvious choice.</p>
+<h3 id="native-integration-with-java-audio-libraries">Native Integration
+with Java Audio Libraries</h3>
+<p>Early versions of <em>Minecraft</em> were built on the Lightweight
+Java Game Library (LWJGL) and used a third-party audio engine called the
+Paulscode SoundSystem.</p>
+<p>The Paulscode library relied on JOrbis, a pure-Java implementation of
+the Vorbis decoder. This integration meant that Java could decode
+<code>.ogg</code> audio files natively across Windows, macOS, and Linux
+without requiring external native codecs or complex platform-specific
+wrappers. It provided seamless cross-platform functionality with minimal
+setup.</p>
+<h3 id="audio-streaming-and-memory-footprint">Audio Streaming and Memory
+Footprint</h3>
+<p>Short, reactive sound effects (such as footsteps or block breaking)
+were initially kept uncompressed or quickly loaded into memory. However,
+ambient loops and C418's long musical compositions required a different
+approach:</p>
+<ul>
+<li><strong>Disk Footprint:</strong> Uncompressed WAV files would have
+inflated the lightweight download size of early <em>Minecraft</em> from
+dozens of megabytes to several gigabytes.</li>
+<li><strong>RAM Conservation:</strong> Loading uncompressed audio tracks
+directly into system memory was not feasible, as early 32-bit Java
+Virtual Machines (JVMs) were severely constrained by memory allocation
+limits.</li>
+<li><strong>Real-Time Streaming:</strong> Vorbis supported robust
+streaming capabilities. The sound engine could buffer small chunks of an
+<code>.ogg</code> file from the disk in real time, keeping the game's
+memory footprint low while playing ambient tracks several minutes
+long.</li>
+</ul>
+<h3 id="high-fidelity-at-low-bitrates">High Fidelity at Low
+Bitrates</h3>
+<p>Aside from legal and architectural benefits, Vorbis delivered
+superior audio fidelity compared to MP3 at identical bitrates. Ambient
+background tracks and delicate piano melodies contain subtle
+reverberations and high-frequency details that easily degrade under
+standard compression. Vorbis maintained high acoustic clarity while
+keeping file sizes compact, ensuring the soundtrack sounded clear even
+on low-end hardware.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

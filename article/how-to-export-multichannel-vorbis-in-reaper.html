@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Export Multichannel Vorbis in REAPER - vorbis</title>
+    <meta name="description" content="REAPER natively supports exporting multichannel OGG Vorbis audio tracks without requiring external encoders, third-party software, or additional codecs. This guide explains how REAPER handles multichannel Vorbis files, provides a straightforward step-by-">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-to-export-multichannel-vorbis-in-reaper">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Export Multichannel Vorbis in REAPER - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-to-export-multichannel-vorbis-in-reaper" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="REAPER natively supports exporting multichannel OGG Vorbis audio tracks without requiring external encoders, third-party software, or additional codecs. This guide explains how REAPER handles multichannel Vorbis files, provides a straightforward step-by-" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-to-export-multichannel-vorbis-in-reaper">How to Export
+Multichannel Vorbis in REAPER</h1>
+<p>REAPER natively supports exporting multichannel OGG Vorbis audio
+tracks without requiring external encoders, third-party software, or
+additional codecs. This guide explains how REAPER handles multichannel
+Vorbis files, provides a straightforward step-by-step process to set up
+your master bus and render settings, and outlines practical use cases
+such as surround sound mixing and game audio production.</p>
+<h2 id="native-vorbis-support-in-reaper">Native Vorbis Support in
+REAPER</h2>
+<p>Cockos REAPER includes built-in encoding libraries for Ogg Vorbis.
+Unlike some digital audio workstations that restrict OGG output to
+standard mono or stereo configurations, REAPER allows you to define
+custom channel counts directly in the render engine. You can encode
+discrete 4-channel (quadraphonic), 6-channel (5.1 surround), 8-channel
+(7.1 surround), or arbitrary multichannel layouts directly to a single
+<code>.ogg</code> container.</p>
+<h2 id="preparing-the-multichannel-routing">Preparing the Multichannel
+Routing</h2>
+<p>Before rendering, ensure your project routing can deliver discrete
+multichannel audio to the output:</p>
+<ol type="1">
+<li>Open the <strong>Master Track Routing</strong> by clicking the
+<strong>Route</strong> button on the Master track in the Mixer or Track
+Control Panel.</li>
+<li>Locate the <strong>Track Channels</strong> dropdown menu.</li>
+<li>Change the channel count from the default <code>2</code> to your
+target output count (e.g., <code>4</code> for quad, <code>6</code> for
+5.1, or <code>8</code> for 7.1).</li>
+<li>Route your individual tracks or buses to the corresponding master
+channels (e.g., Channels 1–2 for Front L/R, 3 for Center, 4 for LFE, 5–6
+for Surrounds).</li>
+</ol>
+<h2 id="step-by-step-render-process">Step-by-Step Render Process</h2>
+<p>Once your mix is routed correctly, export the multichannel file using
+the native render dialog:</p>
+<ol type="1">
+<li>Go to the top menu and select <strong>File &gt; Render</strong> (or
+press <code>Ctrl+Alt+R</code> on Windows / <code>Cmd+Opt+R</code> on
+macOS).</li>
+<li>Under the <strong>Output</strong> section, specify your directory
+and file name.</li>
+<li>In the <strong>Options</strong> section, find the
+<strong>Channels</strong> dropdown:
+<ul>
+<li>Select the exact number of channels matching your master track setup
+(e.g., <code>4</code>, <code>6</code>, or <code>8</code>).</li>
+</ul></li>
+<li>In the <strong>Primary Output Format</strong> section, open the
+format dropdown and choose <strong>OGG Vorbis</strong>.</li>
+<li>Configure the Vorbis settings:
+<ul>
+<li>Choose your preferred encoding mode: <strong>VBR
+(Quality-based)</strong> or <strong>CBR (Bitrate-based)</strong>.</li>
+<li>Adjust the quality slider or bitrate value according to your project
+requirements.</li>
+</ul></li>
+<li>Click <strong>Render 1 File</strong>.</li>
+</ol>
+<p>REAPER will generate a single <code>.ogg</code> file containing all
+discrete audio streams within the container.</p>
+<h2 id="common-use-cases">Common Use Cases</h2>
+<ul>
+<li><strong>Game Audio Middleware:</strong> Engines like Unity and
+Unreal, as well as middleware such as Wwise and FMOD, commonly utilize
+multichannel OGG Vorbis for ambient loops, interactive music stems, and
+localized surround sound.</li>
+<li><strong>Surround Sound Distribution:</strong> Independent
+distribution of 5.1 and quadraphonic music often relies on OGG Vorbis
+due to its royalty-free nature, small file size, and broad support
+across open-source media players.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

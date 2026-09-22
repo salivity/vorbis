@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Engines with Native Ogg Vorbis Support - vorbis</title>
+    <meta name="description" content="Ogg Vorbis is an open-source, patent-free audio compression format widely used in video game development for its efficient balance of fidelity, file size, and CPU decoding performance. This article outlines the major game engines that provide native, out">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/game-engines-with-native-ogg-vorbis-support">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Game Engines with Native Ogg Vorbis Support - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/game-engines-with-native-ogg-vorbis-support" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Ogg Vorbis is an open-source, patent-free audio compression format widely used in video game development for its efficient balance of fidelity, file size, and CPU decoding performance. This article outlines the major game engines that provide native, out" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="game-engines-with-native-ogg-vorbis-support">Game Engines with
+Native Ogg Vorbis Support</h1>
+<p>Ogg Vorbis is an open-source, patent-free audio compression format
+widely used in video game development for its efficient balance of
+fidelity, file size, and CPU decoding performance. This article outlines
+the major game engines that provide native, out-of-the-box support for
+Vorbis audio playback, detailing how each engine handles the format
+within its audio pipeline.</p>
+<h3 id="godot-engine">Godot Engine</h3>
+<p>Godot features complete, first-class native support for the Ogg
+Vorbis format (<code>.ogg</code>). Because Godot is an open-source
+engine, Vorbis aligns directly with its licensing philosophy. The engine
+uses Vorbis primarily for long music tracks and ambient background audio
+through the <code>AudioStreamPlayer</code> node. Files imported as
+<code>.ogg</code> are decoded efficiently on the fly, keeping memory
+footprints low without requiring proprietary audio middleware.</p>
+<h3 id="unity">Unity</h3>
+<p>Unity natively supports Ogg Vorbis files across multiple platforms,
+particularly for standalone desktop systems (Windows, macOS, Linux) and
+Android. When audio clips are imported into the Unity Editor, developers
+can select Vorbis as the target compression format. Unity's underlying
+audio pipeline allows developers to configure Vorbis tracks to either
+decompress completely upon loading into RAM, decompress on the fly
+during playback, or stream directly from disk to optimize performance
+for longer tracks.</p>
+<h3 id="unreal-engine">Unreal Engine</h3>
+<p>Unreal Engine includes native playback and import support for Ogg
+Vorbis. While Unreal's native Audio System converts imported audio into
+internal standard formats (such as Bink Audio in newer releases of
+Unreal Engine 5), legacy and current audio pipelines maintain built-in
+decoders to read and stream <code>.ogg</code> data directly on supported
+platforms. This allows developers to use Vorbis files for dialogue and
+continuous musical scores without relying on external plugins.</p>
+<h3 id="source-and-source-2-valve">Source and Source 2 (Valve)</h3>
+<p>Valve’s Source and Source 2 engines have long incorporated native Ogg
+Vorbis decoding. The engine relies heavily on Vorbis for in-game music
+streaming and scripted narrative sequences, differentiating streaming
+music from smaller, memory-resident sound effects that typically run as
+uncompressed PCM <code>.wav</code> files.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

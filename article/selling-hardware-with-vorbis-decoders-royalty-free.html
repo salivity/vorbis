@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selling Hardware with Vorbis Decoders Royalty-Free - vorbis</title>
+    <meta name="description" content="Companies can legally manufacture and sell proprietary hardware containing Vorbis decoders without paying patent royalties or licensing fees. Developed by the Xiph.Org Foundation, the Vorbis audio compression format was specifically engineered to be comp">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/selling-hardware-with-vorbis-decoders-royalty-free">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Selling Hardware with Vorbis Decoders Royalty-Free - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/selling-hardware-with-vorbis-decoders-royalty-free" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Companies can legally manufacture and sell proprietary hardware containing Vorbis decoders without paying patent royalties or licensing fees. Developed by the Xiph.Org Foundation, the Vorbis audio compression format was specifically engineered to be comp" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="selling-hardware-with-vorbis-decoders-royalty-free">Selling
+Hardware with Vorbis Decoders Royalty-Free</h1>
+<p>Companies can legally manufacture and sell proprietary hardware
+containing Vorbis decoders without paying patent royalties or licensing
+fees. Developed by the Xiph.Org Foundation, the Vorbis audio compression
+format was specifically engineered to be completely open,
+patent-unencumbered, and free for both commercial and non-commercial
+use. This article examines the licensing framework behind Vorbis, the
+requirements for embedding decoders in physical devices, and how to
+maintain compliance when shipping proprietary consumer electronics.</p>
+<h2 id="the-vorbis-royalty-framework">The Vorbis Royalty Framework</h2>
+<p>Unlike proprietary formats such as AAC or early-generation MP3, the
+Vorbis format carries no licensing fees, per-unit royalties, or
+commercial deployment tariffs. The specification itself resides in the
+public domain.</p>
+<p>The Xiph.Org Foundation designed the format explicitly to prevent the
+intellectual property bottlenecks common in digital media hardware.
+Consequently, hardware manufacturers do not need to register with a
+patent pool, sign a commercial license, or report sales figures to
+integrate Vorbis playback capabilities into their devices.</p>
+<h2 id="software-implementation-and-licensing">Software Implementation
+and Licensing</h2>
+<p>While the Vorbis format specification is free of patents and
+royalties, the actual implementation—the code executing the decoding
+process—is governed by copyright licenses.</p>
+<p>Most embedded hardware systems utilize one of two standard reference
+libraries provided by Xiph.Org:</p>
+<ul>
+<li><strong>libvorbis:</strong> The standard reference decoding and
+encoding library, typically suited for systems with floating-point
+hardware capabilities.</li>
+<li><strong>Tremor (libvorbisidec):</strong> An integer-only
+implementation of the Vorbis decoding algorithm, optimized specifically
+for embedded processors, microcontrollers, and digital signal processors
+(DSPs) lacking hardware floating-point units.</li>
+</ul>
+<p>Both <code>libvorbis</code> and <code>Tremor</code> are distributed
+under a modified BSD-style license. This permissive free software
+license permits companies to incorporate the code into closed-source,
+proprietary firmware and commercial hardware without requiring the
+proprietary system software to be open-sourced.</p>
+<h2 id="compliance-requirements-for-manufacturers">Compliance
+Requirements for Manufacturers</h2>
+<p>To legally deploy Vorbis in commercial hardware without paying
+royalties, a manufacturer must adhere to the straightforward obligations
+of the BSD license:</p>
+<ol type="1">
+<li><strong>Retain Copyright Notices:</strong> The original copyright
+notices, the list of BSD conditions, and the accompanying disclaimer
+must be included in the product's documentation, user manual, or
+embedded software information screens.</li>
+<li><strong>Avoid Endorsement Claims:</strong> The name of the Xiph.Org
+Foundation or its contributors cannot be used to endorse or promote the
+hardware product without prior written permission.</li>
+</ol>
+<p>Manufacturers implementing the Vorbis specification entirely from
+scratch via custom fixed-function silicon (ASIC) or custom proprietary
+software are not bound by the BSD license. In that scenario, the
+implementation is purely the company's own intellectual property,
+requiring neither attribution to Xiph.Org nor royalty payments.</p>
+<h2 id="third-party-software-considerations">Third-Party Software
+Considerations</h2>
+<p>If a hardware vendor chooses not to use Xiph.Org’s reference
+implementations and instead uses third-party multimedia frameworks—such
+as FFmpeg or GStreamer—the governing licenses change.</p>
+<p>These third-party libraries often contain components licensed under
+the GNU General Public License (GPL) or GNU Lesser General Public
+License (LGPL). Incorporating GPL-licensed software can require a
+manufacturer to release proprietary source code, while LGPL imposes
+dynamic linking or relinking requirements. To maintain fully proprietary
+firmware, hardware developers should stick to BSD-licensed decoders like
+Tremor or build their own proprietary implementations.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

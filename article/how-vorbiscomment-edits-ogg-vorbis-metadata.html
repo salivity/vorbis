@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Vorbiscomment Edits Ogg Vorbis Metadata - vorbis</title>
+    <meta name="description" content="The vorbiscomment utility modifies metadata within an existing Ogg Vorbis file by parsing its initial bitstream headers, regenerating the comment header with updated key-value tags, and rewriting the container stream while leaving the underlying audio da">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/how-vorbiscomment-edits-ogg-vorbis-metadata">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Vorbiscomment Edits Ogg Vorbis Metadata - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/how-vorbiscomment-edits-ogg-vorbis-metadata" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The vorbiscomment utility modifies metadata within an existing Ogg Vorbis file by parsing its initial bitstream headers, regenerating the comment header with updated key-value tags, and rewriting the container stream while leaving the underlying audio da" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-vorbiscomment-edits-ogg-vorbis-metadata">How Vorbiscomment
+Edits Ogg Vorbis Metadata</h1>
+<p>The <code>vorbiscomment</code> utility modifies metadata within an
+existing Ogg Vorbis file by parsing its initial bitstream headers,
+regenerating the comment header with updated key-value tags, and
+rewriting the container stream while leaving the underlying audio data
+untouched. This article explains the internal mechanics of how
+<code>vorbiscomment</code> unpacks Vorbis header packets, updates user
+comments, recalculates container checksums, and safely writes changes
+back to disk.</p>
+<h3 id="ogg-vorbis-header-structure">Ogg Vorbis Header Structure</h3>
+<p>An Ogg Vorbis file is organized into an Ogg bitstream container
+containing three mandatory header packets at the very beginning of the
+audio stream:</p>
+<ol type="1">
+<li><strong>Identification Header:</strong> Contains stream parameters,
+including sample rate, channels, and Vorbis version.</li>
+<li><strong>Comment Header:</strong> Stores metadata tags as UTF-8
+encoded text fields (e.g., <code>ARTIST=...</code>,
+<code>TITLE=...</code>) along with a vendor string.</li>
+<li><strong>Setup Header:</strong> Contains codec configuration data,
+codebooks, and floor/residue parameters required to decode the
+audio.</li>
+</ol>
+<p>Audio data packets follow immediately after these headers. Because
+metadata is embedded in the second header packet rather than a separate
+file section or an ID3-like tag wrapper, editing it requires
+reconstructing the front portion of the Ogg bitstream.</p>
+<h3 id="the-metadata-parsing-and-editing-process">The Metadata Parsing
+and Editing Process</h3>
+<p>When invoked, <code>vorbiscomment</code> performs several specific
+steps to alter the metadata:</p>
+<ol type="1">
+<li><strong>Stream Demuxing:</strong> The utility reads the initial
+pages of the Ogg container to locate the secondary packet that contains
+the Vorbis comment structure.</li>
+<li><strong>Comment Extraction and Modification:</strong>
+<ul>
+<li>In read mode (<code>-l</code>), it parses the length-prefixed
+strings in the comment packet and outputs them.</li>
+<li>In write mode (<code>-w</code>) or append mode (<code>-a</code>), it
+reads new tags from standard input or a specified file, converts them
+into standard <code>KEY=VALUE</code> formatting, and builds a
+replacement comment packet according to the Vorbis specification.</li>
+</ul></li>
+<li><strong>Packet Replacement:</strong> The original comment packet is
+discarded, and the new comment packet is inserted directly between the
+unchanged Identification Header and the Setup Header.</li>
+</ol>
+<h3 id="stream-rewriting-and-container-adjustment">Stream Rewriting and
+Container Adjustment</h3>
+<p>Because the new metadata usually differs in size from the original
+comments, <code>vorbiscomment</code> cannot perform a direct in-place
+byte substitution on the existing disk blocks without corrupting
+downstream page alignments. It must restructure the Ogg container:</p>
+<ul>
+<li><strong>Page Slicing:</strong> Ogg data is grouped into "pages" with
+a maximum payload of approximately 64 KB. If the new comment header is
+larger or smaller than the original, <code>vorbiscomment</code>
+recalculates the page boundaries.</li>
+<li><strong>Header Flags and Sequence Numbers:</strong> Page sequence
+numbers and continuing packet flags (lacing values) are updated for all
+affected header pages.</li>
+<li><strong>CRC Recalculation:</strong> Each Ogg page contains a 32-bit
+CRC checksum in its header. When <code>vorbiscomment</code> alters any
+header data, it recalculates the CRC checksum for every modified page to
+maintain bitstream validity.</li>
+<li><strong>Passthrough of Audio Packets:</strong> The utility does not
+decode, re-encode, or modify the Setup Header or any subsequent audio
+data packets. It reads the raw audio packets from the source stream and
+multiplexes them behind the new header packets unchanged, ensuring
+lossless metadata modification.</li>
+</ul>
+<h3 id="safe-disk-operations">Safe Disk Operations</h3>
+<p>To prevent file corruption in the event of an interruption or disk
+failure, <code>vorbiscomment</code> creates a temporary file alongside
+the target file. It writes the updated headers and copies the audio
+packets to this temporary file. Once the entire stream is successfully
+written and closed, it replaces the original file atomically using
+standard operating system rename operations.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

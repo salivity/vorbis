@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning on Vorbis Compressed Audio - vorbis</title>
+    <meta name="description" content="Training deep learning audio classifiers directly on Vorbis-compressed audio data is technically feasible, but it requires partial decoding rather than consuming raw bitstreams. While raw entropy-coded bytes obscure the spatial and temporal relationships">
+    <link rel="canonical" href="https://salivity.github.io/vorbis/article/deep-learning-on-vorbis-compressed-audio">
+    <link rel="search" type="application/opensearchdescription+xml" title="vorbis" href="/vorbis/opensearch.xml">
+    <link rel="icon" href="/vorbis/favicon.ico">
+    <link rel="stylesheet" href="/vorbis/css/style.css">
+    <link media="print" rel="stylesheet" href="/vorbis/css/print.css">
+    <script src="/vorbis/js/fuse.min.js"></script>
+    <script src="/vorbis/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Deep Learning on Vorbis Compressed Audio - vorbis" />
+    <meta property="og:url" content="https://salivity.github.io/vorbis/article/deep-learning-on-vorbis-compressed-audio" />
+    <meta property="og:image" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/vorbis/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Training deep learning audio classifiers directly on Vorbis-compressed audio data is technically feasible, but it requires partial decoding rather than consuming raw bitstreams. While raw entropy-coded bytes obscure the spatial and temporal relationships" />
+    <link rel="manifest" href="/vorbis/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/vorbis/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>vorbis</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/vorbis/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="deep-learning-on-vorbis-compressed-audio">Deep Learning on
+Vorbis Compressed Audio</h1>
+<p>Training deep learning audio classifiers directly on
+Vorbis-compressed audio data is technically feasible, but it requires
+partial decoding rather than consuming raw bitstreams. While raw
+entropy-coded bytes obscure the spatial and temporal relationships
+neural networks rely on, models can train directly on the intermediate
+Modified Discrete Cosine Transform (MDCT) coefficients extracted during
+the decompression pipeline. This approach bypasses full time-domain
+reconstruction and subsequent spectrogram generation, cutting
+computational overhead while introducing specific architectural
+challenges.</p>
+<h3 id="the-problem-with-raw-compressed-bitstreams">The Problem with Raw
+Compressed Bitstreams</h3>
+<p>Audio stored in the Vorbis format (commonly in <code>.ogg</code>
+containers) undergoes multiple layers of compression: psychoacoustic
+analysis, Modified Discrete Cosine Transform (MDCT), vector
+quantization, and entropy coding (Huffman coding).</p>
+<p>Feeding raw, bit-level Vorbis data directly into a convolutional
+neural network (CNN) or transformer does not work effectively. Entropy
+coding removes statistical redundancy, causing adjacent bits to lose
+their spatial and temporal locality. To a neural network, raw compressed
+bitstreams resemble high-entropy pseudo-random noise, preventing
+standard convolutional or self-attention layers from extracting
+meaningful acoustic features.</p>
+<h3 id="training-on-partially-decoded-representations">Training on
+Partially Decoded Representations</h3>
+<p>To train a model in the "compressed domain," the bitstream must be
+parsed up to the point where structural frequency data becomes
+accessible.</p>
+<ol type="1">
+<li><strong>Entropy Decoding:</strong> The compressed bitstream is
+parsed using the Vorbis codebooks to extract quantized values.</li>
+<li><strong>Feature Extraction:</strong> Instead of running the
+computationally expensive Inverse MDCT (iMDCT) and synthesis windowing
+to reconstruct pulse-code modulation (PCM) time-domain audio, the
+training pipeline intercepts the raw MDCT coefficients.</li>
+</ol>
+<p>Because MDCT is a frequency-domain representation similar to the
+Short-Time Fourier Transform (STFT), these coefficients function as an
+alternative to traditional Mel-spectrograms. Neural network backbones,
+particularly 1D and 2D CNNs, can learn acoustic patterns directly from
+these coefficients.</p>
+<h3 id="technical-challenges-with-vorbis-data">Technical Challenges with
+Vorbis Data</h3>
+<p>While conceptually similar to training on MP3 or AAC transform
+coefficients, Vorbis introduces unique structural complexities:</p>
+<ul>
+<li><strong>Variable Block Sizes:</strong> Vorbis dynamically switches
+between short and long windows (typically 256 and 2048 samples) to
+balance time resolution during transients and frequency resolution
+during stationary segments. Neural networks expect regular,
+fixed-dimension input tensors. Processing Vorbis MDCT data requires
+either zero-padding, interpolation, or dual-branch networks designed to
+handle asymmetric frame shapes.</li>
+<li><strong>Decoupled Spectral Floors and Residues:</strong> Vorbis
+splits audio data into a "floor" (the overall spectral envelope) and a
+"residue" (the fine spectral detail). To provide a complete spectral
+picture, a classifier must either consume both inputs via multi-modal
+fusion layers or reconstruct the complete quantized spectrum before
+inference.</li>
+<li><strong>Lossy Quantization Artifacts:</strong> Psychoacoustic
+masking intentionally discards inaudible frequencies. Classifiers
+trained on this data may perform poorly if deployed on uncompressed
+audio or audio compressed with different codecs, as the model learns
+codec-specific quantization artifacts.</li>
+</ul>
+<h3 id="performance-and-trade-offs">Performance and Trade-Offs</h3>
+<p>Training directly on Vorbis MDCT coefficients provides clear
+operational advantages and trade-offs:</p>
+<ul>
+<li><strong>I/O and Compute Efficiency:</strong> Skipping full decoding
+(iMDCT, overlap-add) and skipping subsequent STFT/Mel-filterbank
+computations can significantly reduce data loader bottlenecks on CPUs,
+increasing overall GPU throughput during training.</li>
+<li><strong>Memory Footprint:</strong> The intermediate representations
+require less RAM and cache storage compared to uncompressed PCM
+audio.</li>
+<li><strong>Accuracy:</strong> In most classification tasks (such as
+acoustic scene classification or speech command recognition), models
+trained on compressed representations achieve classification accuracy
+within 1% to 3% of models trained on standard Mel-spectrograms, provided
+the input tensor alignment issues are properly resolved.</li>
+</ul>
+<p>Direct training on Vorbis data is an effective optimization strategy
+when large-scale datasets are already stored in Vorbis format, provided
+the training pipeline extracts intermediate transform coefficients
+rather than passing raw binary streams.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/vorbis'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/vorbis/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/vorbis/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>
